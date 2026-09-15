@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Product Details</title>
+    <style>
+        body { background: #f1f5f9; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .detail-card { background: white; width: 800px; display: flex; border-radius: 20px; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
+        .image-side { width: 50%; background: #fff; display: flex; align-items: center; justify-content: center; }
+        .image-side img { width: 100%; height: 100%; object-fit: contain; }
+        .info-side { width: 50%; padding: 40px; }
+        .price { font-size: 2rem; color: #10b981; margin: 20px 0; font-weight: 800; }
+        .back { display: block; margin-bottom: 20px; text-decoration: none; color: #666; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="detail-card">
+    <div class="image-side">
+        <img id="mainImg" src="https://via.placeholder.com/400">
+    </div>
+    <div class="info-side">
+        <a href="ViewAllProduct.html" class="back">← Back</a>
+        <h1 id="pName">Loading...</h1>
+        <p id="pDesc" style="color:#666; line-height:1.6;"></p>
+        <div class="price" id="pPrice">₹0</div>
+        <p><b>Stock:</b> <span id="pQty">0</span> units</p>
+        <button onclick="goToEdit()" style="background:#f59e0b; color:white; border:none; padding:15px 30px; border-radius:10px; cursor:pointer; font-weight:bold; margin-top:20px;">Edit This Product</button>
+    </div>
+</div>
+
+<script>
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get('id');
+
+    fetch(`http://localhost:8080/products/${id}`)
+    .then(res => res.json())
+    .then(p => {
+        document.getElementById('pName').innerText = p.name;
+        document.getElementById('pDesc').innerText = p.description;
+        document.getElementById('pPrice').innerText = `₹${p.price}`;
+        document.getElementById('pQty').innerText = p.quantity;
+        if(p.imagefile) {
+            document.getElementById('mainImg').src = `http://localhost:8080/products/${p.id}/image`;
+        }
+    });
+
+    function goToEdit() {
+        window.location.href = `UpdateProduct.html?id=${id}`;
+    }
+
+     window.addEventListener("pageshow", function (event) {
+        if(event.persisted){
+            window.location.reload();
+        }
+    });
+
+
+</script>
+</body>
+</html>

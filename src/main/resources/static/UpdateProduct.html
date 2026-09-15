@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Product</title>
+    <style>
+        :root {
+          --bg: #f7f7f8;
+          --surface: #ffffff;
+          --border: #e4e4e7;
+          --border-hover: #d4d4d8;
+          --text-primary: #18181b;
+          --text-secondary: #71717a;
+          --text-tertiary: #a1a1aa;
+          --accent: #2563eb;
+          --accent-hover: #1d4ed8;
+          --focus-ring: rgba(37, 99, 235, 0.12);
+          --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+          --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+          margin: 0;
+          padding: 48px 24px;
+          background: var(--bg);
+          color: var(--text-primary);
+          font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Helvetica, Arial, sans-serif;
+          -webkit-font-smoothing: antialiased;
+          display: flex;
+          justify-content: center;
+        }
+
+        .page {
+          width: 100%;
+          max-width: 440px;
+        }
+
+        .back-link {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 13px;
+          font-weight: 500;
+          color: var(--text-secondary);
+          text-decoration: none;
+          margin-bottom: 16px;
+          transition: color 0.15s ease;
+        }
+
+        .back-link:hover {
+          color: var(--text-primary);
+        }
+
+        .card {
+          background: var(--surface);
+          border: 1px solid var(--border);
+          border-radius: 14px;
+          box-shadow: var(--shadow-md);
+          padding: 32px;
+        }
+
+        .card-header {
+          margin-bottom: 24px;
+        }
+
+        .card-header h1 {
+          font-size: 18px;
+          font-weight: 600;
+          letter-spacing: -0.01em;
+          margin: 0 0 4px 0;
+        }
+
+        .card-header p {
+          margin: 0;
+          font-size: 13px;
+          color: var(--text-secondary);
+        }
+
+        form {
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+        }
+
+        .row {
+          display: flex;
+          gap: 12px;
+        }
+
+        .field {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+          flex: 1;
+        }
+
+        .field label {
+          font-size: 13px;
+          font-weight: 500;
+          color: var(--text-primary);
+        }
+
+        .field .hint {
+          font-size: 12px;
+          color: var(--text-tertiary);
+          font-weight: 400;
+        }
+
+        .current-image {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 10px;
+          border: 1px solid var(--border);
+          border-radius: 10px;
+          background: var(--bg);
+        }
+
+        .current-image img {
+          width: 56px;
+          height: 56px;
+          object-fit: cover;
+          border-radius: 6px;
+          border: 1px solid var(--border);
+          background: var(--surface);
+          display: block;
+        }
+
+        .current-image .meta {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+        }
+
+        .current-image .meta .label {
+          font-size: 12px;
+          font-weight: 500;
+          color: var(--text-secondary);
+        }
+
+        .current-image .meta .sub {
+          font-size: 12px;
+          color: var(--text-tertiary);
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="url"],
+        select,
+        textarea {
+          width: 100%;
+          font-family: inherit;
+          font-size: 14px;
+          color: var(--text-primary);
+          background: var(--surface);
+          border: 1px solid var(--border);
+          border-radius: 8px;
+          padding: 9px 12px;
+          transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        input::placeholder,
+        textarea::placeholder {
+          color: var(--text-tertiary);
+        }
+
+        input:hover,
+        select:hover,
+        textarea:hover {
+          border-color: var(--border-hover);
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+          outline: none;
+          border-color: var(--accent);
+          box-shadow: 0 0 0 4px var(--focus-ring);
+        }
+
+        textarea {
+          resize: vertical;
+          min-height: 72px;
+          line-height: 1.5;
+        }
+
+        select {
+          appearance: none;
+          -webkit-appearance: none;
+          background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2371717a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+          background-repeat: no-repeat;
+          background-position: right 10px center;
+          background-size: 16px;
+          padding-right: 34px;
+        }
+
+        .divider {
+          height: 1px;
+          background: var(--border);
+          margin: 4px 0;
+        }
+
+        .segmented {
+          display: inline-flex;
+          padding: 2px;
+          background: var(--bg);
+          border: 1px solid var(--border);
+          border-radius: 8px;
+          gap: 2px;
+        }
+
+        .segmented input {
+          display: none;
+        }
+
+        .segmented label {
+          padding: 6px 12px;
+          font-size: 13px;
+          font-weight: 500;
+          color: var(--text-secondary);
+          border-radius: 6px;
+          cursor: pointer;
+          transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+          user-select: none;
+        }
+
+        .segmented input:checked + label {
+          background: var(--surface);
+          color: var(--text-primary);
+          box-shadow: var(--shadow-sm);
+        }
+
+        .hidden { display: none; }
+
+        .file-drop {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          border: 1px dashed var(--border);
+          border-radius: 8px;
+          padding: 10px 12px;
+          font-size: 13px;
+          color: var(--text-secondary);
+          background: var(--bg);
+        }
+
+        .file-drop input[type="file"] {
+          font-size: 13px;
+          color: var(--text-secondary);
+          max-width: 100%;
+        }
+
+        .actions {
+          margin-top: 8px;
+          display: flex;
+          justify-content: flex-end;
+        }
+
+        .btn-save {
+          background: var(--accent);
+          color: #ffffff;
+          border: none;
+          font-size: 14px;
+          font-weight: 500;
+          padding: 10px 18px;
+          border-radius: 8px;
+          cursor: pointer;
+          transition: background 0.15s ease, transform 0.05s ease;
+        }
+
+        .btn-save:hover {
+          background: var(--accent-hover);
+        }
+
+        .btn-save:active {
+          transform: scale(0.98);
+        }
+
+        @media (max-width: 480px) {
+          .row { flex-direction: column; }
+          .card { padding: 24px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="page">
+    <a href="ViewAllProduct.html" class="back-link">← Back to list</a>
+
+    <div class="card">
+        <div class="card-header">
+            <h1>Edit product</h1>
+            <p>Update the details for this item.</p>
+        </div>
+
+        <!-- Dynamic update path linking the model ID attribute -->
+        <form id="updateForm" enctype="multipart/form-data">
+            <div class="field">
+                <label>Current image</label>
+                <div class="current-image">
+                    <!-- Endpoint loads raw data stream from controller -->
+                    <img id="imagePreview" alt="Product image"/>
+                    <div class="meta">
+                        <span class="label" id="labelname">Product name</span>
+                        <span class="sub">Uploaded image</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="field">
+                <label for="name">Product name</label>
+                <input type="text" id="name" name="name" required>
+            </div>
+
+            <div class="row">
+                <div class="field">
+                    <label for="price">Price (₹)</label>
+                    <input type="number" step="0.01" id="price" name="price" required>
+                </div>
+                <div class="field">
+                    <label for="categoryName">Category</label>
+                    <input type="text" id="categoryName" name="categoryName" required>
+                </div>
+            </div>
+
+            <div class="field">
+                <label for="description">Description <span class="hint">(optional)</span></label>
+                <textarea id="description" name="description" rows="3" ></textarea>
+            </div>
+
+            <div class="row">
+                <div class="field">
+                    <label for="quantity">Quantity</label>
+                    <input type="number" id="quantity" name="quantity" required>
+                </div>
+                <div class="field">
+                    <label for="qunatityUnit">Unit</label>
+                    <select id="qunatityUnit" name="qunatityUnit">
+                        <option value="PIECE">Piece</option>
+                        <option value="KG">KG</option>
+                        <option value="LITER" >Liter</option>
+                        <option value="BOX" >Box</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="field">
+                <label>Change image</label>
+                <div class="segmented" role="tablist">
+                    <input type="radio" id="src-file" name="imageSource" value="file" checked onclick="toggleUpdateInput('file')">
+                    <label for="src-file">Upload file</label>
+                    <input type="radio" id="src-url" name="imageSource" value="url" onclick="toggleUpdateInput('url')">
+                    <label for="src-url">Image URL</label>
+                </div>
+            </div>
+
+            <div class="field" id="fileInputBlock">
+                <label for="imagefile">Upload new file <span class="hint">(optional)</span></label>
+                <div class="file-drop">
+                    <input type="file" id="imagefile" name="imagefile">
+                </div>
+            </div>
+
+            <div class="field hidden" id="urlInputBlock">
+                <label for="imageUrl">New image URL</label>
+                <input type="url" id="imageUrl" name="imageUrl" placeholder="https://example.com/image.jpg">
+            </div>
+
+            <div class="actions">
+                <button type="submit" class="btn-save">Save changes</button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+<script>
+    let usingFileInput = true;
+  function toggleUpdateInput(mode) {
+    const fileBlock = document.getElementById('fileInputBlock');
+    const urlBlock = document.getElementById('urlInputBlock');
+    const fileInput = document.getElementById('imagefile');
+    const urlInput = document.getElementById('imageUrl');
+
+    if (mode === 'file') {
+      fileBlock.classList.remove('hidden');
+      urlBlock.classList.add('hidden');
+      urlInput.value = '';
+      usingFileInput = true;
+    } else {
+      urlBlock.classList.remove('hidden');
+      fileBlock.classList.add('hidden');
+      fileInput.value = '';
+      usingFileInput = false;
+    }
+  }
+  const params = new URLSearchParams(window.location.search);
+  const productId = params.get('id');
+  const updateForm = document.getElementById('updateForm');
+
+  document.addEventListener("DOMContentLoaded", () => {
+      if (productId) {
+          fetchProductDetails(productId);
+      } else {
+          alert("No product ID found in the URL!");
+      }
+  });
+
+  // 1. Load existing data when the page opens
+  function fetchProductDetails(id){
+      fetch(`http://localhost:8080/products/${id}`)
+          .then(res => {
+                if (!res.ok) throw new Error("Product fetch failed");
+                return res.json();
+            })
+          .then(data => {
+              document.getElementById('labelname').innerText = data.name || '';
+              document.getElementById('name').value = data.name || '';
+              document.getElementById('price').value = data.price || '';
+              document.getElementById('categoryName').value = data.categoryName || (data.category ? data.category.name : '');
+              document.getElementById('description').value = data.description || '';
+              document.getElementById('quantity').value = data.quantity || '';
+              document.getElementById('qunatityUnit').value = data.qunatityUnit || '';
+
+              if (data.imagefile || data.id) {
+                  document.getElementById('imagePreview').src = `http://localhost:8080/products/${data.id}/image`;
+              }
+          })
+          .catch(err => {
+                console.error("Error fetching product:", err);
+          });
+  }
+
+  // 2. Preview new image selection locally
+  function handleFileSelect(event) {
+      const reader = new FileReader();
+      reader.onload = function() {
+          const output = document.getElementById('imagePreview');
+          output.src = reader.result;
+      }
+      if (event.target.files[0]) {
+      reader.readAsDataURL(event.target.files[0]);
+      }
+  }
+
+  // 3. Submit the Update using FormData
+  updateForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const formData = new FormData();
+
+      const product = {
+          name: document.getElementById("name").value,
+          price: parseFloat(document.getElementById("price").value),
+          description: document.getElementById("description").value,
+          quantity: parseInt(document.getElementById("quantity").value, 10),
+          qunatityUnit: document.getElementById("qunatityUnit").value,
+          categoryName: document.getElementById("categoryName").value,
+          imageUrl: usingFileInput ? null : document.getElementById("imageUrl").value
+      };
+
+      formData.append("product", new Blob([JSON.stringify(product)], { type: "application/json" }));
+
+      if(usingFileInput){
+          const fileInput = document.getElementById('imagefile');
+          if (fileInput.files[0]) {
+              formData.append("imagefile", fileInput.files[0]);
+          }
+
+          fetch(`http://localhost:8080/products/${productId}/upload`, {
+              method: "PUT",
+              body: formData
+          })
+          .then(res => {
+              if (res.ok) {
+                  alert("Updated successfully");
+                  window.location.href=`AdminOneProduct.html?id=${productId}`
+              } else {
+                  alert("Update failed");
+              }
+          });
+      }else{
+          fetch(`http://localhost:8080/products/${productId}`, {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(product)
+          })
+          .then(res => {
+              if (res.ok) {
+                  alert("Updated successfully");
+                  window.location.href=`AdminOneProduct.html?id=${productId}`
+              } else {
+                  alert("Update failed");
+              }
+          });
+      }
+
+  });
+
+   window.addEventListener("pageshow", function (event) {
+      if(event.persisted){
+          window.location.reload();
+      }
+  });
+
+
+</script>
+
+</body>
+</html>

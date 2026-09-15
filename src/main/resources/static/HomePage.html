@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JustBuyIt — Product Gallery</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-wash: #CCCCFF;
+            --bg-wash-soft: #E4E4FB;
+            --surface: #ffffff;
+            --ink: #23213a;
+            --ink-muted: #6b6a85;
+            --brand: #4f46e5;
+            --brand-dark: #3730a3;
+            --price: #0f9d70;
+            --danger-bg: #fee2e2;
+            --danger: #ef4444;
+            --danger-dark: #991b1b;
+            --border: #e7e6f5;
+            --radius-lg: 18px;
+            --radius-md: 12px;
+            --shadow: 0 10px 30px rgba(79, 70, 229, 0.10);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background: linear-gradient(180deg, var(--bg-wash) 0px, var(--bg-wash) 260px, #f6f6fc 260px, #f6f6fc 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            color: var(--ink);
+        }
+
+        a { color: inherit; }
+
+        /* ---------- Header ---------- */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            backdrop-filter: blur(8px);
+        }
+
+        .navbar {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 14px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 0 0 18px 18px;
+        }
+
+        .navbar-brand {
+            font-size: 1.4rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            color: var(--ink);
+        }
+        .navbar-brand span { color: var(--brand-dark); }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: #3d3c5c;
+            font-weight: 600;
+            font-size: 0.95rem;
+            padding: 9px 16px;
+            border-radius: 20px;
+            transition: background-color 0.15s ease;
+        }
+        .nav-link:hover { background-color: rgba(255,255,255,0.6); }
+
+        .cart-link {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .cart-badge {
+            background: var(--brand-dark);
+            color: #fff;
+            font-size: 0.7rem;
+            font-weight: 700;
+            min-width: 18px;
+            height: 18px;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 5px;
+        }
+
+        .btn-logout {
+            background: var(--danger-bg);
+            color: var(--danger);
+            border: none;
+            padding: 9px 18px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: 0.15s ease;
+        }
+        .btn-logout:hover { background: #fca5a5; color: var(--danger-dark); }
+
+        /* ---------- Hero ---------- */
+
+        .hero {
+            z-index: 18;
+            backdrop-filter: blur(8px);
+            max-width: 1200px;
+            margin: 30px auto 0 auto;
+            padding: 20px 40px 50px 40px;
+        }
+
+        .hero h1 {
+            font-size: 2.4rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            line-height: 1.15;
+            max-width: 640px;
+            color: var(--ink);
+        }
+
+        .hero p.sub {
+            margin-top: 12px;
+            color: #4a486a;
+            font-size: 1.05rem;
+            max-width: 520px;
+        }
+
+        .search-row {
+            margin-top: 26px;
+            display: flex;
+            gap: 10px;
+            max-width: 560px;
+        }
+
+        #searchInput {
+            flex: 1;
+            padding: 14px 20px;
+            border-radius: 14px;
+            border: 1px solid transparent;
+            box-shadow: 0 6px 18px rgba(55, 48, 163, 0.12);
+            font-size: 1rem;
+            font-family: inherit;
+            outline: none;
+            background: var(--surface);
+        }
+        #searchInput:focus { border-color: var(--brand); }
+
+        /* ---------- Category chips ---------- */
+        .category-row {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 40px 10px 40px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .chip {
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--ink-muted);
+            padding: 8px 16px;
+            border-radius: 999px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.15s ease;
+        }
+        .chip:hover { border-color: var(--brand); color: var(--brand-dark); }
+        .chip.active { background: var(--brand); border-color: var(--brand); color: #fff; }
+
+        /* ---------- Grid & Cards ---------- */
+        main {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px 40px 80px 40px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 24px;
+        }
+
+        .card {
+            background: var(--surface);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            cursor: pointer;
+            border: 1px solid var(--border);
+            transition: transform 0.18s ease, box-shadow 0.18s ease;
+            display: flex;
+            flex-direction: column;
+        }
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 16px 34px rgba(79, 70, 229, 0.16);
+        }
+
+        .img-container {
+            height: 190px;
+            width: 100%;
+            background: #f1f0fb;
+            position: relative;
+        }
+        .img-container img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+        .category-tag {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            background: rgba(255,255,255,0.92);
+            color: var(--brand-dark);
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 999px;
+        }
+
+        .content { padding: 18px 20px 20px 20px; flex: 1; display: flex; flex-direction: column; gap: 6px; }
+
+        .content h3 {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--ink);
+            line-height: 1.3;
+        }
+
+        .unit-note { font-size: 0.82rem; color: var(--ink-muted); }
+
+        .price-row {
+            margin-top: 8px;
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+        }
+
+        .price { color: var(--price); font-weight: 800; font-size: 1.2rem; }
+
+        .add-btn {
+            background: var(--brand);
+            color: #fff;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: background-color 0.15s ease;
+        }
+        .add-btn:hover { background: var(--brand-dark); }
+
+        /* ---------- Empty / loading states ---------- */
+        .state-message {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 70px 20px;
+            color: var(--ink-muted);
+        }
+        .state-message h3 { color: var(--ink); font-size: 1.15rem; margin-bottom: 6px; }
+
+        /* ---------- Footer ---------- */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 30px 40px;
+            text-align: center;
+            color: var(--ink-muted);
+            font-size: 0.85rem;
+        }
+
+        @media (max-width: 640px) {
+            .navbar, .hero, .category-row, main, footer { padding-left: 20px; padding-right: 20px; }
+            .hero h1 { font-size: 1.8rem; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <nav class="navbar">
+        <div class="navbar-brand">Just<span>Buy</span>It</div>
+        <div class="nav-links">
+            <a href="/LoginForm.html" class="nav-link">Login</a>
+            <a href="/RegistrationForm.html" class="nav-link">Register</a>
+            <a href="/ShoppingCart.html" class="nav-link cart-link">Cart <span class="cart-badge" id="cartBadge">0</span></a>
+            <button class="btn-logout" onclick="logout()">Logout</button>
+        </div>
+    </nav>
+</header>
+    <div class="hero">
+        <h1>Everything on your list, in one place.</h1>
+        <p class="sub">Browse fresh stock across every category and check out in a couple of clicks.</p>
+        <div class="search-row">
+            <input type="text" id="searchInput" placeholder="Search products by name..." onkeyup="filterProducts()">
+        </div>
+
+        <div class="category-row" id="categoryRow">
+    </div>
+
+<main>
+    <div class="grid" id="productList">
+        <div class="state-message"><h3>Loading products…</h3></div>
+    </div>
+</main>
+
+<footer>
+    © <span id="year"></span> JustBuyIt. All prices shown in INR.
+</footer>
+
+<script>
+    const API_BASE = "http://localhost:8080";
+    let allProducts = [];
+    let activeCategory = "All";
+
+    document.getElementById("year").innerText = new Date().getFullYear();
+
+    // Product API may return the raw Product entity (nested `category: { name }`)
+    // or a ProductDTO (`categoryName` string, `qunatityUnit` string). Support both.
+    function getCategoryName(p) {
+        return p.category?.name || p.categoryName || null;
+    }
+    function getUnit(p) {
+        return p.quantityUnit || p.qunatityUnit || null;
+    }
+
+    function loadProducts() {
+        fetch(`${API_BASE}/products`)
+            .then(res => res.json())
+            .then(data => {
+                allProducts = data;
+                renderCategories(allProducts);
+                displayProducts(allProducts);
+            })
+            .catch(err => {
+                console.error("Failed to load products:", err);
+                document.getElementById("productList").innerHTML =
+                    `<div class="state-message"><h3>Couldn't load products</h3><p>Check your connection and try again.</p></div>`;
+            });
+    }
+
+    function renderCategories(products) {
+        const categories = ["All", ...new Set(products.map(p => getCategoryName(p)).filter(Boolean))];
+        const row = document.getElementById("categoryRow");
+        row.innerHTML = "";
+        categories.forEach(cat => {
+            const chip = document.createElement("button");
+            chip.className = "chip" + (cat === activeCategory ? " active" : "");
+            chip.innerText = cat;
+            chip.onclick = () => {
+                activeCategory = cat;
+                renderCategories(allProducts);
+                applyFilters();
+            };
+            row.appendChild(chip);
+        });
+    }
+
+    function displayProducts(products) {
+        const container = document.getElementById("productList");
+        container.innerHTML = "";
+
+        if (products.length === 0) {
+            container.innerHTML = `<div class="state-message"><h3>No products found</h3><p>Try a different search term or category.</p></div>`;
+            return;
+        }
+
+        products.forEach(p => {
+            const card = document.createElement("div");
+            card.className = "card";
+            card.onclick = (e) => {
+                if (!e.target.closest("button")) window.location.href = `OneProduct.html?id=${p.id}`;
+            };
+
+            const imgSrc = p.imagefile
+                ? `${API_BASE}/products/${p.id}/image`
+                : "https://via.placeholder.com/300x200?text=No+Image";
+
+            const categoryName = getCategoryName(p);
+            const unit = getUnit(p);
+            const unitLabel = unit ? ` ${unit}` : "";
+
+            card.innerHTML = `
+                <div class="img-container">
+                    <img src="${imgSrc}" alt="${p.name}">
+                    ${categoryName ? `<span class="category-tag">${categoryName}</span>` : ""}
+                </div>
+                <div class="content">
+                    <h3>${p.name}</h3>
+                    <span class="unit-note">${p.quantity ?? ""}${unitLabel} available</span>
+                    <div class="price-row">
+                        <span class="price">₹${p.price}</span>
+                        <button class="add-btn" onclick="addToCart(event, ${p.id})">Add to cart</button>
+                    </div>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    function applyFilters() {
+        const searchTerm = document.getElementById("searchInput").value.trim().toLowerCase();
+
+        if (searchTerm === "") {
+            const filtered = activeCategory === "All"
+                ? allProducts
+                : allProducts.filter(p => getCategoryName(p) === activeCategory);
+            displayProducts(filtered);
+            return;
+        }
+
+        fetch(`${API_BASE}/products/search?keyword=${encodeURIComponent(searchTerm)}`)
+            .then(res => res.json())
+            .then(data => {
+                const filtered = activeCategory === "All"
+                    ? data
+                    : data.filter(p => getCategoryName(p) === activeCategory);
+                displayProducts(filtered);
+            })
+            .catch(err => console.error("Search failed:", err));
+    }
+
+    function filterProducts() {
+        applyFilters();
+    }
+
+    function addToCart(event, productId) {
+        event.stopPropagation();
+        fetch(`${API_BASE}/users/cart/items`, {
+            method: "POST",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ productId: productId, quantity: 1 })
+        })
+            .then(res => {
+                if (!res.ok) throw new Error("Add to cart failed");
+                return res.json();
+            })
+            .then(() => refreshCartBadge())
+            .catch(err => console.error("Add to cart error:", err));
+    }
+
+    function refreshCartBadge() {
+        fetch(`${API_BASE}/users/cart`, { credentials: "include" })
+            .then(res => res.json())
+            .then(cart => {
+                const count = (cart.items || []).reduce((sum, item) => sum + (item.quantity || 0), 0);
+                document.getElementById("cartBadge").innerText = count;
+            })
+            .catch(() => {});
+    }
+
+    function logout() {
+        try {
+            fetch("/auth/v1/logout", { method: "POST" });
+        } catch (error) {
+            console.error("Logout error:", error);
+        } finally {
+            window.location.href = "LoginForm.html";
+        }
+    }
+
+    loadProducts();
+    refreshCartBadge();
+
+    window.addEventListener("pageshow", function (event) {
+        if (event.persisted) {
+            window.location.reload();
+        }
+    });
+</script>
+</body>
+</html>

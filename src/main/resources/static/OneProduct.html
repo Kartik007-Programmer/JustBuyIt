@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Details — JustBuyIt</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-wash: #CCCCFF;
+            --surface: #ffffff;
+            --ink: #23213a;
+            --ink-muted: #6b6a85;
+            --brand: #4f46e5;
+            --brand-dark: #3730a3;
+            --price: #0f9d70;
+            --danger-bg: #fee2e2;
+            --danger: #ef4444;
+            --danger-dark: #991b1b;
+            --border: #e7e6f5;
+            --radius-lg: 20px;
+            --shadow: 0 10px 30px rgba(79, 70, 229, 0.10);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background: linear-gradient(180deg, var(--bg-wash) 0px, var(--bg-wash) 160px, #f6f6fc 160px, #f6f6fc 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            color: var(--ink);
+            min-height: 100vh;
+        }
+
+        a { color: inherit; }
+
+        /* ---------- Header ---------- */
+        .navbar {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 14px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 0 0 18px 18px;
+        }
+
+        .navbar-brand {
+            font-size: 1.4rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+        }
+        .navbar-brand span { color: var(--brand-dark); }
+
+        .nav-links { display: flex; align-items: center; gap: 10px; }
+
+        .nav-link {
+            text-decoration: none;
+            color: #3d3c5c;
+            font-weight: 600;
+            font-size: 0.95rem;
+            padding: 9px 16px;
+            border-radius: 20px;
+            transition: background-color 0.15s ease;
+        }
+        .nav-link:hover { background-color: rgba(255,255,255,0.6); }
+
+        .cart-link { position: relative; display: inline-flex; align-items: center; gap: 6px; }
+        .cart-badge {
+            background: var(--brand-dark);
+            color: #fff;
+            font-size: 0.7rem;
+            font-weight: 700;
+            min-width: 18px;
+            height: 18px;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 5px;
+        }
+
+        .btn-logout {
+            background: var(--danger-bg);
+            color: var(--danger);
+            border: none;
+            padding: 9px 18px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+        .btn-logout:hover { background: #fca5a5; color: var(--danger-dark); }
+
+        /* ---------- Layout ---------- */
+        .page-top{
+            z-index: 18;
+            backdrop-filter: blur(8px);
+            max-width: 1200px;
+            margin: 30px auto 0 auto;
+            padding: 20px 40px 50px 40px;
+        }
+        main {
+            max-width: 1100px;
+            margin: 30px auto 80px auto;
+            padding: 0 40px;
+        }
+
+        .back {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 20px;
+            text-decoration: none;
+            color: #4a486a;
+            font-weight: 600;
+            font-size: 0.92rem;
+        }
+        .back:hover { color: var(--brand-dark); }
+
+        .detail-card {
+            background: var(--surface);
+            display: flex;
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+        }
+
+        .image-side {
+            width: 46%;
+            background: #f1f0fb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            min-height: 420px;
+        }
+        .image-side img { width: 100%; height: 100%; object-fit: contain; }
+
+        .category-tag {
+            position: absolute;
+            top: 18px;
+            left: 18px;
+            background: rgba(255,255,255,0.92);
+            color: var(--brand-dark);
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 5px 12px;
+            border-radius: 999px;
+        }
+
+        .info-side {
+            width: 54%;
+            padding: 44px 48px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .info-side h1 {
+            font-size: 1.7rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            line-height: 1.25;
+        }
+
+        .desc {
+            margin-top: 14px;
+            color: var(--ink-muted);
+            line-height: 1.65;
+            font-size: 0.97rem;
+        }
+
+        .price-row {
+            margin-top: 24px;
+            display: flex;
+            align-items: baseline;
+            gap: 10px;
+        }
+        .price { font-size: 2rem; color: var(--price); font-weight: 800; }
+        .unit-note { color: var(--ink-muted); font-size: 0.9rem; }
+
+        .stock-line {
+            margin-top: 8px;
+            font-size: 0.9rem;
+            color: var(--ink-muted);
+        }
+        .stock-line b { color: var(--ink); }
+        .stock-line.low { color: var(--danger-dark); }
+
+        .qty-row {
+            margin-top: 28px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .qty-control {
+            display: flex;
+            align-items: center;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .qty-control button {
+            background: #f6f6fc;
+            border: none;
+            width: 38px;
+            height: 40px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--brand-dark);
+            cursor: pointer;
+        }
+        .qty-control button:hover { background: #eceaf9; }
+        .qty-control input {
+            width: 48px;
+            text-align: center;
+            border: none;
+            font-family: inherit;
+            font-size: 1rem;
+            font-weight: 700;
+            -moz-appearance: textfield;
+        }
+        .qty-control input::-webkit-outer-spin-button,
+        .qty-control input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+        .action-row {
+            margin-top: 28px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .btn-primary {
+            background: #f59e0b;
+            color: #fff;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 0.98rem;
+            transition: background-color 0.15s ease;
+        }
+        .btn-primary:hover { background: #d97f06; }
+
+        .btn-secondary {
+            background: var(--brand);
+            color: #fff;
+            border: none;
+            padding: 15px 26px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 0.98rem;
+            transition: background-color 0.15s ease;
+        }
+        .btn-secondary:hover { background: var(--brand-dark); }
+
+        .btn-primary:disabled, .btn-secondary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .feedback {
+            margin-top: 16px;
+            font-size: 0.88rem;
+            font-weight: 600;
+        }
+        .feedback.success { color: var(--price); }
+        .feedback.error { color: var(--danger); }
+
+        .state-message {
+            text-align: center;
+            padding: 100px 20px;
+            color: var(--ink-muted);
+        }
+        .state-message h3 { color: var(--ink); font-size: 1.15rem; margin-bottom: 6px; }
+
+        @media (max-width: 760px) {
+            .detail-card { flex-direction: column; }
+            .image-side, .info-side { width: 100%; }
+            .image-side { min-height: 280px; }
+            .navbar, main { padding-left: 20px; padding-right: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar">
+    <div class="navbar-brand">Just<span>Buy</span>It</div>
+    <div class="nav-links">
+        <a href="/LoginForm.html" class="nav-link">Login</a>
+        <a href="/RegistrationForm.html" class="nav-link">Register</a>
+        <a href="/Cart.html" class="nav-link cart-link">Cart <span class="cart-badge" id="cartBadge">0</span></a>
+        <button class="btn-logout" onclick="logout()">Logout</button>
+    </div>
+</nav>
+
+<div class="page-top">
+    <a href="HomePage.html" class="back">← Back to products</a>
+</div>
+
+<main id="mainContent">
+    <div class="state-message"><h3>Loading product…</h3></div>
+</main>
+
+<script>
+    const API_BASE = "http://localhost:8080";
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get("id");
+    let currentProduct = null;
+
+    // Product API may return the raw Product entity (nested `category: { name }`)
+    // or a ProductDTO (`categoryName` string, `qunatityUnit` string). Support both.
+    function getCategoryName(p) {
+        return p.category?.name || p.categoryName || null;
+    }
+    function getUnit(p) {
+        return p.quantityUnit || p.qunatityUnit || null;
+    }
+
+    function renderProduct(p) {
+        currentProduct = p;
+        const imgSrc = p.imagefile
+            ? `${API_BASE}/products/${p.id}/image`
+            : "https://via.placeholder.com/500?text=No+Image";
+
+        const categoryName = getCategoryName(p);
+        const unit = getUnit(p);
+        const unitLabel = unit ? ` ${unit}` : "";
+        const inStock = (p.quantity ?? 0) > 0;
+        const lowStock = inStock && p.quantity <= 5;
+
+        document.getElementById("mainContent").innerHTML = `
+            <div class="detail-card">
+                <div class="image-side">
+                    <img src="${imgSrc}" alt="${p.name}">
+                    ${categoryName ? `<span class="category-tag">${categoryName}</span>` : ""}
+                </div>
+                <div class="info-side">
+                    <h1>${p.name}</h1>
+                    <p class="desc">${p.description || "No description available for this product."}</p>
+
+                    <div class="price-row">
+                        <span class="price">₹${p.price}</span>
+                        ${unit ? `<span class="unit-note">per ${unit}</span>` : ""}
+                    </div>
+
+                    <p class="stock-line ${lowStock ? "low" : ""}">
+                        ${inStock
+                            ? `<b>${p.quantity}${unitLabel}</b> in stock${lowStock ? " — order soon" : ""}`
+                            : `<b>Out of stock</b>`}
+                    </p>
+
+                    <div class="qty-row">
+                        <div class="qty-control">
+                            <button type="button" onclick="changeQty(-1)">−</button>
+                            <input type="number" id="qtyInput" value="1" min="1" max="${p.quantity ?? 1}">
+                            <button type="button" onclick="changeQty(1)">+</button>
+                        </div>
+                    </div>
+
+                    <div class="action-row">
+                        <button class="btn-primary" id="buyBtn" onclick="buyProduct()" ${inStock ? "" : "disabled"}>Buy now</button>
+                        <button class="btn-secondary" id="cartBtn" onclick="addToCart()" ${inStock ? "" : "disabled"}>Add to cart</button>
+                    </div>
+
+                    <div class="feedback" id="feedback"></div>
+                </div>
+            </div>
+        `;
+    }
+
+    function loadProduct() {
+        if (!id) {
+            document.getElementById("mainContent").innerHTML = `
+                <div class="state-message"><h3>No product selected</h3><p>Go back and pick a product to view.</p></div>
+            `;
+            return;
+        }
+
+        fetch(`${API_BASE}/products/${id}`)
+            .then(res => {
+                if (!res.ok) throw new Error("Product not found");
+                return res.json();
+            })
+            .then(p => renderProduct(p))
+            .catch(err => {
+                console.error("Failed to load product:", err);
+                document.getElementById("mainContent").innerHTML = `
+                    <div class="state-message"><h3>Couldn't load this product</h3><p>It may have been removed, or the connection failed.</p></div>
+                `;
+            });
+    }
+
+    function changeQty(delta) {
+        const input = document.getElementById("qtyInput");
+        const max = currentProduct?.quantity ?? 1;
+        let value = parseInt(input.value || "1", 10) + delta;
+        value = Math.max(1, Math.min(value, max));
+        input.value = value;
+    }
+
+    function getQty() {
+        const input = document.getElementById("qtyInput");
+        return input ? Math.max(1, parseInt(input.value || "1", 10)) : 1;
+    }
+
+    function showFeedback(message, type) {
+        const el = document.getElementById("feedback");
+        if (!el) return;
+        el.innerText = message;
+        el.className = `feedback ${type}`;
+    }
+
+    function addToCart() {
+        const qty = getQty();
+        fetch(`${API_BASE}/users/cart/items`, {
+            method: "POST",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ productId: currentProduct.id, quantity: qty })
+        })
+            .then(res => {
+                if (!res.ok) throw new Error("Add to cart failed");
+                return res.json();
+            })
+            .then(() => {
+                showFeedback("Added to cart.", "success");
+                refreshCartBadge();
+            })
+            .catch(err => {
+                console.error("Add to cart error:", err);
+                showFeedback("Couldn't add to cart. Try again.", "error");
+            });
+    }
+
+    function buyProduct() {
+        const qty = getQty();
+        fetch(`${API_BASE}/users/cart/items`, {
+            method: "POST",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ productId: currentProduct.id, quantity: qty })
+        })
+            .then(res => {
+                if (!res.ok) throw new Error("Couldn't add to cart");
+                return res.json();
+            })
+            .then(() => {
+                window.location.href = "Checkout.html";
+            })
+            .catch(err => {
+                console.error("Buy now error:", err);
+                showFeedback("Couldn't start checkout. Try again.", "error");
+            });
+    }
+
+    function refreshCartBadge() {
+        fetch(`${API_BASE}/users/cart`, { credentials: "include" })
+            .then(res => res.json())
+            .then(cart => {
+                const count = (cart.items || []).reduce((sum, item) => sum + (item.quantity || 0), 0);
+                document.getElementById("cartBadge").innerText = count;
+            })
+            .catch(() => {});
+    }
+
+    function logout() {
+        try {
+            fetch("/auth/v1/logout", { method: "POST" });
+        } catch (error) {
+            console.error("Logout error:", error);
+        } finally {
+            window.location.href = "LoginForm.html";
+        }
+    }
+
+    loadProduct();
+    refreshCartBadge();
+
+    window.addEventListener("pageshow", function (event) {
+        if (event.persisted) {
+            window.location.reload();
+        }
+    });
+</script>
+</body>
+</html>

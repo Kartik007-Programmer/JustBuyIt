@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Management Dashboard</title>
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --primary: #4f46e5;
+            --secondary: #f59e0b;
+            --info: #3b82f6;
+            --success: #10b981;
+            --danger: #ef4444;
+            --text-dark: #1f2937;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: var(--bg-gradient);
+            height: 100vh;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 3rem 2rem;
+            width: 100%;
+            max-width: 420px;
+            border-radius: 20px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        h1 {
+            color: var(--text-dark);
+            font-size: 1.75rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.025em;
+        }
+
+        p {
+            color: #6b7280;
+            margin-bottom: 2rem;
+            font-size: 0.95rem;
+        }
+
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 14px;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 12px;
+            text-decoration: none;
+            color: white;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        /* Icons using emoji as placeholders, can be replaced with FontAwesome */
+        .btn::before {
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
+
+        .add {
+            background-color: var(--success);
+        }
+        .add::before { content: "➕"; }
+
+        .update {
+            background-color: var(--secondary);
+            color: #ffffff;
+        }
+        .update::before { content: "🔄"; }
+
+        .view {
+            background-color: var(--info);
+        }
+        .view::before { content: "📋"; }
+
+        .logout {
+            background-color: var(--danger);
+        }
+        .logout::before { content: "🚪"; }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            filter: brightness(1.1);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .footer-note {
+            margin-top: 2rem;
+            font-size: 0.75rem;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h1>Inventory Portal</h1>
+    <p>Manage your catalog and stock levels</p>
+
+    <div class="button-group">
+        <a href="AddProduct.html" class="btn add">Add New Product</a>
+        <a href="UpdateProduct.html" class="btn update">Update Inventory</a>
+        <a href="ViewAllProduct.html" class="btn view">View All Products</a>
+        <button onclick="handleLogout()" class="btn logout">Logout</button>
+    </div>
+
+    <div class="footer-note">System Version 2.0</div>
+</div>
+
+<script>
+
+    window.addEventListener("pageshow", function (event) {
+        if(event.persisted){
+            window.location.reload();
+        }
+    });
+
+    async function handleLogout() {
+        try {
+            await fetch('/auth/v1/logout', {
+                method: 'POST'
+            });
+        } catch (error) {
+            console.error('Logout error:', error);
+        } finally {
+            window.location.href = "LoginForm.html";
+        }
+    }
+</script>
+
+</body>
+</html>

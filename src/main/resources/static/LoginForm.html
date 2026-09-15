@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | App Authentication</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background-color: #f4f7f6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .card {
+            background: #ffffff;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            width: 100%;
+            max-width: 400px;
+        }
+        .card h2 {
+            margin-bottom: 24px;
+            color: #333333;
+            text-align: center;
+            font-size: 24px;
+        }
+        .form-group {
+            margin-bottom: 18px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            color: #555555;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #cccccc;
+            border-radius: 4px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .form-group input:focus {
+            border-color: #007bff;
+        }
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background-color: #007bff;
+            border: none;
+            border-radius: 4px;
+            color: #ffffff;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+        }
+        .footer-text {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 14px;
+            color: #666666;
+        }
+        .footer-text a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        .footer-text a:hover {
+            text-decoration: underline;
+        }
+        .alert {
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            font-size: 14px;
+            display: none;
+        }
+        .alert-error { background-color: #f8d7da; color: #721c24; }
+        .alert-success { background-color: #d4edda; color: #155724; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>Sign In</h2>
+    <div id="alert" class="alert"></div>
+    <form id="loginForm">
+        <div class="form-group">
+            <label for="username">Email Address</label>
+            <input type="email" id="username" required placeholder="user@example.com">
+        </div>
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" required placeholder="••••••••">
+        </div>
+        <button type="submit" class="btn">Login</button>
+    </form>
+    <div class="footer-text">
+        Don't have an account? <a href="/RegistrationForm.html">Register</a>
+    </div>
+</div>
+
+<script>
+    document.getElementById('loginForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const alertBox = document.getElementById('alert');
+        alertBox.style.display = 'none';
+
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+
+        // Uses URLSearchParams because controller expects @RequestParam
+        const params = new URLSearchParams();
+        params.append('username', username);
+        params.append('password', password);
+
+        try {
+            const response = await fetch('/auth/v1/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: params
+            });
+
+            if (response.ok) {
+                const message = await response.text();
+                alertBox.className = 'alert alert-success';
+                alertBox.textContent = message || 'Login successful!';
+                alertBox.style.display = 'block';
+                    setTimeout(function() {
+                        window.location.href = "/";
+                    }, 2000);
+            } else {
+                alertBox.className = 'alert alert-error';
+                alertBox.textContent = 'Invalid email or password.';
+                alertBox.style.display = 'block';
+            }
+        } catch (error) {
+            alertBox.className = 'alert alert-error';
+            alertBox.textContent = 'Unable to connect to the server.';
+            alertBox.style.display = 'block';
+        }
+    });
+
+    window.addEventListener("pageshow", function (event) {
+        if(event.persisted){
+            window.location.reload();
+        }
+    });
+</script>
+
+</body>
+</html>

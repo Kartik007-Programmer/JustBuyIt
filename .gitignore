@@ -4,6 +4,10 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
+### Custom Environment Variables ###
+.env
+.env.*
+
 ### STS ###
 .apt_generated
 .classpath

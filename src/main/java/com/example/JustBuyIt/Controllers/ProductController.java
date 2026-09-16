@@ -1,17 +1,25 @@
 package com.example.JustBuyIt.Controllers;
 
 import com.example.JustBuyIt.DTOs.ProductDTO;
+import com.example.JustBuyIt.DTOs.ProductPageDTO;
 import com.example.JustBuyIt.Models.Product;
 import com.example.JustBuyIt.Services.ProductService;
 import com.example.JustBuyIt.Services.SecurityService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @RestController
 public class ProductController
@@ -21,6 +29,8 @@ public class ProductController
 
     @Autowired
     SecurityService securityService;
+
+    private static final Set<String> ALLOWED_SORTS = Set.of("id", "name", "price", "quantity");
 
     @RequestMapping("/")
     public ModelAndView Home() {
@@ -36,8 +46,19 @@ public class ProductController
     }
 
     @GetMapping("/products")
-    public List<Product> getProducts(){
-       return productService.getProducts();
+    public ResponseEntity<ProductPageDTO>  getProducts(
+           @RequestParam(defaultValue = "0") int page,
+           @RequestParam(defaultValue = "9") int size,
+           @RequestParam(defaultValue = "id") String sortby,
+           @RequestParam(defaultValue = "asc") String direction,
+           @RequestParam(required = false) String category
+    ){
+        if (!ALLOWED_SORTS.contains(sortby)) sortby = "id";
+        Sort sort = direction.equalsIgnoreCase("desc")
+                ? Sort.by(sortby).descending()
+                : Sort.by(sortby).ascending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+       return ResponseEntity.ok(productService.getProducts(category, pageable));
     }
 
     @GetMapping("/products/{ProdId}")
@@ -116,8 +137,31 @@ public class ProductController
     }
 
     @GetMapping("/products/search")
-    public ResponseEntity<List<Product>> searchProduct(@RequestParam("keyword") String keyword){
-        System.out.println("searching : "+keyword);
-        return ResponseEntity.ok(productService.searchProduct(keyword));
+    public ResponseEntity<Map<String, Object>> searchProduct(
+            @RequestParam("keyword") String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "9") int size,
+            @RequestParam(required = false) String category){
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Product> productPage = productService.searchProduct(keyword, category, pageable);
+        return ResponseEntity.ok(buildPageResponse(productPage));
+    }
+
+    @GetMapping("/products/categories")
+    public List<String> getCategories() {
+        return productService.getAllCategoryNames();   // implement: categoryRepo.findAll().stream().map(Category::getName).toList()
+    }
+
+    private Map<String, Object> buildPageResponse(Page<Product> page) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("content", page.getContent());
+        response.put("page", page.getNumber());
+        response.put("size", page.getSize());
+        response.put("totalElements", page.getTotalElements());
+        response.put("totalPages", page.getTotalPages());
+        response.put("first", page.isFirst());
+        response.put("last", page.isLast());
+        return response;
     }
 }

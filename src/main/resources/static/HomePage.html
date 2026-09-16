@@ -289,6 +289,52 @@
             .navbar, .hero, .category-row, main, footer { padding-left: 20px; padding-right: 20px; }
             .hero h1 { font-size: 1.8rem; }
         }
+
+        /* ---------- Pagination ---------- */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            margin-top: 40px;
+            flex-wrap: wrap;
+        }
+
+        .pagination button {
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--ink);
+            min-width: 40px;
+            height: 40px;
+            padding: 0 12px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: 0.15s ease;
+        }
+
+        .pagination button:hover:not(:disabled) {
+            border-color: var(--brand);
+            color: var(--brand-dark);
+        }
+
+        .pagination button.active {
+            background: var(--brand);
+            border-color: var(--brand);
+            color: #fff;
+        }
+
+        .pagination button:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+
+        .page-info {
+            color: var(--ink-muted);
+            font-size: 0.88rem;
+            margin: 0 8px;
+        }
     </style>
 </head>
 <body>
@@ -318,6 +364,8 @@
     <div class="grid" id="productList">
         <div class="state-message"><h3>Loading products…</h3></div>
     </div>
+
+    <div class="pagination" id="pagination"></div>
 </main>
 
 <footer>
@@ -325,48 +373,63 @@
 </footer>
 
 <script>
+
     const API_BASE = "http://localhost:8080";
-    let allProducts = [];
+    const PAGE_SIZE = 9;
     let activeCategory = "All";
+    let currentPage = 0;
+    let totalPages = 0;
+    let currentSearchTerm = "";
+    let availableCategories = [];
 
     document.getElementById("year").innerText = new Date().getFullYear();
 
-    // Product API may return the raw Product entity (nested `category: { name }`)
-    // or a ProductDTO (`categoryName` string, `qunatityUnit` string). Support both.
-    function getCategoryName(p) {
-        return p.category?.name || p.categoryName || null;
-    }
-    function getUnit(p) {
-        return p.quantityUnit || p.qunatityUnit || null;
-    }
+        function getCategoryName(p) {
+            return p.category?.name || p.categoryName || null;
+        }
+        function getUnit(p) {
+            return p.quantityUnit || p.qunatityUnit || null;
+        }
 
-    function loadProducts() {
-        fetch(`${API_BASE}/products`)
+    // Fetch a single page from the server
+    function loadProducts(page = 0, searchTerm = "", category = activeCategory) {
+        currentPage = page;
+        currentSearchTerm = searchTerm;
+
+        const container = document.getElementById("productList");
+        container.innerHTML = `<div class="state-message"><h3>Loading products…</h3></div>`;
+
+        const params = new URLSearchParams({ page, size: PAGE_SIZE });
+        if (category && category !== "All") params.set("category", category);
+
+        const url = searchTerm
+            ? `${API_BASE}/products/search?keyword=${encodeURIComponent(searchTerm)}&${params}`
+            : `${API_BASE}/products?${params}`;
+
+        fetch(url)
             .then(res => res.json())
             .then(data => {
-                allProducts = data;
-                renderCategories(allProducts);
-                displayProducts(allProducts);
+                displayProducts(data.content);   // no client-side filtering now
+                renderPagination(data);
             })
             .catch(err => {
                 console.error("Failed to load products:", err);
-                document.getElementById("productList").innerHTML =
+                container.innerHTML =
                     `<div class="state-message"><h3>Couldn't load products</h3><p>Check your connection and try again.</p></div>`;
+                document.getElementById("pagination").innerHTML = "";
             });
     }
 
-    function renderCategories(products) {
-        const categories = ["All", ...new Set(products.map(p => getCategoryName(p)).filter(Boolean))];
+    function renderCategories() {
         const row = document.getElementById("categoryRow");
         row.innerHTML = "";
-        categories.forEach(cat => {
+        availableCategories.forEach(cat => {
             const chip = document.createElement("button");
             chip.className = "chip" + (cat === activeCategory ? " active" : "");
             chip.innerText = cat;
             chip.onclick = () => {
                 activeCategory = cat;
-                renderCategories(allProducts);
-                applyFilters();
+                loadProducts(0, currentSearchTerm, cat);
             };
             row.appendChild(chip);
         });
@@ -381,8 +444,18 @@
             return;
         }
 
-        products.forEach(p => {
-            const card = document.createElement("div");
+        // Apply client-side category filter on top of the page's results
+        const visible = activeCategory === "All"
+            ? products
+            : products.filter(p => getCategoryName(p) === activeCategory);
+
+        if (visible.length === 0) {
+            container.innerHTML = `<div class="state-message"><h3>No products found</h3><p>Try a different search term or category.</p></div>`;
+            return;
+        }
+
+        visible.forEach(p => {
+            card = document.createElement("div");
             card.className = "card";
             card.onclick = (e) => {
                 if (!e.target.closest("button")) window.location.href = `OneProduct.html?id=${p.id}`;
@@ -406,84 +479,136 @@
                     <span class="unit-note">${p.quantity ?? ""}${unitLabel} available</span>
                     <div class="price-row">
                         <span class="price">₹${p.price}</span>
-                        <button class="add-btn" onclick="addToCart(event, ${p.id})">Add to cart</button>
+                            <button class="add-btn" onclick="addToCart(event, ${p.id})">Add to cart</button>
                     </div>
                 </div>
-            `;
+                `;
             container.appendChild(card);
         });
     }
 
-    function applyFilters() {
-        const searchTerm = document.getElementById("searchInput").value.trim().toLowerCase();
+        // ---------- Pagination UI ----------
+        function renderPagination(pageData) {
+            const el = document.getElementById("pagination");
+            el.innerHTML = "";
 
-        if (searchTerm === "") {
-            const filtered = activeCategory === "All"
-                ? allProducts
-                : allProducts.filter(p => getCategoryName(p) === activeCategory);
-            displayProducts(filtered);
-            return;
+            totalPages = pageData.totalPages;
+            if (totalPages <= 1) return;
+
+            const makeBtn = (label, targetPage, opts = {}) => {
+                const btn = document.createElement("button");
+                btn.innerText = label;
+                if (opts.active) btn.classList.add("active");
+                if (opts.disabled) btn.disabled = true;
+                    btn.onclick = () => {
+                        if (!opts.disabled && targetPage !== currentPage) {
+                            loadProducts(targetPage, currentSearchTerm, activeCategory);
+                            window.scrollTo({ top: 0, behavior: "smooth" });
+                        }
+                    };
+                return btn;
+            };
+
+            // Prev
+            el.appendChild(makeBtn("‹", currentPage - 1, { disabled: pageData.first }));
+
+            // Page numbers (with ellipsis for large ranges)
+            range = pageRange(currentPage, totalPages);
+            range.forEach(item => {
+                if (item === "...") {
+                    const span = document.createElement("span");
+                    span.className = "page-info";
+                    span.innerText = "…";
+                    el.appendChild(span);
+                } else {
+                    el.appendChild(makeBtn(String(item + 1), item, { active: item === currentPage }));
+                }
+            });
+
+            // Next
+            el.appendChild(makeBtn("›", currentPage + 1, { disabled: pageData.last }));
+
+            // "Page X of Y" info
+            const info = document.createElement("span");
+            info.className = "page-info";
+            info.innerText = `Page ${currentPage + 1} of ${totalPages}`;
+            el.appendChild(info);
         }
 
-        fetch(`${API_BASE}/products/search?keyword=${encodeURIComponent(searchTerm)}`)
-            .then(res => res.json())
-            .then(data => {
-                const filtered = activeCategory === "All"
-                    ? data
-                    : data.filter(p => getCategoryName(p) === activeCategory);
-                displayProducts(filtered);
+        // Build a compact page list like [0, 1, 2, '...', 8, 9]
+        function pageRange(current, total) {
+            const delta = 2;
+            const range = [];
+            for (let i = 0; i < total; i++) {
+                if (i === 0 || i === total - 1 || (i >= current - delta && i <= current + delta)) {
+                    range.push(i);
+                } else if (range[range.length - 1] !== "...") {
+                    range.push("...");
+                }
+            }
+            return range;
+        }
+
+        // ---------- Filtering ----------
+        function applyFilters() {
+            // Any filter change resets to page 0
+            loadProducts(0, document.getElementById("searchInput").value.trim().toLowerCase(), activeCategory);
+        }
+
+        function filterProducts() {
+            applyFilters();
+        }
+
+        // ---------- Cart ----------
+        function addToCart(event, productId) {
+            event.stopPropagation();
+            fetch(`${API_BASE}/users/cart/items`, {
+                method: "POST",
+                credentials: "include",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ productId: productId, quantity: 1 })
             })
-            .catch(err => console.error("Search failed:", err));
-    }
-
-    function filterProducts() {
-        applyFilters();
-    }
-
-    function addToCart(event, productId) {
-        event.stopPropagation();
-        fetch(`${API_BASE}/users/cart/items`, {
-            method: "POST",
-            credentials: "include",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ productId: productId, quantity: 1 })
-        })
             .then(res => {
-                if (!res.ok) throw new Error("Add to cart failed");
-                return res.json();
+               if (!res.ok) throw new Error("Add to cart failed");
+                    return res.json();
             })
             .then(() => refreshCartBadge())
             .catch(err => console.error("Add to cart error:", err));
-    }
-
-    function refreshCartBadge() {
-        fetch(`${API_BASE}/users/cart`, { credentials: "include" })
-            .then(res => res.json())
-            .then(cart => {
-                const count = (cart.items || []).reduce((sum, item) => sum + (item.quantity || 0), 0);
-                document.getElementById("cartBadge").innerText = count;
-            })
-            .catch(() => {});
-    }
-
-    function logout() {
-        try {
-            fetch("/auth/v1/logout", { method: "POST" });
-        } catch (error) {
-            console.error("Logout error:", error);
-        } finally {
-            window.location.href = "LoginForm.html";
         }
-    }
 
-    loadProducts();
-    refreshCartBadge();
-
-    window.addEventListener("pageshow", function (event) {
-        if (event.persisted) {
-            window.location.reload();
+        function refreshCartBadge() {
+            fetch(`${API_BASE}/users/cart`, { credentials: "include" })
+                .then(res => res.json())
+                .then(cart => {
+                    const count = (cart.items || []).reduce((sum, item) => sum + (item.quantity || 0), 0);
+                    document.getElementById("cartBadge").innerText = count;
+                })
+                .catch(() => {});
         }
-    });
+
+        function logout() {
+            try {
+                fetch("/auth/v1/logout", { method: "POST" });
+            } catch (error) {
+                console.error("Logout error:", error);
+            } finally {
+                window.location.href = "LoginForm.html";
+            }
+        }
+
+        // Initial load
+        fetch(`${API_BASE}/categories`)
+        .then(r => r.json())
+        .then(cats => { availableCategories = ["All", ...cats]; renderCategories(); });
+
+        loadProducts(0);
+        refreshCartBadge();
+
+        window.addEventListener("pageshow", function (event) {
+            if (event.persisted) {
+                window.location.reload();
+            }
+        });
 </script>
 </body>
 </html>

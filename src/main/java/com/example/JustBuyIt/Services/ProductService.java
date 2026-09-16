@@ -1,6 +1,7 @@
 package com.example.JustBuyIt.Services;
 
 import com.example.JustBuyIt.DTOs.ProductDTO;
+import com.example.JustBuyIt.DTOs.ProductPageDTO;
 import com.example.JustBuyIt.Models.Category;
 import com.example.JustBuyIt.Models.Product;
 import com.example.JustBuyIt.Models.QuantityUnit;
@@ -8,6 +9,8 @@ import com.example.JustBuyIt.Repository.CategoryRepo;
 import com.example.JustBuyIt.Repository.ProductRepo;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,10 +33,16 @@ public class ProductService {
         this.imageService = imageService;
     }
 
-    @Cacheable(value = "products", key = "'all'")
+    @Cacheable(value = "products",
+            key = "'page:' + #pageable.pageNumber "
+                    + "+ ':' + #pageable.pageSize "
+                    + "+ ':' + #pageable.sort.toString()")
     @Transactional(readOnly = true)
-    public List<Product> getProducts() {
-        return repo.findAll() ;
+    public ProductPageDTO getProducts(String category, Pageable pageable) {
+        if (category == null || category.isBlank() || category.equalsIgnoreCase("All")) {
+            return toDTO(repo.findAll(pageable));
+        }
+        return toDTO(repo.findByCategory_NameIgnoreCase(category, pageable));
     }
 
     @Cacheable(value = "products",key = "#prodId")
@@ -152,6 +161,13 @@ public class ProductService {
     }
 
     @Transactional(readOnly = true)
+    public Page<Product> searchProduct(String keyword, String category, Pageable pageable) {
+        String cat = (category == null || category.isBlank() || category.equalsIgnoreCase("All"))
+                ? null : category;
+        return repo.searchByKeywordAndCategory(keyword,cat,pageable);
+    }
+
+    @Transactional(readOnly = true)
     public List<Product> searchProduct(String keyword) {
         return repo.searchProductByKeyword(keyword);
     }
@@ -198,5 +214,21 @@ public class ProductService {
             product.setCategory(category);
         }
         return product;
+    }
+
+    private ProductPageDTO toDTO(Page<Product> page) {
+        return new ProductPageDTO(
+                page.getContent(),
+                page.getNumber(),
+                page.getSize(),
+                page.getTotalElements(),
+                page.getTotalPages(),
+                page.isFirst(),
+                page.isLast()
+        );
+    }
+
+    public List<String> getAllCategoryNames() {
+        return categoryRepo.findAllName();
     }
 }

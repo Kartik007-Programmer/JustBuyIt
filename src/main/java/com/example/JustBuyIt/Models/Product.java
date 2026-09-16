@@ -18,7 +18,7 @@ public class Product {
     @Enumerated(EnumType.STRING)
     private QuantityUnit quantityUnit;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name = "category_id")
     private Category category;
 

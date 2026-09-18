@@ -48,7 +48,7 @@ public class ProductController
     @GetMapping("/products")
     public ResponseEntity<ProductPageDTO>  getProducts(
            @RequestParam(defaultValue = "0") int page,
-           @RequestParam(defaultValue = "9") int size,
+           @RequestParam(defaultValue = "15") int size,
            @RequestParam(defaultValue = "id") String sortby,
            @RequestParam(defaultValue = "asc") String direction,
            @RequestParam(required = false) String category

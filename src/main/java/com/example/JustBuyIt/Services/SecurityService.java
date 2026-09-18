@@ -111,4 +111,24 @@ public class SecurityService {
                 .map(auth -> auth.getAuthority())
                 .orElse("USER");
     }
+
+    public Users getPresentAuthorizedUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Users user = null;
+        assert authentication != null;
+        String username = authentication.getName();
+
+        Users Cachedusers = redisCacheService.getUserFromCache(username);
+
+        if (Cachedusers != null) {
+            user = Cachedusers;
+        }else {
+            UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
+            if (userDetails instanceof Users) {
+                user = (Users) userDetails;
+                redisCacheService.setCacheUser(username, user);
+            }
+        }
+        return user;
+    }
 }

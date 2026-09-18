@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout — JustBuyIt</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-wash: #CCCCFF;
+            --surface: #ffffff;
+            --ink: #23213a;
+            --ink-muted: #6b6a85;
+            --brand: #4f46e5;
+            --brand-dark: #3730a3;
+            --price: #0f9d70;
+            --danger-bg: #fee2e2;
+            --danger: #ef4444;
+            --danger-dark: #991b1b;
+            --border: #e7e6f5;
+            --radius-lg: 20px;
+            --radius-md: 12px;
+            --shadow: 0 10px 30px rgba(79, 70, 229, 0.10);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background: linear-gradient(180deg, var(--bg-wash) 0px, var(--bg-wash) 160px, #f6f6fc 160px, #f6f6fc 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            color: var(--ink);
+            min-height: 100vh;
+        }
+
+        a { color: inherit; }
+
+        /* ---------- Header ---------- */
+        .navbar {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 14px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 0 0 18px 18px;
+        }
+
+        .navbar-brand { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.02em; }
+        .navbar-brand span { color: var(--brand-dark); }
+
+        .nav-links { display: flex; align-items: center; gap: 10px; }
+
+        .nav-link {
+            text-decoration: none;
+            color: #3d3c5c;
+            font-weight: 600;
+            font-size: 0.95rem;
+            padding: 9px 16px;
+            border-radius: 20px;
+            transition: background-color 0.15s ease;
+        }
+        .nav-link:hover { background-color: rgba(255,255,255,0.6); }
+
+        .btn-logout {
+            background: var(--danger-bg);
+            color: var(--danger);
+            border: none;
+            padding: 9px 18px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+        .btn-logout:hover { background: #fca5a5; color: var(--danger-dark); }
+
+        /* ---------- Layout ---------- */
+        .page-top{
+            z-index: 18;
+            backdrop-filter: blur(8px);
+            max-width: 1200px;
+            margin: 30px auto 0 auto;
+            padding: 20px 40px 50px 40px;
+        }
+
+        main {
+            max-width: 1100px;
+            margin: 30px auto 80px auto;
+            padding: 0 40px;
+        }
+
+        .back {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 20px;
+            text-decoration: none;
+            color: #4a486a;
+            font-weight: 600;
+            font-size: 0.92rem;
+        }
+        .back:hover { color: var(--brand-dark); }
+
+        h1.page-title {
+            font-size: 1.7rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            margin-bottom: 6px;
+        }
+        .page-sub { color: var(--ink-muted); font-size: 0.95rem; margin-bottom: 24px; }
+
+        .checkout-layout {
+            display: grid;
+            grid-template-columns: 1fr 340px;
+            gap: 26px;
+            align-items: start;
+        }
+
+        .panel {
+            background: var(--surface);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            padding: 28px 30px;
+        }
+
+        .panel h2 {
+            font-size: 1.1rem;
+            font-weight: 800;
+            margin-bottom: 18px;
+        }
+
+        /* ---------- Demo banner ---------- */
+        .demo-banner {
+            background: #fff7ed;
+            border: 1px solid #fed7aa;
+            color: #9a3412;
+            border-radius: var(--radius-md);
+            padding: 12px 16px;
+            font-size: 0.87rem;
+            font-weight: 600;
+            margin-bottom: 22px;
+        }
+
+        /* ---------- Method picker ---------- */
+        .method-row { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
+
+        .method-option {
+            flex: 1;
+            min-width: 140px;
+            border: 1px solid var(--border);
+            background: #fbfbfe;
+            border-radius: var(--radius-md);
+            padding: 14px 16px;
+            cursor: pointer;
+            transition: 0.15s ease;
+            text-align: left;
+            font-family: inherit;
+        }
+        .method-option:hover { border-color: var(--brand); }
+        .method-option.active {
+            border-color: var(--brand);
+            background: #f0efff;
+            box-shadow: 0 0 0 3px rgba(79,70,229,0.12);
+        }
+        .method-option .m-title { font-weight: 700; font-size: 0.95rem; color: var(--ink); }
+        .method-option .m-sub { font-size: 0.8rem; color: var(--ink-muted); margin-top: 2px; }
+
+        /* ---------- Form fields ---------- */
+        .field { margin-bottom: 18px; }
+        .field label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #4a486a;
+            margin-bottom: 7px;
+        }
+        .field input {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            font-family: inherit;
+            font-size: 0.95rem;
+            outline: none;
+            background: #fbfbfe;
+            transition: 0.15s ease;
+        }
+        .field input:focus { border-color: var(--brand); background: #fff; }
+        .field input.invalid { border-color: var(--danger); background: #fff5f5; }
+
+        .field-error {
+            color: var(--danger);
+            font-size: 0.78rem;
+            font-weight: 600;
+            margin-top: 5px;
+            display: none;
+        }
+        .field-error.show { display: block; }
+
+        .field-row { display: flex; gap: 14px; }
+        .field-row .field { flex: 1; }
+
+        .hidden { display: none; }
+
+        /* ---------- Summary ---------- */
+        .summary-card { position: sticky; top: 90px; }
+
+        .summary-line {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.88rem;
+            color: var(--ink-muted);
+            padding: 7px 0;
+        }
+        .summary-line .qty { color: var(--ink-muted); }
+        .summary-line .name {
+            color: var(--ink);
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 170px;
+        }
+
+        .summary-total {
+            display: flex;
+            justify-content: space-between;
+            font-size: 1.1rem;
+            font-weight: 800;
+            padding-top: 14px;
+            margin-top: 10px;
+            border-top: 1px solid var(--border);
+        }
+        .summary-total .amount { color: var(--price); }
+
+        .btn-pay {
+            width: 100%;
+            margin-top: 20px;
+            background: #f59e0b;
+            color: #fff;
+            border: none;
+            padding: 15px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 0.98rem;
+            transition: background-color 0.15s ease;
+        }
+        .btn-pay:hover { background: #d97f06; }
+        .btn-pay:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        .secure-note {
+            margin-top: 12px;
+            font-size: 0.78rem;
+            color: var(--ink-muted);
+            text-align: center;
+        }
+
+        .feedback {
+            margin-top: 14px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-align: center;
+        }
+        .feedback.error { color: var(--danger); }
+
+        /* ---------- Success screen ---------- */
+        .success-wrap {
+            max-width: 520px;
+            margin: 10px auto 0 auto;
+            background: var(--surface);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            padding: 46px 40px;
+            text-align: center;
+        }
+        .success-badge {
+            width: 62px;
+            height: 62px;
+            border-radius: 50%;
+            background: #dcfce7;
+            color: var(--price);
+            font-size: 1.9rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px auto;
+            font-weight: 800;
+        }
+        .success-wrap h2 { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.02em; }
+        .success-wrap .msg { color: var(--ink-muted); margin-top: 10px; font-size: 0.95rem; line-height: 1.6; }
+
+        .receipt {
+            margin-top: 26px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 18px 20px;
+            text-align: left;
+            background: #fbfbfe;
+        }
+        .receipt-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.88rem;
+            padding: 7px 0;
+            gap: 14px;
+        }
+        .receipt-row span:first-child { color: var(--ink-muted); }
+        .receipt-row span:last-child { font-weight: 700; text-align: right; word-break: break-all; }
+        .receipt-row .status-ok { color: var(--price); }
+
+        .success-actions { margin-top: 26px; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+        .btn-outline {
+            background: none;
+            border: 1px solid var(--border);
+            color: #4a486a;
+            padding: 12px 22px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn-outline:hover { border-color: var(--brand); color: var(--brand-dark); }
+        .btn-solid {
+            background: var(--brand);
+            border: none;
+            color: #fff;
+            padding: 12px 22px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn-solid:hover { background: var(--brand-dark); }
+
+        /* ---------- States ---------- */
+        .state-message { text-align: center; padding: 100px 20px; color: var(--ink-muted); }
+        .state-message h3 { color: var(--ink); font-size: 1.15rem; margin-bottom: 6px; }
+        .state-message .browse-link {
+            display: inline-block;
+            margin-top: 16px;
+            color: var(--brand);
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        @media (max-width: 780px) {
+            .checkout-layout { grid-template-columns: 1fr; }
+            .summary-card { position: static; }
+            .navbar, main { padding-left: 20px; padding-right: 20px; }
+            .field-row { flex-direction: column; gap: 0; }
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar">
+    <div class="navbar-brand">Just<span>Buy</span>It</div>
+    <div class="nav-links">
+        <a href="HomePage.html" class="nav-link">Products</a>
+        <a href="Cart.html" class="nav-link">Cart</a>
+        <button class="btn-logout" onclick="logout()">Logout</button>
+    </div>
+</nav>
+
+<div class="page-top">
+    <a href="HomePage.html" class="back">← Back to products</a>
+</div>
+
+<main id="mainContent">
+    <div class="state-message"><h3>Loading checkout…</h3></div>
+</main>
+
+<script>
+    const API_BASE = "http://localhost:8080";
+    const CART_BASE = `${API_BASE}/users/cart`;
+    let currentCart = null;
+    let selectedMethod = "UPI";
+
+    /* ---------- Load cart ---------- */
+    function loadCheckout() {
+        fetch(CART_BASE, { credentials: "include" })
+            .then(res => {
+                if (res.status === 401 || res.status === 403) throw new Error("Not authenticated");
+                if (!res.ok) throw new Error("Failed to load cart");
+                return res.json();
+            })
+            .then(cart => {
+                currentCart = cart;
+                const items = cart.items || [];
+                if (items.length === 0) {
+                    document.getElementById("mainContent").innerHTML = `
+                        <div class="state-message">
+                            <h3>Your cart is empty</h3>
+                            <p>Add something to your cart before checking out.</p>
+                            <a href="HomePage.html" class="browse-link">Browse products →</a>
+                        </div>`;
+                    return;
+                }
+                renderCheckout(cart);
+            })
+            .catch(err => {
+                console.error("Checkout load error:", err);
+                document.getElementById("mainContent").innerHTML = `
+                    <div class="state-message">
+                        <h3>Couldn't load checkout</h3>
+                        <p>Make sure you're signed in, then try again.</p>
+                        <a href="Cart.html" class="browse-link">Back to cart →</a>
+                    </div>`;
+            });
+    }
+
+    /* ---------- Render form ---------- */
+    function renderCheckout(cart) {
+        const items = cart.items || [];
+        const lines = items.map(i => `
+            <div class="summary-line">
+                <span class="name">${i.productName}</span>
+                <span class="qty">×${i.quantity}</span>
+                <span>₹${i.subTotal}</span>
+            </div>
+        `).join("");
+
+        document.getElementById("mainContent").innerHTML = `
+            <a href="ShoppingCart.html" class="back">← Back to cart</a>
+            <h1 class="page-title">Checkout</h1>
+            <p class="page-sub">Choose how you'd like to pay and confirm your order.</p>
+
+            <div class="checkout-layout">
+                <div class="panel">
+                    <div class="demo-banner">
+                        Demo mode — this is a simulated payment. Don't enter real card or UPI details.
+                    </div>
+
+                    <h2>Payment method</h2>
+                    <div class="method-row">
+                        <button type="button" class="method-option active" id="opt-UPI" onclick="selectMethod('UPI')">
+                            <div class="m-title">UPI</div>
+                            <div class="m-sub">Pay via UPI ID</div>
+                        </button>
+                        <button type="button" class="method-option" id="opt-CARD" onclick="selectMethod('CARD')">
+                            <div class="m-title">Card</div>
+                            <div class="m-sub">Credit or debit</div>
+                        </button>
+                        <button type="button" class="method-option" id="opt-COD" onclick="selectMethod('COD')">
+                            <div class="m-title">Cash on delivery</div>
+                            <div class="m-sub">Pay when it arrives</div>
+                        </button>
+                    </div>
+
+                    <!-- UPI fields -->
+                    <div id="upiFields">
+                        <div class="field">
+                            <label for="upiId">UPI ID</label>
+                            <input type="text" id="upiId" placeholder="yourname@bank" autocomplete="off">
+                            <div class="field-error" id="err-upiId">Enter a valid UPI ID (e.g. name@bank).</div>
+                        </div>
+                    </div>
+
+                    <!-- Card fields -->
+                    <div id="cardFields" class="hidden">
+                        <div class="field">
+                            <label for="cardHolderName">Name on card</label>
+                            <input type="text" id="cardHolderName" placeholder="As printed on the card" autocomplete="off">
+                            <div class="field-error" id="err-cardHolderName">Enter the cardholder's name.</div>
+                        </div>
+                        <div class="field">
+                            <label for="cardNumber">Card number</label>
+                            <input type="text" id="cardNumber" placeholder="4111 1111 1111 1111" inputmode="numeric" maxlength="19" autocomplete="off" oninput="formatCardNumber(this)">
+                            <div class="field-error" id="err-cardNumber">Enter a 16-digit card number.</div>
+                        </div>
+                        <div class="field-row">
+                            <div class="field">
+                                <label for="cardExpiryDate">Expiry</label>
+                                <input type="text" id="cardExpiryDate" placeholder="MM/YY" maxlength="5" inputmode="numeric" autocomplete="off" oninput="formatExpiry(this)">
+                                <div class="field-error" id="err-cardExpiryDate">Use MM/YY, and not in the past.</div>
+                            </div>
+                            <div class="field">
+                                <label for="cardCvv">CVV</label>
+                                <input type="password" id="cardCvv" placeholder="123" maxlength="4" inputmode="numeric" autocomplete="off" oninput="digitsOnly(this)">
+                                <div class="field-error" id="err-cardCvv">Enter the 3- or 4-digit CVV.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- COD note -->
+                    <div id="codFields" class="hidden">
+                        <p style="color: var(--ink-muted); font-size: 0.92rem; line-height: 1.6;">
+                            No payment details needed. You'll pay the full amount when your order is delivered.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="panel summary-card">
+                    <h2>Order summary</h2>
+                    ${lines}
+                    <div class="summary-total">
+                        <span>Total</span>
+                        <span class="amount">₹${cart.totalPrice}</span>
+                    </div>
+                    <button class="btn-pay" id="payBtn" onclick="submitPayment()">Pay ₹${cart.totalPrice}</button>
+                    <div class="secure-note">Simulated transaction · no real money moves</div>
+                    <div class="feedback" id="feedback"></div>
+                </div>
+            </div>
+        `;
+    }
+
+    /* ---------- Method switching ---------- */
+    function selectMethod(method) {
+        selectedMethod = method;
+        ["UPI", "CARD", "COD"].forEach(m => {
+            document.getElementById(`opt-${m}`).classList.toggle("active", m === method);
+        });
+        document.getElementById("upiFields").classList.toggle("hidden", method !== "UPI");
+        document.getElementById("cardFields").classList.toggle("hidden", method !== "CARD");
+        document.getElementById("codFields").classList.toggle("hidden", method !== "COD");
+        clearErrors();
+    }
+
+    /* ---------- Input formatting ---------- */
+    function digitsOnly(el) {
+        el.value = el.value.replace(/\D/g, "");
+    }
+
+    function formatCardNumber(el) {
+        const digits = el.value.replace(/\D/g, "").slice(0, 16);
+        el.value = digits.replace(/(.{4})/g, "$1 ").trim();
+    }
+
+    function formatExpiry(el) {
+        let digits = el.value.replace(/\D/g, "").slice(0, 4);
+        if (digits.length >= 3) {
+            el.value = `${digits.slice(0, 2)}/${digits.slice(2)}`;
+        } else {
+            el.value = digits;
+        }
+    }
+
+    /* ---------- Validation ---------- */
+    function setError(fieldId, hasError) {
+        const input = document.getElementById(fieldId);
+        const error = document.getElementById(`err-${fieldId}`);
+        if (input) input.classList.toggle("invalid", hasError);
+        if (error) error.classList.toggle("show", hasError);
+    }
+
+    function clearErrors() {
+        ["upiId", "cardHolderName", "cardNumber", "cardExpiryDate", "cardCvv"]
+            .forEach(id => setError(id, false));
+        showFeedback("");
+    }
+
+    function expiryIsValid(value) {
+        const match = /^(\d{2})\/(\d{2})$/.exec(value);
+        if (!match) return false;
+        const month = parseInt(match[1], 10);
+        const year = 2000 + parseInt(match[2], 10);
+        if (month < 1 || month > 12) return false;
+        const now = new Date();
+        const endOfMonth = new Date(year, month, 0, 23, 59, 59);
+        return endOfMonth >= now;
+    }
+
+    function validate() {
+        clearErrors();
+        let valid = true;
+
+        if (selectedMethod === "UPI") {
+            const upi = document.getElementById("upiId").value.trim();
+            if (!/^[\w.\-]{2,}@[a-zA-Z]{2,}$/.test(upi)) {
+                setError("upiId", true);
+                valid = false;
+            }
+        }
+
+        if (selectedMethod === "CARD") {
+            const name = document.getElementById("cardHolderName").value.trim();
+            const number = document.getElementById("cardNumber").value.replace(/\s/g, "");
+            const expiry = document.getElementById("cardExpiryDate").value.trim();
+            const cvv = document.getElementById("cardCvv").value.trim();
+
+            if (name.length < 2) { setError("cardHolderName", true); valid = false; }
+            if (number.length !== 16) { setError("cardNumber", true); valid = false; }
+            if (!expiryIsValid(expiry)) { setError("cardExpiryDate", true); valid = false; }
+            if (cvv.length < 3 || cvv.length > 4) { setError("cardCvv", true); valid = false; }
+        }
+
+        return valid;
+    }
+
+    /* ---------- Submit ---------- */
+    function buildPaymentRequest() {
+        const request = { paymentMethod: selectedMethod };
+
+        if (selectedMethod === "UPI") {
+            request.upiId = document.getElementById("upiId").value.trim();
+        } else if (selectedMethod === "CARD") {
+            request.cardHolderName = document.getElementById("cardHolderName").value.trim();
+            request.cardNumber = document.getElementById("cardNumber").value.replace(/\s/g, "");
+            request.cardExpiryDate = document.getElementById("cardExpiryDate").value.trim();
+            request.cardCvv = document.getElementById("cardCvv").value.trim();
+        }
+
+        return request;
+    }
+
+    function submitPayment() {
+        if (!validate()) {
+            showFeedback("Please fix the highlighted fields.");
+            return;
+        }
+
+        const btn = document.getElementById("payBtn");
+        btn.disabled = true;
+        btn.innerText = "Processing…";
+        showFeedback("");
+
+        fetch(`${CART_BASE}/payment/checkout`, {
+            method: "POST",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(buildPaymentRequest())
+        })
+            .then(res => {
+                if (res.status === 401 || res.status === 403) throw new Error("Not authenticated");
+                if (!res.ok) throw new Error("Payment failed");
+                return res.json();
+            })
+            .then(payment => renderSuccess(payment))
+            .catch(err => {
+                console.error("Payment error:", err);
+                btn.disabled = false;
+                btn.innerText = `Pay ₹${currentCart.totalPrice}`;
+                showFeedback("Payment couldn't be processed. Please try again.");
+            });
+    }
+
+    let lastPaymentResponse = null;
+    /* ---------- Success ---------- */
+    function renderSuccess(payment) {
+        lastPaymentResponse = payment;
+        const currency = payment.currency || "INR";
+        document.getElementById("mainContent").innerHTML = `
+            <div class="success-wrap">
+                <div class="success-badge">✓</div>
+                <h2>Payment successful</h2>
+                <p class="msg">${payment.message || "Your order has been placed."}</p>
+
+                <div class="receipt">
+                    <div class="receipt-row">
+                        <span>Transaction ID</span>
+                        <span>${payment.transactionId || "—"}</span>
+                    </div>
+                    <div class="receipt-row">
+                        <span>Amount paid</span>
+                        <span>₹${payment.amount} ${currency}</span>
+                    </div>
+                    <div class="receipt-row">
+                        <span>Payment method</span>
+                        <span>${payment.paymentMethod}</span>
+                    </div>
+                    <div class="receipt-row">
+                        <span>Status</span>
+                        <span class="status-ok">${payment.status || "SUCCESS"}</span>
+                    </div>
+                </div>
+
+                <div class="success-actions">
+                    <a href="HomePage.html" class="btn-solid">Continue shopping</a>
+                    <button class="btn-outline" id="downloadBtn" onclick="downloadPdfReceipt()">Download Receipt (PDF)</button>
+                </div>
+                <div class="feedback" id="receiptFeedback"></div>
+            </div>
+        `;
+    }
+
+    function downloadPdfReceipt() {
+        const currentPaymentResponse = lastPaymentResponse;
+        if (!currentPaymentResponse) return;
+
+        console.log("Receipt payload:", JSON.stringify(currentPaymentResponse));
+
+        const btn = document.getElementById("downloadBtn");
+        if (btn) btn.innerText = "Generating PDF...";
+
+        fetch(`${CART_BASE}/payment/checkout/receipt`, {
+            method: "POST", // Or GET depending on browser fetch constraints with request bodies
+            credentials: "include",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(currentPaymentResponse)
+        })
+        .then(res => {
+              if (!res.ok) {
+                return res.text().then(body => {
+                    throw new Error(`Receipt failed: ${res.status} — ${body}`);
+                });
+              }
+              return res.blob();
+        })
+        .then(blob => {
+            // Create a downloadable blob URL
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `receipt-${currentPaymentResponse.paymentMethod || 'order'}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+
+            // Clean up
+            a.remove();
+            window.URL.revokeObjectURL(url);
+            if (btn) btn.innerText = "Download Receipt (PDF)";
+        })
+        .catch(err => {
+            console.error("Receipt download error:", err);
+            if (btn) btn.innerText = "Download Receipt (PDF)";
+            const feedback = document.getElementById("receiptFeedback");
+            if (feedback) {
+                feedback.innerText = "Could not download receipt. Please try again.";
+                feedback.className = "feedback error";
+            }
+        });
+    }
+
+    function showFeedback(message) {
+        const el = document.getElementById("feedback");
+        if (el) {
+            el.innerText = message;
+            el.className = message ? "feedback error" : "feedback";
+        }
+    }
+
+    function logout() {
+        try {
+            fetch("/auth/v1/logout", { method: "POST" });
+        } catch (error) {
+            console.error("Logout error:", error);
+        } finally {
+            window.location.href = "LoginForm.html";
+        }
+    }
+
+    loadCheckout();
+</script>
+</body>
+</html>

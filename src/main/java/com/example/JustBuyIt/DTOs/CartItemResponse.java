@@ -19,6 +19,14 @@ public class CartItemResponse {
         this.subTotal = subTotal;
     }
 
+    public CartItemResponse(String name, Integer quantity, Double price, double v) {
+        this.productName = name;
+        this.unitPrice = price;
+        this.quantity = quantity;
+        this.subTotal = v;
+    }
+
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 

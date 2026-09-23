@@ -1,0 +1,267 @@
+/* ---------- Detail Card ---------- */
+.detail-card {
+background: var(--surface);
+display: flex;
+border-radius: var(--radius-lg);
+overflow: hidden;
+box-shadow: var(--shadow);
+border: 1px solid var(--border);
+}
+
+.image-side {
+width: 46%;
+background: #f1f0fb;
+display: flex;
+align-items: center;
+justify-content: center;
+position: relative;
+min-height: 420px;
+}
+.image-side img { width: 100%; height: 100%; object-fit: contain; }
+
+.category-tag {
+top: 18px;
+left: 18px;
+font-size: 0.75rem;
+padding: 5px 12px;
+}
+
+.info-side {
+width: 54%;
+padding: 44px 48px;
+display: flex;
+flex-direction: column;
+}
+
+.info-side h1 {
+font-size: 1.7rem;
+font-weight: 800;
+letter-spacing: -0.02em;
+line-height: 1.25;
+}
+
+.desc {
+margin-top: 14px;
+color: var(--ink-muted);
+line-height: 1.65;
+font-size: 0.97rem;
+}
+
+.price-row {
+margin-top: 24px;
+display: flex;
+align-items: baseline;
+gap: 10px;
+}
+.price { font-size: 2rem; color: var(--price); font-weight: 800; }
+.unit-note { font-size: 0.9rem; }
+
+.stock-line {
+margin-top: 8px;
+font-size: 0.9rem;
+color: var(--ink-muted);
+}
+.stock-line b { color: var(--ink); }
+.stock-line.low { color: var(--danger-dark); }
+
+.qty-row {
+margin-top: 28px;
+display: flex;
+align-items: center;
+gap: 16px;
+}
+
+.qty-control {
+display: flex;
+align-items: center;
+border: 1px solid var(--border);
+border-radius: 12px;
+overflow: hidden;
+}
+.qty-control button {
+background: #f6f6fc;
+border: none;
+width: 38px;
+height: 40px;
+font-size: 1.1rem;
+font-weight: 700;
+color: var(--brand-dark);
+cursor: pointer;
+}
+.qty-control button:hover { background: #eceaf9; }
+.qty-control input {
+width: 48px;
+text-align: center;
+border: none;
+font-family: inherit;
+font-size: 1rem;
+font-weight: 700;
+-moz-appearance: textfield;
+}
+.qty-control input::-webkit-outer-spin-button,
+.qty-control input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+.action-row {
+margin-top: 28px;
+display: flex;
+gap: 12px;
+flex-wrap: wrap;
+}
+
+.btn-primary {
+background: #f59e0b;
+color: #fff;
+border: none;
+padding: 15px 30px;
+border-radius: 12px;
+cursor: pointer;
+font-weight: 700;
+font-size: 0.98rem;
+transition: background-color 0.15s ease;
+}
+.btn-primary:hover { background: #d97f06; }
+
+.btn-secondary {
+background: var(--brand);
+color: #fff;
+border: none;
+padding: 15px 26px;
+border-radius: 12px;
+cursor: pointer;
+font-weight: 700;
+font-size: 0.98rem;
+transition: background-color 0.15s ease;
+}
+.btn-secondary:hover { background: var(--brand-dark); }
+
+.btn-primary:disabled, .btn-secondary:disabled {
+opacity: 0.5;
+cursor: not-allowed;
+}
+
+.feedback {
+margin-top: 16px;
+text-align: left;
+}
+
+/* ============================================================
+   RESPONSIVE — Product Detail
+   ============================================================ */
+
+@media (max-width: 900px) {
+    .detail-card {
+        flex-direction: column;
+    }
+    .image-side,
+    .info-side {
+        width: 100%;
+    }
+    .image-side {
+        min-height: 320px;
+        max-height: 420px;
+    }
+    .info-side {
+        padding: 32px 34px;
+    }
+}
+
+@media (max-width: 640px) {
+    .detail-card {
+        border-radius: 16px;
+    }
+
+    /* ---- Image ---- */
+    .image-side {
+        min-height: 220px;
+        max-height: 280px;
+    }
+    .image-side img {
+        max-height: 100%;
+    }
+    .category-tag {
+        top: 12px;
+        left: 12px;
+        font-size: 0.68rem;
+        padding: 4px 10px;
+    }
+
+    /* ---- Info panel ---- */
+    .info-side {
+        padding: 20px 18px 24px 18px;
+    }
+    .info-side h1 {
+        font-size: 1.25rem;
+        line-height: 1.25;
+    }
+    .desc {
+        margin-top: 10px;
+        font-size: 0.88rem;
+        line-height: 1.55;
+    }
+
+    /* ---- Price ---- */
+    .price-row {
+        margin-top: 16px;
+        gap: 8px;
+    }
+    .price {
+        font-size: 1.5rem;
+    }
+    .unit-note {
+        font-size: 0.82rem;
+    }
+
+    .stock-line {
+        margin-top: 6px;
+        font-size: 0.82rem;
+    }
+
+    /* ---- Qty ---- */
+    .qty-row {
+        margin-top: 18px;
+        gap: 12px;
+    }
+    .qty-control {
+        border-radius: 10px;
+    }
+    .qty-control button {
+        width: 34px;
+        height: 36px;
+        font-size: 1rem;
+    }
+    .qty-control input {
+        width: 42px;
+        font-size: 0.95rem;
+    }
+
+    /* ---- Actions: full-width stacked buttons ---- */
+    .action-row {
+        margin-top: 20px;
+        flex-direction: column;
+        gap: 10px;
+    }
+    .btn-primary,
+    .btn-secondary {
+        width: 100%;
+        padding: 13px 18px;
+        font-size: 0.92rem;
+        border-radius: 10px;
+    }
+
+    .feedback {
+        margin-top: 12px;
+        font-size: 0.82rem;
+    }
+}
+
+@media (max-width: 380px) {
+    .info-side h1 {
+        font-size: 1.1rem;
+    }
+    .price {
+        font-size: 1.35rem;
+    }
+    .desc {
+        font-size: 0.82rem;
+    }
+}

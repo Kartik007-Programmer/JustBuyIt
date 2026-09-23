@@ -9,6 +9,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -106,6 +107,10 @@ public class SecurityService {
 
     public String getPresentAuthorizedRole() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()
+                || authentication instanceof AnonymousAuthenticationToken) {
+            return "GUEST";
+        }
         return authentication.getAuthorities().stream()
                 .findFirst()
                 .map(auth -> auth.getAuthority())
@@ -130,5 +135,28 @@ public class SecurityService {
             }
         }
         return user;
+    }
+
+    public Users getPresentAuthorizedAdmin() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Users user = null;
+        assert authentication != null;
+        String username = authentication.getName();
+        String role = getPresentAuthorizedRole();
+        if (role.equals("ADMIN")) {
+            Users Cachedusers = redisCacheService.getUserFromCache(username);
+
+            if (Cachedusers != null) {
+                user = Cachedusers;
+            }else {
+                UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
+                if (userDetails instanceof Users) {
+                    user = (Users) userDetails;
+                    redisCacheService.setCacheUser(username, user);
+                }
+            }
+            return user;
+        }
+        return null;
     }
 }

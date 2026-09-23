@@ -38,8 +38,8 @@ public class ProductController
         ModelAndView mv = new ModelAndView();
 
         if (role.equals("ADMIN")) {
-            mv.setViewName("AdminDashboad.html");
-        }else if (role.equals("USER")) {
+            mv.setViewName("admin/AdminDashboad.html");
+        }else {
             mv.setViewName("HomePage.html");
         }
         return mv;
@@ -141,9 +141,16 @@ public class ProductController
             @RequestParam("keyword") String keyword,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "9") int size,
+            @RequestParam(defaultValue = "id") String sortby,
+            @RequestParam(defaultValue = "asc") String direction,
             @RequestParam(required = false) String category){
 
-        Pageable pageable = PageRequest.of(page, size);
+        if (!ALLOWED_SORTS.contains(sortby)) sortby = "id";
+        Sort sort = direction.equalsIgnoreCase("desc")
+                ? Sort.by(sortby).descending()
+                : Sort.by(sortby).ascending();
+
+        Pageable pageable = PageRequest.of(page, size, sort);
         Page<Product> productPage = productService.searchProduct(keyword, category, pageable);
         return ResponseEntity.ok(buildPageResponse(productPage));
     }

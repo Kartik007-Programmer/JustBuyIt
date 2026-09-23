@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Details · JustBuyIt Admin</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="/css/admin/admin.css">
+    <link rel="stylesheet" href="/css/admin/pages/product.css">
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar__brand">
+        <div class="sidebar__logo"><i class="fas fa-bolt"></i></div>
+        <div class="sidebar__title">Just<span>BuyIt</span></div>
+    </div>
+    <div class="sidebar__badge"><i class="fas fa-user-shield"></i> Admin Panel</div>
+
+    <div class="sidebar__section">Overview</div>
+    <nav class="sidebar__nav">
+        <a href="/admin/AdminDashboad.html" class="sidebar__link sidebar__link--dashboard">
+            <i class="fas fa-chart-pie"></i><span>Dashboard</span>
+        </a>
+    </nav>
+
+    <div class="sidebar__section">Catalog</div>
+    <nav class="sidebar__nav sidebar__nav--grow">
+        <a href="/admin/AddProduct.html" class="sidebar__link sidebar__link--add">
+            <i class="fas fa-plus-circle"></i><span>Add Product</span>
+        </a>
+        <a href="/admin/UpdateProduct.html" class="sidebar__link sidebar__link--update">
+            <i class="fas fa-pen-to-square"></i><span>Update Product</span>
+        </a>
+        <a href="/admin/ViewAllProduct.html" class="sidebar__link sidebar__link--view is-active">
+            <i class="fas fa-layer-group"></i><span>View All Products</span>
+        </a>
+    </nav>
+
+    <div class="sidebar__section">Account</div>
+    <nav class="sidebar__nav">
+        <a href="#" class="sidebar__link sidebar__link--logout" onclick="handleLogout(event)">
+            <i class="fas fa-sign-out-alt"></i><span>Logout</span>
+        </a>
+    </nav>
+
+    <div class="sidebar__footer">
+        <div class="sidebar__user">
+            <div class="sidebar__avatar" id="adminAvatar">--</div>
+            <div class="sidebar__user-info">
+                <span class="sidebar__user-name" id="adminName">Loading…</span>
+                <span class="sidebar__user-role" id="adminRole">Administrator</span>
+            </div>
+        </div>
+    </div>
+</aside>
+
+<div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+<div class="app">
+    <header class="topbar">
+        <div class="topbar__left">
+            <button class="topbar__menu-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+            <h1 class="topbar__title">
+                Dashboard
+                <small id="adminWelcome">Welcome back — here's your store overview</small>
+            </h1>
+        </div>
+        <span class="topbar__pill">
+            <i class="fas fa-circle" style="font-size:.5rem;color:#10b981;"></i> System Online
+        </span>
+    </header>
+
+    <main class="content content--medium" id="detailRoot">
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:var(--sp-8);gap:var(--sp-4);color:var(--c-text-secondary);">
+            <div class="spinner"></div>
+            <div>Loading product details…</div>
+        </div>
+    </main>
+</div>
+
+<script>
+    function toggleSidebar() {
+        document.getElementById('sidebar').classList.toggle('is-open');
+        document.getElementById('overlay').classList.toggle('is-visible');
+    }
+    async function handleLogout(e) {
+        if (e) e.preventDefault();
+        try { await fetch('/auth/v1/logout', { method: 'POST' }); }
+        catch (err) { console.error(err); }
+        finally { window.location.href = 'LoginForm.html'; }
+    }
+    window.addEventListener('pageshow', e => { if (e.persisted) window.location.reload(); });
+
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get('id');
+    const root = document.getElementById('detailRoot');
+
+    function esc(s) {
+        return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        }[c]));
+    }
+
+    function render(p) {
+        const imgSrc = p.imagefile ? `/products/${p.id}/image` : 'https://via.placeholder.com/400x400?text=No+Image';
+        const cat = p.categoryName || (p.category ? p.category.name : 'Uncategorized');
+        const unit = p.qunatityUnit || 'PIECE';
+
+        root.innerHTML = `
+            <div class="card" style="overflow:hidden;box-shadow:0 20px 40px -18px rgba(79,70,229,.35);">
+                <div class="grid grid-2" style="gap:0;">
+                    <!-- IMAGE SIDE -->
+                    <div style="position:relative;background:linear-gradient(135deg,#eef2ff,#f5f3ff);display:flex;align-items:center;justify-content:center;min-height:400px;padding:var(--sp-8);">
+                        <div style="position:absolute;top:-60px;right:-60px;width:200px;height:200px;background:radial-gradient(circle,rgba(167,139,250,.35),transparent 70%);border-radius:50%;"></div>
+                        <img src="${imgSrc}"
+                             alt="${esc(p.name)}"
+                             onerror="this.src='https://via.placeholder.com/400x400?text=No+Image'"
+                             style="position:relative;z-index:1;width:100%;max-width:340px;aspect-ratio:1;object-fit:cover;border-radius:var(--r-xl);box-shadow:0 20px 40px -18px rgba(0,0,0,.3);background:#fff;">
+                    </div>
+
+                    <!-- INFO SIDE -->
+                    <div style="padding:var(--sp-8);display:flex;flex-direction:column;">
+                        <a href="/admin/ViewAllProduct.html" class="text-muted fs-sm fw-700 mb-5 d-flex align-center gap-2" style="width:fit-content;">
+                            <i class="fas fa-arrow-left"></i> Back to catalog
+                        </a>
+
+                        <span class="pill pill--info mb-4"><i class="fas fa-folder"></i> ${esc(cat)}</span>
+
+                        <h1 class="fw-800 mb-3" style="font-size:1.85rem;letter-spacing:-.03em;line-height:1.2;">${esc(p.name)}</h1>
+                        <p class="text-muted mb-5" style="font-size:.92rem;line-height:1.65;">
+                            ${esc(p.description) || 'No description provided for this product.'}
+                        </p>
+
+                        <div class="d-flex align-center gap-3 mb-5" style="padding-bottom:var(--sp-5);border-bottom:1px dashed var(--c-border);">
+                            <span style="font-size:2.2rem;font-weight:800;letter-spacing:-.03em;background:var(--g-success);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;">
+                                ₹${Number(p.price || 0).toFixed(2)}
+                            </span>
+                            <span class="text-muted" style="font-size:.8rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;">
+                                Incl. all taxes
+                            </span>
+                        </div>
+
+                        <div class="grid grid-2 mb-6" style="gap:var(--sp-3);">
+                            <div style="background:var(--c-surface-alt);border:1px solid var(--c-border);border-radius:var(--r-lg);padding:var(--sp-4);">
+                                <div class="text-muted" style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:var(--sp-1);">
+                                    <i class="fas fa-cubes" style="color:var(--c-primary);"></i> Stock
+                                </div>
+                                <div class="fw-700">${p.quantity != null ? p.quantity : 0} ${esc(unit)}</div>
+                            </div>
+                            <div style="background:var(--c-surface-alt);border:1px solid var(--c-border);border-radius:var(--r-lg);padding:var(--sp-4);">
+                                <div class="text-muted" style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:var(--sp-1);">
+                                    <i class="fas fa-hashtag" style="color:var(--c-primary);"></i> Product ID
+                                </div>
+                                <div class="fw-700">#${p.id}</div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-3 flex-wrap" style="margin-top:auto;">
+                            <button class="btn btn--warning" onclick="goToEdit()">
+                                <i class="fas fa-pen"></i> Edit This Product
+                            </button>
+                            <button class="btn btn--danger" onclick="deleteProduct(${p.id})">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                            <a href="/admin/ViewAllProduct.html" class="btn btn--ghost">
+                                <i class="fas fa-th-large"></i> All Products
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    function loadProduct() {
+        if (!id) {
+            root.innerHTML = `
+                <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:var(--sp-8);gap:var(--sp-4);color:var(--c-text-secondary);">
+                    <i class="fas fa-exclamation-circle" style="font-size:2rem;color:var(--c-secondary);"></i>
+                    <div>No product ID provided.</div>
+                    <a href="/admin/ViewAllProduct.html" class="btn btn--warning mt-3">
+                        <i class="fas fa-arrow-left"></i> Back to catalog
+                    </a>
+                </div>`;
+            return;
+        }
+
+        fetch(`/products/${id}`)
+            .then(r => { if (!r.ok) throw new Error('Not found'); return r.json(); })
+            .then(render)
+            .catch(err => {
+                console.error(err);
+                root.innerHTML = `
+                    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:var(--sp-8);gap:var(--sp-4);color:var(--c-text-secondary);">
+                        <i class="fas fa-exclamation-triangle" style="font-size:2rem;color:var(--c-danger);"></i>
+                        <div>Failed to load product #${esc(id)}.</div>
+                        <a href="/admin/ViewAllProduct.html" class="btn btn--warning mt-3">
+                            <i class="fas fa-arrow-left"></i> Back to catalog
+                        </a>
+                    </div>`;
+            });
+    }
+
+    function goToEdit() { window.location.href = `/admin/UpdateProduct.html?id=${id}`; }
+
+    function deleteProduct(pid) {
+        if (!confirm('Delete this product permanently?')) return;
+        fetch(`/products/${pid}`, { method: 'DELETE' }).then(r => {
+            if (r.ok) { alert('Product deleted'); window.location.href = '/admin/ViewAllProduct.html'; }
+            else alert('Delete failed');
+        });
+    }
+
+    loadProduct();
+
+    (function fetchAdmin() {
+        fetch('/admin', { credentials: 'include' })
+            .then(r => r.ok ? r.json() : null)
+            .then(admin => {
+                if (!admin) return;
+
+                const fullName =
+                    admin.name ||
+                    'Admin User';
+
+                const role = 'Administrator';
+
+                // Initials for the avatar (max 2 letters)
+                const initials = fullName
+                    .split(/\s+/)
+                    .map(w => w[0])
+                    .filter(Boolean)
+                    .slice(0, 2)
+                    .join('')
+                    .toUpperCase() || 'AD';
+
+                document.getElementById('adminAvatar').innerText = initials;
+                document.getElementById('adminName').innerText   = fullName;
+                document.getElementById('adminRole').innerText   = role;
+
+                const welcome = document.getElementById('adminWelcome');
+                if (welcome) {
+                    welcome.innerText = `Welcome back, ${fullName} — here's your store overview`;
+                }
+            })
+            .catch(err => console.error('Failed to load admin:', err));
+    })();
+</script>
+</body>
+</html>

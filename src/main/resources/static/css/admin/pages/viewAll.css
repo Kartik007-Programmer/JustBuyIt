@@ -1,0 +1,255 @@
+/* ---------- RESPONSIVE: VIEW ALL PRODUCTS ---------- */
+
+/* Tablet: 3-up → 2-up is already handled by .grid-4. Fine. */
+
+/* Phone: 2-up cards, compact meta, stacked toolbar */
+@media (max-width: 575.98px) {
+  /* Product grid: 2 columns on phones, so cards stay useful */
+  #productGrid.grid-4 {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--sp-3);
+  }
+
+  /* Compact card internals */
+  .product-card__body { padding: var(--sp-3); }
+  .product-card__title { font-size: .82rem; -webkit-line-clamp: 2; }
+  .product-card__desc { display: none; } /* hide on phones — too much noise */
+  .product-card__badge { font-size: .55rem; padding: 2px 6px; top: var(--sp-2); right: var(--sp-2); }
+  .product-card__price { font-size: .95rem; }
+  .product-card__stock { font-size: .65rem; }
+
+  .product-card__meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--sp-1);
+    padding-top: var(--sp-2);
+    margin-bottom: var(--sp-2);
+  }
+
+  /* Action buttons: icon-only row, evenly spaced */
+  .product-card__actions { gap: var(--sp-1); }
+  .product-card__actions .btn {
+    padding: var(--sp-2) 0;
+    font-size: .75rem;
+  }
+
+  /* Toolbar: stack fields full-width */
+  .card--padded .grid-3 {
+    grid-template-columns: 1fr;
+    gap: var(--sp-3) !important;
+  }
+
+  /* Toolbar header row: stack add button below title */
+  .card--padded > .d-flex.justify-between {
+    flex-direction: column;
+    align-items: stretch !important;
+    gap: var(--sp-3);
+  }
+  .card--padded > .d-flex.justify-between .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Filter chips: wrap nicely */
+  #activeFilters { gap: var(--sp-2); }
+  .filter-chip { font-size: .7rem; padding: 4px 8px 4px 10px; }
+
+  /* Pagination: stack info above buttons, center them */
+  #pagination {
+    flex-direction: column;
+    align-items: center !important;
+    gap: var(--sp-3);
+    text-align: center;
+  }
+  #pageInfo { order: 2; }
+  #pageButtons { order: 1; flex-wrap: wrap; justify-content: center; }
+}
+
+/* Very small phones (< 380px): drop to single column */
+@media (max-width: 380px) {
+  #productGrid.grid-4 { grid-template-columns: 1fr; }
+  .product-card__desc { display: -webkit-box; -webkit-line-clamp: 2; } /* re-show since we have space */
+}
+
+/* <!-- ============================================================
+     PAGE-SPECIFIC STYLES (product card + pagination + filter chips)
+     In a stricter architecture these would live in components.css,
+     but keeping them scoped here documents the page-specific UI.
+     ============================================================ --> */
+
+ /* ---------- PRODUCT CARD ---------- */
+    .product-card {
+        background: var(--c-surface);
+        border: 1px solid var(--c-border);
+        border-radius: var(--r-xl);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        transition: all var(--t-base);
+        box-shadow: var(--sh-sm);
+    }
+    .product-card:hover {
+        transform: translateY(-6px);
+        border-color: var(--c-border-hover);
+        box-shadow: 0 22px 38px -18px rgba(79,70,229,.4);
+    }
+
+    .product-card__img-wrap {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 4 / 3;
+        background: linear-gradient(135deg, #eef2ff, #f5f3ff);
+        overflow: hidden;
+        cursor: pointer;
+    }
+    .product-card__img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform .4s ease;
+    }
+    .product-card:hover .product-card__img { transform: scale(1.06); }
+
+    .product-card__badge {
+        position: absolute;
+        top: var(--sp-3);
+        right: var(--sp-3);
+        font-size: .6rem;
+        padding: 3px 8px;
+        backdrop-filter: blur(6px);
+        box-shadow: 0 4px 10px -4px rgba(0,0,0,.2);
+    }
+
+    .product-card__body {
+        display: flex;
+        flex-direction: column;
+        padding: var(--sp-4);
+        flex: 1;
+    }
+    .product-card__title {
+        font-size: .95rem;
+        font-weight: 700;
+        letter-spacing: -.01em;
+        line-height: 1.3;
+        margin-bottom: var(--sp-2);
+        cursor: pointer;
+        transition: color var(--t-fast);
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    .product-card__title:hover { color: var(--c-primary); }
+
+    .product-card__desc {
+        font-size: .78rem;
+        color: var(--c-text-secondary);
+        line-height: 1.5;
+        margin-bottom: var(--sp-4);
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .product-card__meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: var(--sp-3);
+        margin-top: auto;
+        border-top: 1px dashed var(--c-border);
+        margin-bottom: var(--sp-3);
+    }
+    .product-card__price {
+        font-size: 1.15rem;
+        font-weight: 800;
+        letter-spacing: -.02em;
+        background: var(--g-success);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    .product-card__stock {
+        font-size: .72rem;
+        font-weight: 700;
+        color: var(--c-text-secondary);
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+    .product-card__stock i { color: var(--c-primary); }
+
+    .product-card__actions {
+        display: flex;
+        gap: var(--sp-2);
+    }
+    .product-card__actions .btn {
+        flex: 1;
+        padding: var(--sp-2);
+        font-size: .85rem;
+    }
+
+    /* ---------- FILTER CHIP ---------- */
+    .filter-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--sp-2);
+        padding: var(--sp-1) var(--sp-2) var(--sp-1) var(--sp-3);
+        background: var(--c-primary-light);
+        border: 1px solid var(--c-border-hover);
+        border-radius: var(--r-pill);
+        font-size: .75rem;
+        font-weight: 700;
+        color: var(--c-primary-dark);
+    }
+    .filter-chip button {
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: var(--c-primary);
+        display: grid;
+        place-items: center;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        transition: background var(--t-fast);
+        font-size: .7rem;
+    }
+    .filter-chip button:hover { background: rgba(79,70,229,.15); }
+
+    /* ---------- PAGINATION ---------- */
+    .page-btn {
+        min-width: 38px;
+        height: 38px;
+        padding: 0 var(--sp-2);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: var(--r-md);
+        border: 1.5px solid var(--c-border);
+        background: var(--c-surface);
+        color: var(--c-text);
+        font-weight: 700;
+        font-size: .82rem;
+        cursor: pointer;
+        transition: all var(--t-fast);
+    }
+    .page-btn:hover:not(:disabled) {
+        border-color: var(--c-primary);
+        color: var(--c-primary);
+        transform: translateY(-1px);
+    }
+    .page-btn.is-active {
+        background: var(--g-primary);
+        color: #fff;
+        border-color: transparent;
+        box-shadow: 0 8px 16px -6px rgba(79,70,229,.55);
+    }
+    .page-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+    /* ---------- SKELETON PULSE ---------- */
+    @keyframes pulse {
+        0%, 100% { opacity: .55; }
+        50%      { opacity: 1; }
+    }

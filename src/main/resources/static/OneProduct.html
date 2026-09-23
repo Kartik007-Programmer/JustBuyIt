@@ -7,289 +7,38 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg-wash: #CCCCFF;
-            --surface: #ffffff;
-            --ink: #23213a;
-            --ink-muted: #6b6a85;
-            --brand: #4f46e5;
-            --brand-dark: #3730a3;
-            --price: #0f9d70;
-            --danger-bg: #fee2e2;
-            --danger: #ef4444;
-            --danger-dark: #991b1b;
-            --border: #e7e6f5;
-            --radius-lg: 20px;
-            --shadow: 0 10px 30px rgba(79, 70, 229, 0.10);
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-
-        body {
-            background: linear-gradient(180deg, var(--bg-wash) 0px, var(--bg-wash) 160px, #f6f6fc 160px, #f6f6fc 100%);
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            color: var(--ink);
-            min-height: 100vh;
-        }
-
-        a { color: inherit; }
-
-        /* ---------- Header ---------- */
-        .navbar {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 14px 40px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: rgba(255, 255, 255, 0.75);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border-radius: 0 0 18px 18px;
-        }
-
-        .navbar-brand {
-            font-size: 1.4rem;
-            font-weight: 800;
-            letter-spacing: -0.02em;
-        }
-        .navbar-brand span { color: var(--brand-dark); }
-
-        .nav-links { display: flex; align-items: center; gap: 10px; }
-
-        .nav-link {
-            text-decoration: none;
-            color: #3d3c5c;
-            font-weight: 600;
-            font-size: 0.95rem;
-            padding: 9px 16px;
-            border-radius: 20px;
-            transition: background-color 0.15s ease;
-        }
-        .nav-link:hover { background-color: rgba(255,255,255,0.6); }
-
-        .cart-link { position: relative; display: inline-flex; align-items: center; gap: 6px; }
-        .cart-badge {
-            background: var(--brand-dark);
-            color: #fff;
-            font-size: 0.7rem;
-            font-weight: 700;
-            min-width: 18px;
-            height: 18px;
-            border-radius: 999px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0 5px;
-        }
-
-        .btn-logout {
-            background: var(--danger-bg);
-            color: var(--danger);
-            border: none;
-            padding: 9px 18px;
-            border-radius: 20px;
-            font-weight: 700;
-            font-size: 0.9rem;
-            cursor: pointer;
-        }
-        .btn-logout:hover { background: #fca5a5; color: var(--danger-dark); }
-
-        /* ---------- Layout ---------- */
-        .page-top{
-            z-index: 18;
-            backdrop-filter: blur(8px);
-            max-width: 1200px;
-            margin: 30px auto 0 auto;
-            padding: 20px 40px 50px 40px;
-        }
-        main {
-            max-width: 1100px;
-            margin: 30px auto 80px auto;
-            padding: 0 40px;
-        }
-
-        .back {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            margin-bottom: 20px;
-            text-decoration: none;
-            color: #4a486a;
-            font-weight: 600;
-            font-size: 0.92rem;
-        }
-        .back:hover { color: var(--brand-dark); }
-
-        .detail-card {
-            background: var(--surface);
-            display: flex;
-            border-radius: var(--radius-lg);
-            overflow: hidden;
-            box-shadow: var(--shadow);
-            border: 1px solid var(--border);
-        }
-
-        .image-side {
-            width: 46%;
-            background: #f1f0fb;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            min-height: 420px;
-        }
-        .image-side img { width: 100%; height: 100%; object-fit: contain; }
-
-        .category-tag {
-            position: absolute;
-            top: 18px;
-            left: 18px;
-            background: rgba(255,255,255,0.92);
-            color: var(--brand-dark);
-            font-size: 0.75rem;
-            font-weight: 700;
-            padding: 5px 12px;
-            border-radius: 999px;
-        }
-
-        .info-side {
-            width: 54%;
-            padding: 44px 48px;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .info-side h1 {
-            font-size: 1.7rem;
-            font-weight: 800;
-            letter-spacing: -0.02em;
-            line-height: 1.25;
-        }
-
-        .desc {
-            margin-top: 14px;
-            color: var(--ink-muted);
-            line-height: 1.65;
-            font-size: 0.97rem;
-        }
-
-        .price-row {
-            margin-top: 24px;
-            display: flex;
-            align-items: baseline;
-            gap: 10px;
-        }
-        .price { font-size: 2rem; color: var(--price); font-weight: 800; }
-        .unit-note { color: var(--ink-muted); font-size: 0.9rem; }
-
-        .stock-line {
-            margin-top: 8px;
-            font-size: 0.9rem;
-            color: var(--ink-muted);
-        }
-        .stock-line b { color: var(--ink); }
-        .stock-line.low { color: var(--danger-dark); }
-
-        .qty-row {
-            margin-top: 28px;
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-
-        .qty-control {
-            display: flex;
-            align-items: center;
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            overflow: hidden;
-        }
-        .qty-control button {
-            background: #f6f6fc;
-            border: none;
-            width: 38px;
-            height: 40px;
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: var(--brand-dark);
-            cursor: pointer;
-        }
-        .qty-control button:hover { background: #eceaf9; }
-        .qty-control input {
-            width: 48px;
-            text-align: center;
-            border: none;
-            font-family: inherit;
-            font-size: 1rem;
-            font-weight: 700;
-            -moz-appearance: textfield;
-        }
-        .qty-control input::-webkit-outer-spin-button,
-        .qty-control input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-
-        .action-row {
-            margin-top: 28px;
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-
-        .btn-primary {
-            background: #f59e0b;
-            color: #fff;
-            border: none;
-            padding: 15px 30px;
-            border-radius: 12px;
-            cursor: pointer;
-            font-weight: 700;
-            font-size: 0.98rem;
-            transition: background-color 0.15s ease;
-        }
-        .btn-primary:hover { background: #d97f06; }
-
-        .btn-secondary {
-            background: var(--brand);
-            color: #fff;
-            border: none;
-            padding: 15px 26px;
-            border-radius: 12px;
-            cursor: pointer;
-            font-weight: 700;
-            font-size: 0.98rem;
-            transition: background-color 0.15s ease;
-        }
-        .btn-secondary:hover { background: var(--brand-dark); }
-
-        .btn-primary:disabled, .btn-secondary:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .feedback {
-            margin-top: 16px;
-            font-size: 0.88rem;
-            font-weight: 600;
-        }
-        .feedback.success { color: var(--price); }
-        .feedback.error { color: var(--danger); }
-
-        .state-message {
-            text-align: center;
-            padding: 100px 20px;
-            color: var(--ink-muted);
-        }
-        .state-message h3 { color: var(--ink); font-size: 1.15rem; margin-bottom: 6px; }
-
-        @media (max-width: 760px) {
-            .detail-card { flex-direction: column; }
-            .image-side, .info-side { width: 100%; }
-            .image-side { min-height: 280px; }
-            .navbar, main { padding-left: 20px; padding-right: 20px; }
-        }
-    </style>
+    <link rel="stylesheet" href="/css/users/pages/product.css">
+    <link rel="stylesheet" href="/css/users/common.css">
 </head>
+
+<!-- ============ LOGIN PROMPT MODAL ============ -->
+<div class="auth-modal-backdrop" id="authModal" aria-hidden="true">
+    <div class="auth-modal" role="dialog" aria-modal="true" aria-labelledby="authModalTitle">
+        <button class="auth-modal-close" onclick="closeAuthModal()" aria-label="Close">×</button>
+
+        <div class="auth-modal-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 15v2m-6 4h12a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2Zm10-10V7a4 4 0 0 0-8 0v4h8Z"
+                      stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </div>
+
+        <h2 id="authModalTitle">Sign in to continue</h2>
+        <p class="auth-modal-msg">
+            You need an account to add items to your cart and check out.
+        </p>
+
+        <div class="auth-modal-actions">
+            <a href="/LoginForm.html" class="auth-btn auth-btn-primary">Log in</a>
+            <a href="/RegistrationForm.html" class="auth-btn auth-btn-secondary">Create account</a>
+        </div>
+
+        <button class="auth-modal-later" onclick="closeAuthModal()">
+            Continue browsing
+        </button>
+    </div>
+</div>
+
 <body>
 
 <nav class="navbar">
@@ -297,13 +46,24 @@
     <div class="nav-links">
         <a href="/LoginForm.html" class="nav-link">Login</a>
         <a href="/RegistrationForm.html" class="nav-link">Register</a>
-        <a href="/Cart.html" class="nav-link cart-link">Cart <span class="cart-badge" id="cartBadge">0</span></a>
+        <a href="/users/ShoppingCart.html" class="nav-link cart-link" aria-label="Cart" id="cartNavLink">                <span class="cart-icon-wrap">
+                <span class="cart-icon-wrap">
+                    <svg class="cart-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <path d="M3 3h2.2l2.1 12.4a2 2 0 0 0 1.97 1.6h9.36a2 2 0 0 0 1.96-1.55L22 8H6.2"
+                              stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                        <circle cx="9" cy="20" r="1.6" fill="currentColor"/>
+                        <circle cx="18" cy="20" r="1.6" fill="currentColor"/>
+                    </svg>
+                    <span class="cart-badge" id="cartBadge" data-empty="true">0</span>
+                </span>
+            <span class="cart-text">Cart</span>
+        </a>
         <button class="btn-logout" onclick="logout()">Logout</button>
     </div>
 </nav>
 
 <div class="page-top">
-    <a href="HomePage.html" class="back">← Back to products</a>
+    <a href="/HomePage.html" class="back">← Back to products</a>
 </div>
 
 <main id="mainContent">
@@ -315,6 +75,7 @@
     const params = new URLSearchParams(window.location.search);
     const id = params.get("id");
     let currentProduct = null;
+    let isGuestUser = null;
 
     // Product API may return the raw Product entity (nested `category: { name }`)
     // or a ProductDTO (`categoryName` string, `qunatityUnit` string). Support both.
@@ -367,8 +128,8 @@
                     </div>
 
                     <div class="action-row">
-                        <button class="btn-primary" id="buyBtn" onclick="buyProduct()" ${inStock ? "" : "disabled"}>Buy now</button>
-                        <button class="btn-secondary" id="cartBtn" onclick="addToCart()" ${inStock ? "" : "disabled"}>Add to cart</button>
+                        <button class="btn-primary" id="buyBtn" onclick="buyProduct(event)" ${inStock ? "" : "disabled"}>Buy now</button>
+                        <button class="btn-secondary" id="cartBtn" onclick="addToCart(event)" ${inStock ? "" : "disabled"}>Add to cart</button>
                     </div>
 
                     <div class="feedback" id="feedback"></div>
@@ -419,55 +180,144 @@
         el.className = `feedback ${type}`;
     }
 
-    function addToCart() {
+    function addToCart(event) {
+        const btn = document.getElementById("cartBtn");
+        if (!btn || btn.classList.contains("loading") || btn.classList.contains("added")) return;
+
+        if (event) spawnRipple(btn, event);
+        btn.classList.add("loading");
+
         const qty = getQty();
         fetch(`${API_BASE}/users/cart/items`, {
             method: "POST",
             credentials: "include",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
             body: JSON.stringify({ productId: currentProduct.id, quantity: qty })
         })
             .then(res => {
+                if (isUnauthorized(res)) {
+                    const e = new Error("UNAUTHORIZED");
+                    e.code = "UNAUTHORIZED";
+                    throw e;
+                }
                 if (!res.ok) throw new Error("Add to cart failed");
                 return res.json();
             })
             .then(() => {
+                btn.classList.remove("loading");
+                btn.classList.add("added");
+                const original = btn.innerText;
+                btn.innerText = "✓ Added to cart";
                 showFeedback("Added to cart.", "success");
-                refreshCartBadge();
+                refreshCartBadge(true);
+                setTimeout(() => {
+                    btn.classList.remove("added");
+                    btn.innerText = original || "Add to cart";
+                }, 1400);
             })
             .catch(err => {
                 console.error("Add to cart error:", err);
+                btn.classList.remove("loading");
+
+                if (err.code === "UNAUTHORIZED") {
+                    btn.innerText = "Add to cart";
+                    openAuthModal();
+                    return;
+                }
+
+                btn.innerText = "Try again";
                 showFeedback("Couldn't add to cart. Try again.", "error");
+                setTimeout(() => { btn.innerText = "Add to cart"; }, 1200);
             });
     }
 
-    function buyProduct() {
+    // Buy now — same loading treatment, then redirect
+    function buyProduct(event) {
+        const btn = document.getElementById("buyBtn");
+        if (!btn || btn.classList.contains("loading")) return;
+
+        if (event) spawnRipple(btn, event);
+        btn.classList.add("loading");
+
         const qty = getQty();
         fetch(`${API_BASE}/users/cart/items`, {
             method: "POST",
             credentials: "include",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
             body: JSON.stringify({ productId: currentProduct.id, quantity: qty })
         })
             .then(res => {
+                if (isUnauthorized(res)) {
+                    const e = new Error("UNAUTHORIZED");
+                    e.code = "UNAUTHORIZED";
+                    throw e;
+                }
                 if (!res.ok) throw new Error("Couldn't add to cart");
                 return res.json();
             })
             .then(() => {
-                window.location.href = "Checkout.html";
+                refreshCartBadge(true);
+                setTimeout(() => {
+                    window.location.href = "/users/PaymentCheckout.html";
+                }, 350);
             })
             .catch(err => {
                 console.error("Buy now error:", err);
+                btn.classList.remove("loading");
+
+                if (err.code === "UNAUTHORIZED") {
+                    openAuthModal();
+                    return;
+                }
                 showFeedback("Couldn't start checkout. Try again.", "error");
             });
     }
 
-    function refreshCartBadge() {
-        fetch(`${API_BASE}/users/cart`, { credentials: "include" })
-            .then(res => res.json())
+    function spawnRipple(btn, event) {
+        const rect = btn.getBoundingClientRect();
+        const ripple = document.createElement("span");
+        ripple.className = "ripple";
+        const size = Math.max(rect.width, rect.height) * 2;
+        ripple.style.width = ripple.style.height = `${size}px`;
+        ripple.style.left = `${event.clientX - rect.left - size / 2}px`;
+        ripple.style.top  = `${event.clientY - rect.top  - size / 2}px`;
+        btn.appendChild(ripple);
+        setTimeout(() => ripple.remove(), 600);
+    }
+
+    function refreshCartBadge(animate = false) {
+        fetch(`${API_BASE}/users/cart`, {
+            credentials: "include",
+            headers: { "Accept": "application/json" }
+        })
+            .then(res => {
+                if (isUnauthorized(res)) {
+                isGuestUser = true;
+                return null;
+            }
+            if (!res.ok) return null;
+            isGuestUser = false;
+            return res.json();
+            })
             .then(cart => {
+                if (!cart) return;
+                const badge = document.getElementById("cartBadge");
                 const count = (cart.items || []).reduce((sum, item) => sum + (item.quantity || 0), 0);
-                document.getElementById("cartBadge").innerText = count;
+                const changed = badge.innerText !== String(count);
+                badge.innerText = count;
+                badge.dataset.empty = count === 0 ? "true" : "false";
+                if (animate && changed && count > 0) {
+                    badge.classList.remove("pop");
+                    void badge.offsetWidth;
+                    badge.classList.add("pop");
+                    setTimeout(() => badge.classList.remove("pop"), 500);
+                }
             })
             .catch(() => {});
     }
@@ -478,7 +328,7 @@
         } catch (error) {
             console.error("Logout error:", error);
         } finally {
-            window.location.href = "LoginForm.html";
+            window.location.href = "/LoginForm.html";
         }
     }
 
@@ -490,6 +340,109 @@
             window.location.reload();
         }
     });
+
+    // ---------- Auth Prompt Modal ----------
+    let authModalEl = null;
+
+    function openAuthModal() {
+        authModalEl = authModalEl || document.getElementById("authModal");
+        if (!authModalEl) return;
+
+        setAuthModalLinks();
+
+        authModalEl.classList.add("show");
+        authModalEl.setAttribute("aria-hidden", "false");
+        document.body.style.overflow = "hidden";
+    }
+
+    function closeAuthModal() {
+        authModalEl = authModalEl || document.getElementById("authModal");
+        if (!authModalEl) return;
+        authModalEl.classList.remove("show");
+        authModalEl.setAttribute("aria-hidden", "true");
+        document.body.style.overflow = "";
+    }
+
+    // Close on backdrop click + Escape key
+    document.addEventListener("click", (e) => {
+        if (e.target && e.target.id === "authModal") closeAuthModal();
+    });
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") closeAuthModal();
+    });
+
+    // Helper: detect a 401/403 from a fetch response
+    function isUnauthorized(res) {
+        return res.status === 401 || res.status === 403;
+    }
+
+    // Hide logout if not logged in
+    (function hideLogoutIfGuest() {
+        fetch(`${API_BASE}/users/cart`, {
+            credentials: "include",
+            headers: { "Accept": "application/json" }
+        })
+            .then(res => {
+                const btn = document.querySelector(".btn-logout");
+                if (!btn) return;
+                if (res.status === 401 || res.status === 403) {
+                    btn.style.display = "none";
+                }
+            })
+            .catch(() => {});
+    })();
+
+    // ---------- Navbar Cart: gate for guests ----------
+    (function setupCartNavGate() {
+        const cartLink = document.getElementById("cartNavLink");
+        if (!cartLink) return;
+
+        cartLink.addEventListener("click", (e) => {
+            // Let modifier clicks / middle-click / target=_blank behave normally
+            if (e.ctrlKey || e.metaKey || e.shiftKey || e.altKey || e.button !== 0) return;
+
+            // Fast path: we already know the user is a guest
+            if (isGuestUser === true) {
+                e.preventDefault();
+                openAuthModal();
+                return;
+            }
+
+            // Fast path: we already know the user is logged in
+            if (isGuestUser === false) {
+                return;   // let the browser navigate normally
+            }
+
+            e.preventDefault();
+
+            // Probe the cart endpoint — if we get 401, user is a guest
+            fetch(`${API_BASE}/users/cart`, {
+                credentials: "include",
+                headers: { "Accept": "application/json" }
+            })
+                .then(res => {
+                    if (isUnauthorized(res)) {
+                        openAuthModal();
+                        return;
+                    }
+                    // Logged in (or some other status we can't classify) → just go
+                    window.location.href = cartLink.href;
+                })
+                .catch(() => {
+                    // Network error → let the browser try the navigation
+                    window.location.href = cartLink.href;
+                });
+        });
+    })();
+
+    // In openAuthModal() — before showing
+    function setAuthModalLinks() {
+        const here = encodeURIComponent(location.pathname + location.search);
+        const loginLink = document.querySelector('#authModal .auth-btn-primary');
+        const registerLink = document.querySelector('#authModal .auth-btn-secondary');
+        if (loginLink)    loginLink.href    = `/LoginForm.html?redirect=${here}`;
+        if (registerLink) registerLink.href = `/RegistrationForm.html?redirect=${here}`;
+    }
 </script>
 </body>
 </html>

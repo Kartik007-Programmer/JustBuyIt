@@ -1,0 +1,23 @@
+/* Form buttons stack on phones */
+@media (max-width: 575.98px) {
+  form .d-flex.justify-end {
+    flex-direction: column-reverse;
+    gap: var(--sp-2) !important;
+  }
+  form .d-flex.justify-end .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* Update page: product picker input + button stack */
+@media (max-width: 575.98px) {
+  #productIdInput { max-width: 100% !important; }
+  #productIdInput + .btn { width: 100%; justify-content: center; }
+
+  /* Current image preview: wrap */
+  .current-image {
+    flex-direction: column;
+    text-align: center;
+  }
+}

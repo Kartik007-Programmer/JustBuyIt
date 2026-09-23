@@ -37,10 +37,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             HttpServletResponse response,
             FilterChain filterChain) throws ServletException, IOException {
 
-        if (IsURIsPublicEndPoints(request.getRequestURI())){
-            filterChain.doFilter(request, response);
-            return;
-        }
+//        if (IsURIsPublicEndPoints(request.getRequestURI())){
+//            filterChain.doFilter(request, response);
+//            return;
+//        }
 
         String authToken = getAuthTokenFromRequest(request);
 
@@ -84,13 +84,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 logger.error("Authentication failed: " + e.getMessage());
             }
         }
-
-        // If not authenticated, redirect to login
-        if (SecurityContextHolder.getContext().getAuthentication() == null) {
-            response.sendRedirect("/LoginForm.html");
-            return;
-        }
-
         filterChain.doFilter(request, response);
     }
 

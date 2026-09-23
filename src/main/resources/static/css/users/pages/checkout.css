@@ -1,0 +1,406 @@
+/* ---------- Page Layout ---------- */
+h1.page-title { margin-bottom: 6px; }
+.page-sub { color: var(--ink-muted); font-size: 0.95rem; margin-bottom: 24px; }
+
+.checkout-layout {
+display: grid;
+grid-template-columns: 1fr 340px;
+gap: 26px;
+align-items: start;
+}
+
+.panel {
+background: var(--surface);
+border-radius: var(--radius-lg);
+border: 1px solid var(--border);
+box-shadow: var(--shadow);
+padding: 28px 30px;
+}
+
+.panel h2 {
+font-size: 1.1rem;
+font-weight: 800;
+margin-bottom: 18px;
+}
+
+/* ---------- Demo Banner ---------- */
+.demo-banner {
+background: #fff7ed;
+border: 1px solid #fed7aa;
+color: #9a3412;
+border-radius: var(--radius-md);
+padding: 12px 16px;
+font-size: 0.87rem;
+font-weight: 600;
+margin-bottom: 22px;
+}
+
+/* ---------- Method Picker ---------- */
+.method-row { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
+
+.method-option {
+flex: 1;
+min-width: 140px;
+border: 1px solid var(--border);
+background: #fbfbfe;
+border-radius: var(--radius-md);
+padding: 14px 16px;
+cursor: pointer;
+transition: 0.15s ease;
+text-align: left;
+font-family: inherit;
+}
+.method-option:hover { border-color: var(--brand); }
+.method-option.active {
+border-color: var(--brand);
+background: #f0efff;
+box-shadow: 0 0 0 3px rgba(79,70,229,0.12);
+}
+.method-option .m-title { font-weight: 700; font-size: 0.95rem; color: var(--ink); }
+.method-option .m-sub { font-size: 0.8rem; color: var(--ink-muted); margin-top: 2px; }
+
+/* ---------- Form Fields ---------- */
+.field { margin-bottom: 18px; }
+.field label {
+display: block;
+font-size: 0.85rem;
+font-weight: 600;
+color: #4a486a;
+margin-bottom: 7px;
+}
+.field input {
+width: 100%;
+padding: 12px 14px;
+border: 1px solid var(--border);
+border-radius: var(--radius-md);
+font-family: inherit;
+font-size: 0.95rem;
+outline: none;
+background: #fbfbfe;
+transition: 0.15s ease;
+}
+.field input:focus { border-color: var(--brand); background: #fff; }
+.field input.invalid { border-color: var(--danger); background: #fff5f5; }
+
+.field-error {
+color: var(--danger);
+font-size: 0.78rem;
+font-weight: 600;
+margin-top: 5px;
+display: none;
+}
+.field-error.show { display: block; }
+
+.field-row { display: flex; gap: 14px; }
+.field-row .field { flex: 1; }
+
+.hidden { display: none; }
+
+/* ---------- Summary ---------- */
+.summary-card { position: sticky; top: 90px; }
+
+.summary-line {
+display: flex;
+justify-content: space-between;
+font-size: 0.88rem;
+color: var(--ink-muted);
+padding: 7px 0;
+}
+.summary-line .qty { color: var(--ink-muted); }
+.summary-line .name {
+color: var(--ink);
+font-weight: 600;
+white-space: nowrap;
+overflow: hidden;
+text-overflow: ellipsis;
+max-width: 170px;
+}
+
+.summary-total {
+display: flex;
+justify-content: space-between;
+font-size: 1.1rem;
+font-weight: 800;
+padding-top: 14px;
+margin-top: 10px;
+border-top: 1px solid var(--border);
+}
+.summary-total .amount { color: var(--price); }
+
+.btn-pay {
+width: 100%;
+margin-top: 20px;
+background: #f59e0b;
+color: #fff;
+border: none;
+padding: 15px;
+border-radius: 12px;
+cursor: pointer;
+font-weight: 700;
+font-size: 0.98rem;
+transition: background-color 0.15s ease;
+}
+.btn-pay:hover { background: #d97f06; }
+.btn-pay:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.secure-note {
+margin-top: 12px;
+font-size: 0.78rem;
+color: var(--ink-muted);
+text-align: center;
+}
+
+/* ---------- Success Screen ---------- */
+.success-wrap {
+max-width: 520px;
+margin: 10px auto 0 auto;
+background: var(--surface);
+border-radius: var(--radius-lg);
+border: 1px solid var(--border);
+box-shadow: var(--shadow);
+padding: 46px 40px;
+text-align: center;
+}
+.success-badge {
+width: 62px;
+height: 62px;
+border-radius: 50%;
+background: #dcfce7;
+color: var(--price);
+font-size: 1.9rem;
+display: flex;
+align-items: center;
+justify-content: center;
+margin: 0 auto 20px auto;
+font-weight: 800;
+}
+.success-wrap h2 { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.02em; }
+.success-wrap .msg { color: var(--ink-muted); margin-top: 10px; font-size: 0.95rem; line-height: 1.6; }
+
+.receipt {
+margin-top: 26px;
+border: 1px solid var(--border);
+border-radius: var(--radius-md);
+padding: 18px 20px;
+text-align: left;
+background: #fbfbfe;
+}
+.receipt-row {
+display: flex;
+justify-content: space-between;
+font-size: 0.88rem;
+padding: 7px 0;
+gap: 14px;
+}
+.receipt-row span:first-child { color: var(--ink-muted); }
+.receipt-row span:last-child { font-weight: 700; text-align: right; word-break: break-all; }
+.receipt-row .status-ok { color: var(--price); }
+
+.success-actions { margin-top: 26px; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.btn-outline {
+background: none;
+border: 1px solid var(--border);
+color: #4a486a;
+padding: 12px 22px;
+border-radius: 12px;
+font-weight: 700;
+font-size: 0.9rem;
+cursor: pointer;
+text-decoration: none;
+display: inline-block;
+}
+.btn-outline:hover { border-color: var(--brand); color: var(--brand-dark); }
+.btn-solid {
+background: var(--brand);
+border: none;
+color: #fff;
+padding: 12px 22px;
+border-radius: 12px;
+font-weight: 700;
+font-size: 0.9rem;
+cursor: pointer;
+text-decoration: none;
+display: inline-block;
+}
+.btn-solid:hover { background: var(--brand-dark); }
+
+/* ============================================================
+   RESPONSIVE — Checkout
+   ============================================================ */
+
+/* Tablet */
+@media (max-width: 900px) {
+    .checkout-layout {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    .summary-card {
+        position: static;
+        top: auto;
+    }
+}
+
+/* Mobile */
+@media (max-width: 640px) {
+    .page-sub {
+        font-size: 0.88rem;
+        margin-bottom: 18px;
+    }
+
+    .checkout-layout {
+        gap: 16px;
+    }
+
+    /* ---- Panels ---- */
+    .panel {
+        padding: 20px 18px;
+        border-radius: 14px;
+    }
+    .panel h2 {
+        font-size: 1rem;
+        margin-bottom: 14px;
+    }
+
+    /* ---- Demo banner ---- */
+    .demo-banner {
+        padding: 10px 12px;
+        font-size: 0.78rem;
+        margin-bottom: 16px;
+        border-radius: 10px;
+    }
+
+    /* ---- Payment method picker ---- */
+    .method-row {
+        gap: 8px;
+        margin-bottom: 18px;
+    }
+    .method-option {
+        flex: 1 1 calc(50% - 4px);   /* 2 per row */
+        min-width: 0;
+        padding: 10px 12px;
+        border-radius: 10px;
+    }
+    .method-option .m-title {
+        font-size: 0.86rem;
+    }
+    .method-option .m-sub {
+        font-size: 0.72rem;
+    }
+
+    /* ---- Fields ---- */
+    .field {
+        margin-bottom: 14px;
+    }
+    .field label {
+        font-size: 0.8rem;
+        margin-bottom: 6px;
+    }
+    .field input {
+        padding: 11px 12px;
+        font-size: 0.92rem;
+        border-radius: 10px;
+    }
+    .field-error {
+        font-size: 0.72rem;
+    }
+
+    /* Stack expiry + cvv vertically — inputs are too small side by side */
+    .field-row {
+        flex-direction: column;
+        gap: 0;
+    }
+    .field-row .field {
+        flex: 1 1 auto;
+    }
+
+    /* ---- Summary ---- */
+    .summary-card {
+        padding: 18px 16px;
+    }
+    .summary-line {
+        font-size: 0.82rem;
+        padding: 6px 0;
+    }
+    .summary-line .name {
+        max-width: 55%;   /* was 170px — fits any phone */
+    }
+    .summary-total {
+        font-size: 1rem;
+    }
+    .btn-pay {
+        padding: 13px;
+        font-size: 0.92rem;
+        border-radius: 10px;
+        margin-top: 16px;
+    }
+    .secure-note {
+        font-size: 0.72rem;
+    }
+
+    /* ---- Success screen ---- */
+    .success-wrap {
+        padding: 32px 22px;
+        border-radius: 14px;
+    }
+    .success-badge {
+        width: 52px;
+        height: 52px;
+        font-size: 1.5rem;
+        margin-bottom: 14px;
+    }
+    .success-wrap h2 {
+        font-size: 1.2rem;
+    }
+    .success-wrap .msg {
+        font-size: 0.88rem;
+        margin-top: 8px;
+    }
+
+    /* ---- Receipt ---- */
+    .receipt {
+        padding: 14px 14px;
+        margin-top: 20px;
+        border-radius: 10px;
+    }
+    .receipt-row {
+        font-size: 0.78rem;
+        flex-direction: column;
+        gap: 2px;
+        padding: 6px 0;
+    }
+    .receipt-row span:last-child {
+        text-align: left;
+        font-size: 0.82rem;
+    }
+
+    /* ---- Success actions ---- */
+    .success-actions {
+        flex-direction: column;
+        gap: 10px;
+        margin-top: 20px;
+    }
+    .btn-solid,
+    .btn-outline {
+        padding: 12px 18px;
+        font-size: 0.86rem;
+        width: 100%;
+        text-align: center;
+        border-radius: 10px;
+    }
+}
+
+/* Very small phones */
+@media (max-width: 380px) {
+    .panel {
+        padding: 16px 14px;
+    }
+    .method-option {
+        padding: 9px 10px;
+    }
+    .method-option .m-title {
+        font-size: 0.8rem;
+    }
+    .method-option .m-sub {
+        font-size: 0.68rem;
+    }
+}

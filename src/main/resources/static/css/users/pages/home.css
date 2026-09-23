@@ -1,0 +1,662 @@
+/* ---------- Hero ---------- */
+.hero {
+    z-index: 18;
+    backdrop-filter: blur(8px);
+    max-width: 1200px;
+    margin: 15px auto 0 auto;
+    padding: 20px 40px 0px 40px;
+}
+
+.hero h1 {
+    font-size: 2.4rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.15;
+    max-width: 640px;
+    color: var(--ink);
+}
+
+.hero p.sub {
+    margin-top: 12px;
+    color: #4a486a;
+    font-size: 1.05rem;
+    max-width: 520px;
+}
+
+.search-row {
+    margin-top: 26px;
+    display: flex;
+    gap: 10px;
+    max-width: 560px;
+}
+
+#searchInput {
+    flex: 1;
+    padding: 14px 20px;
+    border-radius: 14px;
+    border: 1px solid transparent;
+    box-shadow: 0 6px 18px rgba(55, 48, 163, 0.12);
+    font-size: 1rem;
+    font-family: inherit;
+    outline: none;
+    background: var(--surface);
+}
+#searchInput:focus { border-color: var(--brand); }
+
+/* ---------- Category chips (horizontal scroll, hidden bar) ---------- */
+.category-wrapper {
+    position: relative;
+    max-width: 1200px;
+    margin: 15px auto 20px;
+    padding: 0 40px;
+}
+
+.category-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-behavior: smooth;
+    padding: 4px 14px;
+
+    /* Hide scrollbar — Firefox */
+    scrollbar-width: none;
+    /* Hide scrollbar — IE / legacy Edge */
+    -ms-overflow-style: none;
+
+    /* Soft fade at both edges */
+    mask-image: linear-gradient(
+        to right,
+        transparent 0,
+        #000 32px,
+        #000 calc(100% - 32px),
+        transparent 100%
+    );
+    -webkit-mask-image: linear-gradient(
+        to right,
+        transparent 0,
+        #000 32px,
+        #000 calc(100% - 32px),
+        transparent 100%
+    );
+}
+
+/* Hide scrollbar — Chrome / Safari / new Edge */
+.category-row::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+}
+
+.scroll-btn.right { right: 6px; opacity: 0; pointer-events: none; }
+
+/* Chips */
+.chip {
+    display: inline-block;
+    flex-shrink: 0;
+    white-space: nowrap;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--ink-muted);
+    padding: 8px 16px;
+    border-radius: 999px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.15s ease;
+}
+.chip:hover { border-color: var(--brand); color: var(--brand-dark); }
+.chip.active { background: var(--brand); border-color: var(--brand); color: #fff; }
+
+/* Arrow buttons */
+.scroll-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 32px;
+    height: 32px;
+    padding: auto;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.15);
+    color: var(--ink);
+    font-size: 1.1rem;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.2s ease, color 0.15s ease, border-color 0.15s ease;
+}
+.scroll-btn:hover { color: var(--brand-dark); border-color: var(--brand); }
+.scroll-btn.left  { left: 0;  opacity: 0; pointer-events: none; }
+.scroll-btn.right { right: 0; opacity: 0; pointer-events: none; }
+
+
+/* ---------- Grid & Cards ---------- */
+main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px 40px 80px 40px;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 24px;
+}
+
+.card {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    cursor: pointer;
+    border: 1px solid var(--border);
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+    display: flex;
+    flex-direction: column;
+}
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 34px rgba(79, 70, 229, 0.16);
+}
+
+.img-container {
+    height: 190px;
+    width: 100%;
+    background: #f1f0fb;
+    position: relative;
+}
+.img-container img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.category-tag {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background: rgba(255,255,255,0.92);
+    color: var(--brand-dark);
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 999px;
+}
+
+.content { padding: 18px 20px 20px 20px; flex: 1; display: flex; flex-direction: column; gap: 6px; }
+
+.content h3 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1.3;
+}
+
+.unit-note { font-size: 0.82rem; color: var(--ink-muted); }
+
+.price-row {
+    margin-top: 8px;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+}
+
+.price { color: var(--price); font-weight: 800; font-size: 1.2rem; }
+
+.add-btn {
+    background: var(--brand);
+    color: #fff;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+.add-btn:hover { background: var(--brand-dark); }
+
+/* ---------- Empty / loading states ---------- */
+.state-message {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 70px 20px;
+    color: var(--ink-muted);
+}
+
+/* ---------- Footer ---------- */
+footer {
+    border-top: 1px solid var(--border);
+    padding: 30px 40px;
+    text-align: center;
+    color: var(--ink-muted);
+    font-size: 0.85rem;
+}
+
+/* ---------- Pagination ---------- */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-top: 40px;
+    flex-wrap: wrap;
+}
+
+.pagination button {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--ink);
+    min-width: 40px;
+    height: 40px;
+    padding: 0 12px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: 0.15s ease;
+}
+
+.pagination button:hover:not(:disabled) {
+    border-color: var(--brand);
+    color: var(--brand-dark);
+}
+
+.pagination button.active {
+    background: var(--brand);
+    border-color: var(--brand);
+    color: #fff;
+}
+
+.pagination button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.page-info {
+    color: var(--ink-muted);
+    font-size: 0.88rem;
+    margin: 0 8px;
+}
+
+/* ---------- Skeleton loading cards ---------- */
+.skeleton-card {
+    cursor: default;
+    pointer-events: none;   /* no clicking/hovering while loading */
+}
+.skeleton-card:hover {
+    transform: none;
+    box-shadow: var(--shadow);
+}
+
+/* Base shimmer element */
+.skeleton-line,
+.skeleton-img,
+.skeleton-btn {
+    position: relative;
+    overflow: hidden;
+    background: #eceafc;               /* soft brand-tinted gray */
+    border-radius: 8px;
+}
+
+/* Shimmer sweep */
+.skeleton-line::after,
+.skeleton-img::after,
+.skeleton-btn::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.75) 50%,
+        rgba(255, 255, 255, 0) 100%
+    );
+    animation: shimmer 1.4s infinite;
+}
+
+@keyframes shimmer {
+    100% { transform: translateX(100%); }
+}
+
+/* Image placeholder matches .img-container height */
+.skeleton-img {
+    height: 190px;
+    width: 100%;
+    border-radius: 0;      /* full-bleed inside card */
+}
+
+/* Text lines inside .content */
+.skeleton-title {
+    height: 16px;
+    width: 75%;
+    margin-bottom: 8px;
+}
+.skeleton-sub {
+    height: 12px;
+    width: 45%;
+    margin-bottom: 8px;
+}
+.skeleton-price {
+    height: 20px;
+    width: 60px;
+    border-radius: 6px;
+}
+.skeleton-btn {
+    height: 32px;
+    width: 92px;
+    border-radius: 10px;
+}
+
+/* Optional: dim hover on skeleton card content */
+.skeleton-card .content {
+    gap: 10px;
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    .skeleton-line::after,
+    .skeleton-img::after,
+    .skeleton-btn::after {
+        animation: none;
+    }
+}
+
+/* ============================================================
+   RESPONSIVE — Mobile, tablet, and small-desktop
+   ============================================================ */
+
+/* Tablet (≤ 900px) */
+@media (max-width: 900px) {
+    .hero,
+    .category-wrapper,
+    main,
+    footer {
+        padding-left: 28px;
+        padding-right: 28px;
+    }
+    .navbar {
+        padding-left: 28px;
+        padding-right: 28px;
+    }
+    .grid {
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 18px;
+    }
+}
+
+/* Mobile (≤ 640px) */
+@media (max-width: 640px) {
+    /* ---- Layout padding ---- */
+    .hero,
+    .category-wrapper,
+    main,
+    footer {
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+    .navbar {
+        padding: 12px 16px;
+        border-radius: 0 0 14px 14px;
+    }
+
+    /* ---- Hero ---- */
+    .hero {
+        margin-top: 8px;
+        padding-top: 12px;
+    }
+    .hero h1 {
+        font-size: 1.75rem;
+        line-height: 1.2;
+        letter-spacing: -0.02em;
+        max-width: 100%;
+    }
+    .hero p.sub {
+        font-size: 0.95rem;
+        margin-top: 10px;
+        max-width: 100%;
+    }
+
+    /* ---- Search ---- */
+    .search-row {
+        margin-top: 18px;
+        max-width: 100%;
+    }
+    #searchInput {
+        padding: 12px 16px;
+        font-size: 0.95rem;
+        border-radius: 12px;
+    }
+
+    /* ---- Category row ---- */
+    .category-wrapper {
+        margin: 10px auto 16px;
+        padding: 0 16px;
+    }
+    .category-row {
+        gap: 8px;
+        padding: 2px 9px;
+        mask-image: linear-gradient(
+            to right,
+            transparent 0,
+            #000 16px,
+            #000 calc(100% - 16px),
+            transparent 100%
+        );
+        -webkit-mask-image: linear-gradient(
+            to right,
+            transparent 0,
+            #000 16px,
+            #000 calc(100% - 16px),
+            transparent 100%
+        );
+    }
+    .chip {
+        padding: 7px 14px;
+        font-size: 0.82rem;
+    }
+    .scroll-btn {
+        width: 28px;
+        height: 28px;
+        font-size: 1rem;
+    }
+    .scroll-btn.left  { left: 2px; }
+    .scroll-btn.right { right: 2px; }
+
+    /* ---- Grid & cards ---- */
+    main {
+        margin: 10px auto 40px auto;
+        padding-top: 12px;
+        padding-bottom: 40px;
+    }
+    .grid {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 12px;
+    }
+    .card {
+        border-radius: 14px;
+    }
+    .img-container {
+        height: 140px;
+    }
+    .category-tag {
+        top: 8px;
+        left: 8px;
+        font-size: 0.66rem;
+        padding: 3px 8px;
+    }
+    .content {
+        padding: 12px 14px 14px 14px;
+        gap: 4px;
+    }
+    .content h3 {
+        font-size: 0.92rem;
+        line-height: 1.25;
+    }
+    .unit-note {
+        font-size: 0.74rem;
+    }
+    .price-row {
+        margin-top: 6px;
+        gap: 6px;
+    }
+    .price {
+        font-size: 1.05rem;
+    }
+    .add-btn {
+        padding: 7px 10px;
+        font-size: 0.75rem;
+        border-radius: 8px;
+    }
+
+    /* ---- Pagination ---- */
+    .pagination {
+        margin-top: 24px;
+        gap: 6px;
+    }
+    .pagination button {
+        min-width: 34px;
+        height: 34px;
+        padding: 0 8px;
+        font-size: 0.82rem;
+        border-radius: 8px;
+    }
+    .page-info {
+        font-size: 0.78rem;
+        margin: 0 4px;
+        flex-basis: 100%;
+        text-align: center;
+    }
+
+    /* ---- Footer ---- */
+    footer {
+        padding: 20px 16px;
+        font-size: 0.78rem;
+    }
+
+    /* ---- Skeleton sizing ---- */
+    .skeleton-img { height: 140px; }
+    .skeleton-title { height: 14px; width: 80%; }
+    .skeleton-sub { height: 10px; width: 55%; }
+    .skeleton-price { height: 16px; width: 48px; }
+    .skeleton-btn { height: 28px; width: 72px; }
+}
+
+/* Extra-small phones (≤ 380px, e.g. iPhone SE) */
+@media (max-width: 380px) {
+    .hero h1 { font-size: 1.5rem; }
+    .hero p.sub { font-size: 0.88rem; }
+    .grid {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 10px;
+    }
+    .img-container { height: 120px; }
+    .content h3 { font-size: 0.85rem; }
+    .price { font-size: 0.95rem; }
+    .add-btn {
+        padding: 6px 8px;
+        font-size: 0.7rem;
+    }
+    .chip {
+        padding: 6px 12px;
+        font-size: 0.78rem;
+    }
+}
+/* ============================================================
+   ADD-TO-CART ANIMATIONS
+   ============================================================ */
+
+/* Button pressed feedback */
+.add-btn {
+    position: relative;
+    overflow: hidden;
+    transition: background-color 0.15s ease,
+                transform 0.12s ease,
+                box-shadow 0.2s ease;
+}
+.add-btn:active {
+    transform: scale(0.94);
+}
+
+/* Success state — turns green briefly */
+.add-btn.added {
+    background: #0f9d70 !important;
+    color: #fff;
+    cursor: default;
+}
+.add-btn.added:hover {
+    background: #0f9d70 !important;
+}
+
+/* Loading state — hides text, shows spinner */
+.add-btn.loading {
+    color: transparent !important;
+    pointer-events: none;
+}
+.add-btn.loading::after {
+    content: "";
+    position: absolute;
+    inset: 50% auto auto 50%;
+    width: 16px;
+    height: 16px;
+    margin: -8px 0 0 -8px;
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: btn-spin 0.7s linear infinite;
+}
+
+@keyframes btn-spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Ripple effect — a circle expands from click point */
+.add-btn .ripple {
+    position: absolute;
+    border-radius: 50%;
+    transform: scale(0);
+    background: rgba(255, 255, 255, 0.55);
+    animation: ripple-expand 0.55s ease-out forwards;
+    pointer-events: none;
+}
+@keyframes ripple-expand {
+    to {
+        transform: scale(3);
+        opacity: 0;
+    }
+}
+
+/* Cart badge pop */
+@keyframes badge-pop {
+    0%   { transform: scale(1);   }
+    40%  { transform: scale(1.5); }
+    70%  { transform: scale(0.9); }
+    100% { transform: scale(1);   }
+}
+.cart-badge.pop {
+    animation: badge-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Product card pulse ring on add */
+@keyframes card-pulse {
+    0%   { box-shadow: 0 0 0 0 rgba(15, 157, 112, 0.55); }
+    70%  { box-shadow: 0 0 0 14px rgba(15, 157, 112, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(15, 157, 112, 0); }
+}
+.card.pulse {
+    animation: card-pulse 0.7s ease-out;
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    .add-btn .ripple,
+    .cart-badge.pop,
+    .card.pulse,
+    .add-btn.loading::after {
+        animation: none;
+    }
+}

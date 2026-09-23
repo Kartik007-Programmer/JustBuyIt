@@ -1,0 +1,211 @@
+/* ============================================================
+   LAYOUT — Sidebar, Topbar, Content Shell
+   ============================================================ */
+
+/* ---------- SIDEBAR ---------- */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: var(--sidebar-w);
+  height: 100vh;
+  padding: var(--sp-7) var(--sp-5);
+  display: flex;
+  flex-direction: column;
+  background: var(--g-sidebar);
+  color: var(--c-text-inverse);
+  box-shadow: 4px 0 24px -6px rgba(79,70,229,.35);
+  z-index: var(--z-sidebar);
+  overflow-y: auto;
+  transition: transform var(--t-slow);
+}
+.sidebar__brand {
+  display: flex; align-items: center; gap: var(--sp-3);
+  padding: var(--sp-2) var(--sp-2) var(--sp-7);
+  border-bottom: 1px solid rgba(255,255,255,.1);
+  margin-bottom: var(--sp-6);
+}
+.sidebar__logo {
+  width: 42px; height: 42px; flex-shrink: 0;
+  display: grid; place-items: center;
+  border-radius: var(--r-md);
+  background: var(--g-brand-logo);
+  font-size: 1.35rem;
+  box-shadow: 0 8px 20px -6px rgba(236,72,153,.6);
+}
+.sidebar__title {
+  font-size: 1.3rem; font-weight: 800; letter-spacing: -.03em;
+  white-space: nowrap;
+}
+.sidebar__title span {
+  background: var(--g-brand-text);
+  -webkit-background-clip: text; background-clip: text;
+  color: transparent;
+}
+.sidebar__badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: var(--sp-1) var(--sp-3);
+  margin: 0 var(--sp-2) var(--sp-6);
+  border-radius: var(--r-pill);
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.12);
+  color: #c7d2fe;
+  font-size: .65rem; font-weight: 700;
+  letter-spacing: .08em; text-transform: uppercase;
+  width: fit-content;
+}
+.sidebar__section {
+  padding: 0 var(--sp-3);
+  margin: var(--sp-3) 0 var(--sp-2);
+  font-size: .68rem; font-weight: 700;
+  letter-spacing: .1em; text-transform: uppercase;
+  color: #a5b4fc; opacity: .75;
+}
+.sidebar__nav {
+  display: flex; flex-direction: column; gap: var(--sp-1);
+}
+.sidebar__nav--grow { flex: 1; }
+.sidebar__link {
+  display: flex; align-items: center; gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--r-md);
+  color: #e0e7ff;
+  font-size: .9rem; font-weight: 600;
+  white-space: nowrap;
+  transition: all var(--t-base);
+}
+.sidebar__link i { width: 22px; font-size: 1.05rem; text-align: center; transition: transform var(--t-base); }
+.sidebar__link:hover { background: rgba(255,255,255,.1); color: #fff; transform: translateX(4px); }
+.sidebar__link:hover i { transform: scale(1.15); }
+.sidebar__link.is-active {
+  background: linear-gradient(90deg, rgba(255,255,255,.18), rgba(255,255,255,.06));
+  color: #fff;
+  box-shadow: inset 3px 0 0 #fbbf24;
+}
+.sidebar__link--dashboard i { color: #a78bfa; }
+.sidebar__link--add i    { color: #34d399; }
+.sidebar__link--update i { color: #fbbf24; }
+.sidebar__link--view i   { color: #60a5fa; }
+.sidebar__link--logout i { color: #f87171; }
+
+.sidebar__footer {
+  padding: var(--sp-4) var(--sp-3) var(--sp-1);
+  border-top: 1px solid rgba(255,255,255,.1);
+  margin-top: var(--sp-4);
+}
+.sidebar__user {
+  display: flex; align-items: center; gap: var(--sp-3);
+  padding: var(--sp-2);
+  border-radius: var(--r-md);
+  background: rgba(255,255,255,.06);
+}
+.sidebar__avatar {
+  width: 36px; height: 36px; flex-shrink: 0;
+  display: grid; place-items: center;
+  border-radius: var(--r-md);
+  background: linear-gradient(135deg, #fbbf24, #f472b6);
+  font-weight: 700; font-size: .85rem;
+}
+.sidebar__user-info { display: flex; flex-direction: column; line-height: 1.2; }
+.sidebar__user-name { font-size: .82rem; font-weight: 700; }
+.sidebar__user-role {
+  font-size: .68rem; font-weight: 600;
+  color: #a5b4fc; letter-spacing: .04em; text-transform: uppercase;
+}
+
+/* ---------- MAIN WRAPPER ---------- */
+.app {
+  margin-left: var(--sidebar-w);
+  min-height: 100vh;
+  display: flex; flex-direction: column;
+  transition: margin-left var(--t-slow);
+}
+
+/* ---------- TOPBAR ---------- */
+.topbar {
+  position: sticky; top: 0;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: var(--sp-4) var(--sp-8);
+  background: rgba(255,255,255,.85);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--c-border);
+  z-index: var(--z-topbar);
+}
+.topbar__left { display: flex; align-items: center; gap: var(--sp-4); }
+.topbar__title {
+  font-size: 1.15rem; font-weight: 700;
+  letter-spacing: -.02em; margin: 0;
+}
+.topbar__title small {
+  display: block;
+  margin-top: 2px;
+  font-size: .75rem; font-weight: 500;
+  color: var(--c-text-secondary);
+}
+.topbar__pill {
+  display: inline-flex; align-items: center; gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--r-pill);
+  background: var(--c-primary-light);
+  border: 1px solid var(--c-border-hover);
+  color: var(--c-primary);
+  font-size: .78rem; font-weight: 700;
+}
+.topbar__menu-btn {
+  display: none;
+  padding: var(--sp-1);
+  border: none; background: none; cursor: pointer;
+  border-radius: var(--r-sm);
+  font-size: 1.3rem;
+}
+
+/* ---------- CONTENT ---------- */
+.content {
+  flex: 1;
+  width: 100%;
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding: var(--sp-8);
+}
+.content--narrow { max-width: 960px; }
+.content--medium { max-width: 1100px; }
+
+/* ---------- OVERLAY (mobile) ---------- */
+.overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(15,15,30,.5);
+  backdrop-filter: blur(2px);
+  z-index: var(--z-overlay);
+}
+.overlay.is-visible { display: block; }
+
+/* ---------- RESPONSIVE ---------- */
+@media (max-width: 991.98px) {
+  .sidebar { transform: translateX(-100%); }
+  .sidebar.is-open { transform: translateX(0); }
+  .app { margin-left: 0; }
+  .topbar { padding: var(--sp-3) var(--sp-5); }
+  .topbar__menu-btn { display: inline-flex; }
+  .content { padding: var(--sp-5); }
+}
+
+/* NEW: tighter phone spacing + safe tap targets */
+@media (max-width: 575.98px) {
+  .topbar {
+    padding: var(--sp-3) var(--sp-4);
+    flex-wrap: wrap;
+    gap: var(--sp-2);
+  }
+  .topbar__title { font-size: 1rem; }
+  .topbar__title small { font-size: .7rem; }
+  .topbar__pill { font-size: .68rem; padding: 4px 10px; }
+
+  .content { padding: var(--sp-4) var(--sp-3); }
+
+  /* Sidebar becomes a drawer with breathing room */
+  .sidebar {
+    width: min(85vw, 300px);
+    padding: var(--sp-5) var(--sp-4);
+  }
+}

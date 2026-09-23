@@ -2,341 +2,44 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#CCCCFF">
     <title>JustBuyIt — Product Gallery</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg-wash: #CCCCFF;
-            --bg-wash-soft: #E4E4FB;
-            --surface: #ffffff;
-            --ink: #23213a;
-            --ink-muted: #6b6a85;
-            --brand: #4f46e5;
-            --brand-dark: #3730a3;
-            --price: #0f9d70;
-            --danger-bg: #fee2e2;
-            --danger: #ef4444;
-            --danger-dark: #991b1b;
-            --border: #e7e6f5;
-            --radius-lg: 18px;
-            --radius-md: 12px;
-            --shadow: 0 10px 30px rgba(79, 70, 229, 0.10);
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-
-        body {
-            background: linear-gradient(180deg, var(--bg-wash) 0px, var(--bg-wash) 260px, #f6f6fc 260px, #f6f6fc 100%);
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            color: var(--ink);
-        }
-
-        a { color: inherit; }
-
-        /* ---------- Header ---------- */
-        header {
-            position: sticky;
-            top: 0;
-            z-index: 20;
-            backdrop-filter: blur(8px);
-        }
-
-        .navbar {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 14px 40px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: rgba(255, 255, 255, 0.75);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border-radius: 0 0 18px 18px;
-        }
-
-        .navbar-brand {
-            font-size: 1.4rem;
-            font-weight: 800;
-            letter-spacing: -0.02em;
-            color: var(--ink);
-        }
-        .navbar-brand span { color: var(--brand-dark); }
-
-        .nav-links {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .nav-link {
-            text-decoration: none;
-            color: #3d3c5c;
-            font-weight: 600;
-            font-size: 0.95rem;
-            padding: 9px 16px;
-            border-radius: 20px;
-            transition: background-color 0.15s ease;
-        }
-        .nav-link:hover { background-color: rgba(255,255,255,0.6); }
-
-        .cart-link {
-            position: relative;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .cart-badge {
-            background: var(--brand-dark);
-            color: #fff;
-            font-size: 0.7rem;
-            font-weight: 700;
-            min-width: 18px;
-            height: 18px;
-            border-radius: 999px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0 5px;
-        }
-
-        .btn-logout {
-            background: var(--danger-bg);
-            color: var(--danger);
-            border: none;
-            padding: 9px 18px;
-            border-radius: 20px;
-            font-weight: 700;
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: 0.15s ease;
-        }
-        .btn-logout:hover { background: #fca5a5; color: var(--danger-dark); }
-
-        /* ---------- Hero ---------- */
-
-        .hero {
-            z-index: 18;
-            backdrop-filter: blur(8px);
-            max-width: 1200px;
-            margin: 30px auto 0 auto;
-            padding: 20px 40px 50px 40px;
-        }
-
-        .hero h1 {
-            font-size: 2.4rem;
-            font-weight: 800;
-            letter-spacing: -0.03em;
-            line-height: 1.15;
-            max-width: 640px;
-            color: var(--ink);
-        }
-
-        .hero p.sub {
-            margin-top: 12px;
-            color: #4a486a;
-            font-size: 1.05rem;
-            max-width: 520px;
-        }
-
-        .search-row {
-            margin-top: 26px;
-            display: flex;
-            gap: 10px;
-            max-width: 560px;
-        }
-
-        #searchInput {
-            flex: 1;
-            padding: 14px 20px;
-            border-radius: 14px;
-            border: 1px solid transparent;
-            box-shadow: 0 6px 18px rgba(55, 48, 163, 0.12);
-            font-size: 1rem;
-            font-family: inherit;
-            outline: none;
-            background: var(--surface);
-        }
-        #searchInput:focus { border-color: var(--brand); }
-
-        /* ---------- Category chips ---------- */
-        .category-row {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 40px 10px 40px;
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .chip {
-            border: 1px solid var(--border);
-            background: var(--surface);
-            color: var(--ink-muted);
-            padding: 8px 16px;
-            border-radius: 999px;
-            font-size: 0.88rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.15s ease;
-        }
-        .chip:hover { border-color: var(--brand); color: var(--brand-dark); }
-        .chip.active { background: var(--brand); border-color: var(--brand); color: #fff; }
-
-        /* ---------- Grid & Cards ---------- */
-        main {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px 40px 80px 40px;
-        }
-
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-            gap: 24px;
-        }
-
-        .card {
-            background: var(--surface);
-            border-radius: var(--radius-lg);
-            overflow: hidden;
-            box-shadow: var(--shadow);
-            cursor: pointer;
-            border: 1px solid var(--border);
-            transition: transform 0.18s ease, box-shadow 0.18s ease;
-            display: flex;
-            flex-direction: column;
-        }
-        .card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 16px 34px rgba(79, 70, 229, 0.16);
-        }
-
-        .img-container {
-            height: 190px;
-            width: 100%;
-            background: #f1f0fb;
-            position: relative;
-        }
-        .img-container img { width: 100%; height: 100%; object-fit: cover; display: block; }
-
-        .category-tag {
-            position: absolute;
-            top: 12px;
-            left: 12px;
-            background: rgba(255,255,255,0.92);
-            color: var(--brand-dark);
-            font-size: 0.72rem;
-            font-weight: 700;
-            padding: 4px 10px;
-            border-radius: 999px;
-        }
-
-        .content { padding: 18px 20px 20px 20px; flex: 1; display: flex; flex-direction: column; gap: 6px; }
-
-        .content h3 {
-            font-size: 1.05rem;
-            font-weight: 700;
-            color: var(--ink);
-            line-height: 1.3;
-        }
-
-        .unit-note { font-size: 0.82rem; color: var(--ink-muted); }
-
-        .price-row {
-            margin-top: 8px;
-            display: flex;
-            align-items: baseline;
-            justify-content: space-between;
-        }
-
-        .price { color: var(--price); font-weight: 800; font-size: 1.2rem; }
-
-        .add-btn {
-            background: var(--brand);
-            color: #fff;
-            border: none;
-            padding: 8px 14px;
-            border-radius: 10px;
-            font-weight: 700;
-            font-size: 0.85rem;
-            cursor: pointer;
-            transition: background-color 0.15s ease;
-        }
-        .add-btn:hover { background: var(--brand-dark); }
-
-        /* ---------- Empty / loading states ---------- */
-        .state-message {
-            grid-column: 1 / -1;
-            text-align: center;
-            padding: 70px 20px;
-            color: var(--ink-muted);
-        }
-        .state-message h3 { color: var(--ink); font-size: 1.15rem; margin-bottom: 6px; }
-
-        /* ---------- Footer ---------- */
-        footer {
-            border-top: 1px solid var(--border);
-            padding: 30px 40px;
-            text-align: center;
-            color: var(--ink-muted);
-            font-size: 0.85rem;
-        }
-
-        @media (max-width: 640px) {
-            .navbar, .hero, .category-row, main, footer { padding-left: 20px; padding-right: 20px; }
-            .hero h1 { font-size: 1.8rem; }
-        }
-
-        /* ---------- Pagination ---------- */
-        .pagination {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 8px;
-            margin-top: 40px;
-            flex-wrap: wrap;
-        }
-
-        .pagination button {
-            border: 1px solid var(--border);
-            background: var(--surface);
-            color: var(--ink);
-            min-width: 40px;
-            height: 40px;
-            padding: 0 12px;
-            border-radius: 10px;
-            font-weight: 600;
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: 0.15s ease;
-        }
-
-        .pagination button:hover:not(:disabled) {
-            border-color: var(--brand);
-            color: var(--brand-dark);
-        }
-
-        .pagination button.active {
-            background: var(--brand);
-            border-color: var(--brand);
-            color: #fff;
-        }
-
-        .pagination button:disabled {
-            opacity: 0.45;
-            cursor: not-allowed;
-        }
-
-        .page-info {
-            color: var(--ink-muted);
-            font-size: 0.88rem;
-            margin: 0 8px;
-        }
-    </style>
+    <link rel="stylesheet" href="/css/users/pages/home.css">
+    <link rel="stylesheet" href="/css/users/common.css">
 </head>
+
+<!-- ============ LOGIN PROMPT MODAL ============ -->
+<div class="auth-modal-backdrop" id="authModal" aria-hidden="true">
+    <div class="auth-modal" role="dialog" aria-modal="true" aria-labelledby="authModalTitle">
+        <button class="auth-modal-close" onclick="closeAuthModal()" aria-label="Close">×</button>
+
+        <div class="auth-modal-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 15v2m-6 4h12a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2Zm10-10V7a4 4 0 0 0-8 0v4h8Z"
+                      stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </div>
+
+        <h2 id="authModalTitle">Sign in to continue</h2>
+        <p class="auth-modal-msg">
+            You need an account to add items to your cart and check out.
+        </p>
+
+        <div class="auth-modal-actions">
+            <a href="/LoginForm.html" class="auth-btn auth-btn-primary">Log in</a>
+            <a href="/RegistrationForm.html" class="auth-btn auth-btn-secondary">Create account</a>
+        </div>
+
+        <button class="auth-modal-later" onclick="closeAuthModal()">
+            Continue browsing
+        </button>
+    </div>
+</div>
+
 <body>
 
 <header>
@@ -345,26 +48,38 @@
         <div class="nav-links">
             <a href="/LoginForm.html" class="nav-link">Login</a>
             <a href="/RegistrationForm.html" class="nav-link">Register</a>
-            <a href="/ShoppingCart.html" class="nav-link cart-link">Cart <span class="cart-badge" id="cartBadge">0</span></a>
+            <a href="/users/ShoppingCart.html" class="nav-link cart-link" aria-label="Cart" id="cartNavLink">
+                <span class="cart-icon-wrap">
+                    <svg class="cart-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <path d="M3 3h2.2l2.1 12.4a2 2 0 0 0 1.97 1.6h9.36a2 2 0 0 0 1.96-1.55L22 8H6.2"
+                              stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                        <circle cx="9" cy="20" r="1.6" fill="currentColor"/>
+                        <circle cx="18" cy="20" r="1.6" fill="currentColor"/>
+                    </svg>
+                    <span class="cart-badge" id="cartBadge" data-empty="true">0</span>
+                </span>
+                            <span class="cart-text">Cart</span>
+            </a>
             <button class="btn-logout" onclick="logout()">Logout</button>
         </div>
     </nav>
 </header>
-    <div class="hero">
-        <h1>Everything on your list, in one place.</h1>
-        <p class="sub">Browse fresh stock across every category and check out in a couple of clicks.</p>
-        <div class="search-row">
-            <input type="text" id="searchInput" placeholder="Search products by name..." onkeyup="filterProducts()">
-        </div>
 
-        <div class="category-row" id="categoryRow">
+<div class="hero">
+    <h1>Everything on your list, in one place.</h1>
+    <p class="sub">Browse fresh stock across every category and check out in a couple of clicks.</p>
+    <div class="search-row">
+        <input type="text" id="searchInput" placeholder="Search products by name..." onkeyup="filterProducts()">
     </div>
+    <div class="category-wrapper">
+        <button class="scroll-btn left" onclick="scrollCats(-1)">‹</button>
+        <div class="category-row" id="categoryRow"></div>
+        <button class="scroll-btn right" onclick="scrollCats(1)">›</button>
+    </div>
+</div>
 
 <main>
-    <div class="grid" id="productList">
-        <div class="state-message"><h3>Loading products…</h3></div>
-    </div>
-
+    <div class="grid" id="productList"></div>
     <div class="pagination" id="pagination"></div>
 </main>
 
@@ -373,92 +88,136 @@
 </footer>
 
 <script>
-
+    // ---------- Config ----------
     const API_BASE = "http://localhost:8080";
     const PAGE_SIZE = 15;
+    const DRAG_THRESHOLD = 6;
+
+    // ---------- State ----------
     let activeCategory = "All";
     let currentPage = 0;
     let totalPages = 0;
     let currentSearchTerm = "";
     let availableCategories = [];
+    let isGuestUser = null;
 
+    // ---------- Init year ----------
     document.getElementById("year").innerText = new Date().getFullYear();
 
-        function getCategoryName(p) {
-            return p.category?.name || p.categoryName || null;
-        }
-        function getUnit(p) {
-            return p.quantityUnit || p.qunatityUnit || null;
-        }
+    // ---------- Helpers ----------
+    function getCategoryName(p) {
+        const c = p.category;
+        if (!c) return p.categoryName || null;
+        if (typeof c === "string") return c;
+        return c.name || null;
+    }
 
-    // Fetch a single page from the server
+    function getUnit(p) {
+        return p.quantityUnit || p.qunatityUnit || "";
+    }
+
+    // ---------- Skeleton: render N placeholder cards ----------
+    function renderSkeletons(count = PAGE_SIZE) {
+        const container = document.getElementById("productList");
+        container.innerHTML = "";
+        for (let i = 0; i < count; i++) {
+            const skeleton = document.createElement("div");
+            skeleton.className = "card skeleton-card";
+            skeleton.innerHTML = `
+                <div class="img-container skeleton-img"></div>
+                <div class="content">
+                    <div class="skeleton-line skeleton-title"></div>
+                    <div class="skeleton-line skeleton-sub"></div>
+                    <div class="price-row">
+                        <div class="skeleton-line skeleton-price"></div>
+                        <div class="skeleton-btn"></div>
+                    </div>
+                </div>
+            `;
+            container.appendChild(skeleton);
+        }
+    }
+
+    // ---------- Products: fetch one page ----------
     function loadProducts(page = 0, searchTerm = "", category = activeCategory) {
         currentPage = page;
         currentSearchTerm = searchTerm;
 
-        const container = document.getElementById("productList");
-        container.innerHTML = `<div class="state-message"><h3>Loading products…</h3></div>`;
+        // Show skeletons immediately (but keep the row height stable)
+        renderSkeletons(PAGE_SIZE);
+
+        // Hide pagination while loading to avoid stale buttons
+        document.getElementById("pagination").innerHTML = "";
 
         const params = new URLSearchParams({ page, size: PAGE_SIZE });
         if (category && category !== "All") params.set("category", category);
 
         const url = searchTerm
-            ? `${API_BASE}/products/search?keyword=${encodeURIComponent(searchTerm)}&${params}`
-            : `${API_BASE}/products?${params}`;
+            ? `${API_BASE}/products/search?keyword=${encodeURIComponent(searchTerm)}&${params.toString()}`
+            : `${API_BASE}/products?${params.toString()}`;
 
-        fetch(url)
-            .then(res => res.json())
+        fetch(url, { credentials: "include" })
+            .then(res => {
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                return res.json();
+            })
             .then(data => {
-                displayProducts(data.content);   // no client-side filtering now
-                renderPagination(data);
+                const content = data.content || data;
+                displayProducts(content);
+                if (data.totalPages !== undefined) {
+                    renderPagination(data);
+                }
             })
             .catch(err => {
                 console.error("Failed to load products:", err);
+                const container = document.getElementById("productList");
                 container.innerHTML =
-                    `<div class="state-message"><h3>Couldn't load products</h3><p>Check your connection and try again.</p></div>`;
+                    `<div class="state-message">
+                        <h3>Couldn't load products</h3>
+                        <p>${err.message}</p>
+                     </div>`;
                 document.getElementById("pagination").innerHTML = "";
             });
     }
 
+    // ---------- Categories: render chips ----------
     function renderCategories() {
         const row = document.getElementById("categoryRow");
         row.innerHTML = "";
+
         availableCategories.forEach(cat => {
             const chip = document.createElement("button");
             chip.className = "chip" + (cat === activeCategory ? " active" : "");
             chip.innerText = cat;
-            chip.onclick = () => {
-                activeCategory = cat;
-                loadProducts(0, currentSearchTerm, cat);
-            };
+            chip.dataset.category = cat;
             row.appendChild(chip);
         });
+
+        setTimeout(updateArrows, 50);
+        requestAnimationFrame(updateArrows);
     }
 
+    // ---------- Products: render cards ----------
     function displayProducts(products) {
         const container = document.getElementById("productList");
         container.innerHTML = "";
 
-        if (products.length === 0) {
-            container.innerHTML = `<div class="state-message"><h3>No products found</h3><p>Try a different search term or category.</p></div>`;
+        if (!products || products.length === 0) {
+            container.innerHTML =
+                `<div class="state-message">
+                    <h3>No products found</h3>
+                    <p>Try a different search term or category.</p>
+                 </div>`;
             return;
         }
 
-        // Apply client-side category filter on top of the page's results
-        const visible = activeCategory === "All"
-            ? products
-            : products.filter(p => getCategoryName(p) === activeCategory);
-
-        if (visible.length === 0) {
-            container.innerHTML = `<div class="state-message"><h3>No products found</h3><p>Try a different search term or category.</p></div>`;
-            return;
-        }
-
-        visible.forEach(p => {
-            card = document.createElement("div");
+        products.forEach(p => {
+            const card = document.createElement("div");
             card.className = "card";
             card.onclick = (e) => {
-                if (!e.target.closest("button")) window.location.href = `OneProduct.html?id=${p.id}`;
+                if (!e.target.closest("button")) {
+                    window.location.href = `/OneProduct.html?id=${p.id}`;
+                }
             };
 
             const imgSrc = p.imagefile
@@ -471,7 +230,7 @@
 
             card.innerHTML = `
                 <div class="img-container">
-                    <img src="${imgSrc}" alt="${p.name}">
+                    <img src="${imgSrc}" alt="${p.name}" onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
                     ${categoryName ? `<span class="category-tag">${categoryName}</span>` : ""}
                 </div>
                 <div class="content">
@@ -479,136 +238,451 @@
                     <span class="unit-note">${p.quantity ?? ""}${unitLabel} available</span>
                     <div class="price-row">
                         <span class="price">₹${p.price}</span>
-                            <button class="add-btn" onclick="addToCart(event, ${p.id})">Add to cart</button>
+                        <button class="add-btn" onclick="addToCart(event, ${p.id})">Add to cart</button>
                     </div>
                 </div>
-                `;
+            `;
             container.appendChild(card);
         });
     }
 
-        // ---------- Pagination UI ----------
-        function renderPagination(pageData) {
-            const el = document.getElementById("pagination");
-            el.innerHTML = "";
+    // ---------- Pagination UI ----------
+    function renderPagination(pageData) {
+        const el = document.getElementById("pagination");
+        el.innerHTML = "";
 
-            totalPages = pageData.totalPages;
-            if (totalPages <= 1) return;
+        totalPages = pageData.totalPages;
+        if (totalPages <= 1) return;
 
-            const makeBtn = (label, targetPage, opts = {}) => {
-                const btn = document.createElement("button");
-                btn.innerText = label;
-                if (opts.active) btn.classList.add("active");
-                if (opts.disabled) btn.disabled = true;
-                    btn.onclick = () => {
-                        if (!opts.disabled && targetPage !== currentPage) {
-                            loadProducts(targetPage, currentSearchTerm, activeCategory);
-                            window.scrollTo({ top: 0, behavior: "smooth" });
-                        }
-                    };
-                return btn;
+        const makeBtn = (label, targetPage, opts = {}) => {
+            const btn = document.createElement("button");
+            btn.innerText = label;
+            if (opts.active) btn.classList.add("active");
+            if (opts.disabled) btn.disabled = true;
+            btn.onclick = () => {
+                if (!opts.disabled && targetPage !== currentPage) {
+                    loadProducts(targetPage, currentSearchTerm, activeCategory);
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                }
             };
+            return btn;
+        };
 
-            // Prev
-            el.appendChild(makeBtn("‹", currentPage - 1, { disabled: pageData.first }));
+        el.appendChild(makeBtn("‹", currentPage - 1, { disabled: pageData.first }));
 
-            // Page numbers (with ellipsis for large ranges)
-            range = pageRange(currentPage, totalPages);
-            range.forEach(item => {
-                if (item === "...") {
-                    const span = document.createElement("span");
-                    span.className = "page-info";
-                    span.innerText = "…";
-                    el.appendChild(span);
-                } else {
-                    el.appendChild(makeBtn(String(item + 1), item, { active: item === currentPage }));
-                }
-            });
-
-            // Next
-            el.appendChild(makeBtn("›", currentPage + 1, { disabled: pageData.last }));
-
-            // "Page X of Y" info
-            const info = document.createElement("span");
-            info.className = "page-info";
-            info.innerText = `Page ${currentPage + 1} of ${totalPages}`;
-            el.appendChild(info);
-        }
-
-        // Build a compact page list like [0, 1, 2, '...', 8, 9]
-        function pageRange(current, total) {
-            const delta = 2;
-            const range = [];
-            for (let i = 0; i < total; i++) {
-                if (i === 0 || i === total - 1 || (i >= current - delta && i <= current + delta)) {
-                    range.push(i);
-                } else if (range[range.length - 1] !== "...") {
-                    range.push("...");
-                }
-            }
-            return range;
-        }
-
-        // ---------- Filtering ----------
-        function applyFilters() {
-            // Any filter change resets to page 0
-            loadProducts(0, document.getElementById("searchInput").value.trim().toLowerCase(), activeCategory);
-        }
-
-        function filterProducts() {
-            applyFilters();
-        }
-
-        // ---------- Cart ----------
-        function addToCart(event, productId) {
-            event.stopPropagation();
-            fetch(`${API_BASE}/users/cart/items`, {
-                method: "POST",
-                credentials: "include",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ productId: productId, quantity: 1 })
-            })
-            .then(res => {
-               if (!res.ok) throw new Error("Add to cart failed");
-                    return res.json();
-            })
-            .then(() => refreshCartBadge())
-            .catch(err => console.error("Add to cart error:", err));
-        }
-
-        function refreshCartBadge() {
-            fetch(`${API_BASE}/users/cart`, { credentials: "include" })
-                .then(res => res.json())
-                .then(cart => {
-                    const count = (cart.items || []).reduce((sum, item) => sum + (item.quantity || 0), 0);
-                    document.getElementById("cartBadge").innerText = count;
-                })
-                .catch(() => {});
-        }
-
-        function logout() {
-            try {
-                fetch("/auth/v1/logout", { method: "POST" });
-            } catch (error) {
-                console.error("Logout error:", error);
-            } finally {
-                window.location.href = "LoginForm.html";
-            }
-        }
-
-        // Initial load
-        fetch(`${API_BASE}/categories`)
-        .then(r => r.json())
-        .then(cats => { availableCategories = ["All", ...cats]; renderCategories(); });
-
-        loadProducts(0);
-        refreshCartBadge();
-
-        window.addEventListener("pageshow", function (event) {
-            if (event.persisted) {
-                window.location.reload();
+        const range = pageRange(currentPage, totalPages);
+        range.forEach(item => {
+            if (item === "...") {
+                const span = document.createElement("span");
+                span.className = "page-info";
+                span.innerText = "…";
+                el.appendChild(span);
+            } else {
+                el.appendChild(makeBtn(String(item + 1), item, { active: item === currentPage }));
             }
         });
+
+        el.appendChild(makeBtn("›", currentPage + 1, { disabled: pageData.last }));
+
+        const info = document.createElement("span");
+        info.className = "page-info";
+        info.innerText = `Page ${currentPage + 1} of ${totalPages}`;
+        el.appendChild(info);
+    }
+
+    function pageRange(current, total) {
+        const delta = 2;
+        const range = [];
+        for (let i = 0; i < total; i++) {
+            if (i === 0 || i === total - 1 || (i >= current - delta && i <= current + delta)) {
+                range.push(i);
+            } else if (range[range.length - 1] !== "...") {
+                range.push("...");
+            }
+        }
+        return range;
+    }
+
+    // ---------- Filtering ----------
+    function filterProducts() {
+        loadProducts(0, document.getElementById("searchInput").value.trim(), activeCategory);
+    }
+
+    // ---------- Category arrows ----------
+    function scrollCats(dir) {
+        const row = document.getElementById("categoryRow");
+        row.scrollBy({ left: dir * 260, behavior: "smooth" });
+    }
+
+    function updateArrows() {
+        const row   = document.getElementById("categoryRow");
+        const left  = document.querySelector(".scroll-btn.left");
+        const right = document.querySelector(".scroll-btn.right");
+        if (!left || !right) return;
+
+        const atStart  = row.scrollLeft <= 4;
+        const atEnd    = row.scrollLeft + row.clientWidth >= row.scrollWidth - 4;
+        const noScroll = row.scrollWidth <= row.clientWidth + 4;
+
+        if (noScroll) {
+            left.style.opacity  = "0";
+            right.style.opacity = "0";
+            left.style.pointerEvents  = "none";
+            right.style.pointerEvents = "none";
+            return;
+        }
+
+        left.style.opacity  = atStart ? "0" : "1";
+        right.style.opacity = atEnd   ? "0" : "1";
+        left.style.pointerEvents  = atStart ? "none" : "auto";
+        right.style.pointerEvents = atEnd   ? "none" : "auto";
+    }
+
+    // ---------- Cart ----------
+    function addToCart(event, productId) {
+        event.stopPropagation();
+        event.preventDefault();
+
+        const btn = event.currentTarget;
+        if (!btn || btn.classList.contains("loading") || btn.classList.contains("added")) return;
+
+        spawnRipple(btn, event);
+        btn.classList.add("loading");
+
+        fetch(`${API_BASE}/users/cart/items`, {
+            method: "POST",
+            credentials: "include",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"        // <-- forces JSON 401 from entry point
+            },
+            body: JSON.stringify({ productId: productId, quantity: 1 })
+        })
+            .then(res => {
+                if (isUnauthorized(res)) {
+                    const err = new Error("UNAUTHORIZED");
+                    err.code = "UNAUTHORIZED";
+                    throw err;
+                }
+                if (!res.ok) throw new Error("Add to cart failed");
+                return res.json();
+            })
+            .then(() => {
+                btn.classList.remove("loading");
+                btn.classList.add("added");
+                const originalText = btn.innerText;
+                btn.innerText = "✓ Added";
+
+                const card = btn.closest(".card");
+                if (card) {
+                    card.classList.add("pulse");
+                    setTimeout(() => card.classList.remove("pulse"), 700);
+                }
+
+                refreshCartBadge(true);
+
+                setTimeout(() => {
+                    btn.classList.remove("added");
+                    btn.innerText = originalText || "Add to cart";
+                }, 1400);
+            })
+            .catch(err => {
+                console.error("Add to cart error:", err);
+                btn.classList.remove("loading");
+
+                if (err.code === "UNAUTHORIZED") {
+                    // Guest → show our styled modal, not the raw login page
+                    btn.innerText = "Add to cart";
+                    openAuthModal();
+                    return;
+                }
+
+                btn.innerText = "Try again";
+                setTimeout(() => { btn.innerText = "Add to cart"; }, 1200);
+            });
+    }
+
+    // Ripple: places a circle where the user clicked inside the button
+    function spawnRipple(btn, event) {
+        const rect = btn.getBoundingClientRect();
+        const ripple = document.createElement("span");
+        ripple.className = "ripple";
+        const size = Math.max(rect.width, rect.height) * 2;
+        ripple.style.width = ripple.style.height = `${size}px`;
+        ripple.style.left = `${event.clientX - rect.left - size / 2}px`;
+        ripple.style.top  = `${event.clientY - rect.top  - size / 2}px`;
+        btn.appendChild(ripple);
+        setTimeout(() => ripple.remove(), 600);
+    }
+
+    function refreshCartBadge(animate = false) {
+        fetch(`${API_BASE}/users/cart`, {
+            credentials: "include",
+            headers: { "Accept": "application/json" }
+        })
+            .then(res => {
+                if (isUnauthorized(res)) {
+                isGuestUser = true;
+                return null;
+            }
+            if (!res.ok) return null;
+            isGuestUser = false;
+            return res.json();
+            })
+            .then(cart => {
+                if (!cart) return;
+                const badge = document.getElementById("cartBadge");
+                const count = (cart.items || []).reduce((sum, item) => sum + (item.quantity || 0), 0);
+
+                const changed = badge.innerText !== String(count);
+                badge.innerText = count;
+                badge.dataset.empty = count === 0 ? "true" : "false";
+
+                if (animate && changed && count > 0) {
+                    badge.classList.remove("pop");
+                    void badge.offsetWidth;
+                    badge.classList.add("pop");
+                    setTimeout(() => badge.classList.remove("pop"), 500);
+                }
+            })
+            .catch(() => {});
+    }
+
+    // ---------- Logout ----------
+    function logout() {
+        fetch("/auth/v1/logout", { method: "POST" })
+            .catch(err => console.error("Logout error:", err))
+            .finally(() => { window.location.href = "/LoginForm.html"; });
+    }
+
+    // ============================================================
+    //  DRAG-TO-SCROLL + CLICK-TO-FILTER FOR CATEGORY ROW
+    // ============================================================
+    (function setupCategoryDragAndClick() {
+        const row = document.getElementById("categoryRow");
+
+        let isPointerDown = false;
+        let isDragging = false;
+        let startX = 0;
+        let startScrollLeft = 0;
+        let pointerId = null;
+        let draggedChip = null;
+        let suppressNextClick = false;
+
+        function onPointerDown(e) {
+            if (e.pointerType === "mouse" && e.button !== 0) return;
+            isPointerDown = true;
+            isDragging = false;
+            startX = e.clientX;
+            startScrollLeft = row.scrollLeft;
+            pointerId = e.pointerId;
+            draggedChip = e.target.closest(".chip");
+            try { row.setPointerCapture(pointerId); } catch (_) {}
+        }
+
+        function onPointerMove(e) {
+            if (!isPointerDown) return;
+            const dx = e.clientX - startX;
+
+            if (!isDragging && Math.abs(dx) > DRAG_THRESHOLD) {
+                isDragging = true;
+                row.classList.add("dragging");
+                row.style.cursor = "grabbing";
+            }
+
+            if (isDragging) {
+                row.scrollLeft = startScrollLeft - dx;
+                e.preventDefault();
+            }
+        }
+
+        function onPointerUp(e) {
+            if (!isPointerDown) return;
+
+            const wasDragging = isDragging;
+            const chip = draggedChip;
+
+            isPointerDown = false;
+            isDragging = false;
+            draggedChip = null;
+            row.classList.remove("dragging");
+            row.style.cursor = "";
+
+            try { row.releasePointerCapture(pointerId); } catch (_) {}
+            pointerId = null;
+
+            if (wasDragging) {
+                suppressNextClick = true;
+                setTimeout(() => { suppressNextClick = false; }, 0);
+            } else if (chip) {
+                const cat = chip.dataset.category;
+                if (cat && cat !== activeCategory) {
+                    activeCategory = cat;
+                    row.querySelectorAll(".chip").forEach(c => {
+                        c.classList.toggle("active", c.dataset.category === cat);
+                    });
+                    loadProducts(0, currentSearchTerm, cat);
+                }
+            }
+        }
+
+        row.addEventListener("click", (e) => {
+            if (suppressNextClick) {
+                e.preventDefault();
+                e.stopPropagation();
+                suppressNextClick = false;
+            }
+        }, true);
+
+        row.addEventListener("pointerdown", onPointerDown);
+        row.addEventListener("pointermove", onPointerMove);
+        row.addEventListener("pointerup", onPointerUp);
+        row.addEventListener("pointercancel", onPointerUp);
+        row.addEventListener("dragstart", (e) => e.preventDefault());
+    })();
+
+    // ---------- Wheel: horizontal scroll ----------
+    const categoryRowEl = document.getElementById("categoryRow");
+    categoryRowEl.addEventListener("scroll", updateArrows);
+    categoryRowEl.addEventListener("wheel", (event) => {
+        if (event.deltaY !== 0) {
+            event.preventDefault();
+            categoryRowEl.scrollLeft += event.deltaY;
+        }
+    }, { passive: false });
+
+    window.addEventListener("resize", updateArrows);
+
+    // ---------- Initial load ----------
+    fetch(`${API_BASE}/products/categories`, { credentials: "include" })
+        .then(r => {
+            if (!r.ok) throw new Error(`HTTP ${r.status}`);
+            return r.json();
+        })
+        .then(cats => {
+            availableCategories = ["All", ...cats];
+            renderCategories();
+        })
+        .catch(err => {
+            console.error("Failed to load categories:", err);
+            availableCategories = ["All"];
+            renderCategories();
+        });
+
+    // Kick off first load → shows skeletons → then real products
+    loadProducts(0);
+    refreshCartBadge();
+
+    // ---------- bfcache reload ----------
+    window.addEventListener("pageshow", function (event) {
+        if (event.persisted) {
+            window.location.reload();
+        }
+    });
+
+    // ---------- Auth Prompt Modal ----------
+    let authModalEl = null;
+
+    function openAuthModal() {
+        authModalEl = authModalEl || document.getElementById("authModal");
+        if (!authModalEl) return;
+
+        setAuthModalLinks();
+
+        authModalEl.classList.add("show");
+        authModalEl.setAttribute("aria-hidden", "false");
+        document.body.style.overflow = "hidden";
+    }
+
+    function closeAuthModal() {
+        authModalEl = authModalEl || document.getElementById("authModal");
+        if (!authModalEl) return;
+        authModalEl.classList.remove("show");
+        authModalEl.setAttribute("aria-hidden", "true");
+        document.body.style.overflow = "";
+    }
+
+    // Close on backdrop click + Escape key
+    document.addEventListener("click", (e) => {
+        if (e.target && e.target.id === "authModal") closeAuthModal();
+    });
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") closeAuthModal();
+    });
+
+    // Helper: detect a 401/403 from a fetch response
+    function isUnauthorized(res) {
+        return res.status === 401 || res.status === 403;
+    }
+
+    // Hide logout if not logged in
+    (function hideLogoutIfGuest() {
+        fetch(`${API_BASE}/users/cart`, {
+            credentials: "include",
+            headers: { "Accept": "application/json" }
+        })
+            .then(res => {
+                const btn = document.querySelector(".btn-logout");
+                if (!btn) return;
+                if (res.status === 401 || res.status === 403) {
+                    btn.style.display = "none";
+                }
+            })
+            .catch(() => {});
+    })();
+
+    // ---------- Navbar Cart: gate for guests ----------
+    (function setupCartNavGate() {
+        const cartLink = document.getElementById("cartNavLink");
+        if (!cartLink) return;
+
+        cartLink.addEventListener("click", (e) => {
+            // Let modifier clicks / middle-click / target=_blank behave normally
+            if (e.ctrlKey || e.metaKey || e.shiftKey || e.altKey || e.button !== 0) return;
+
+            // Fast path: we already know the user is a guest
+            if (isGuestUser === true) {
+                e.preventDefault();
+                openAuthModal();
+                return;
+            }
+
+            // Fast path: we already know the user is logged in
+            if (isGuestUser === false) {
+                return;   // let the browser navigate normally
+            }
+
+            e.preventDefault();
+
+            // Probe the cart endpoint — if we get 401, user is a guest
+            fetch(`${API_BASE}/users/cart`, {
+                credentials: "include",
+                headers: { "Accept": "application/json" }
+            })
+                .then(res => {
+                    if (isUnauthorized(res)) {
+                        openAuthModal();
+                        return;
+                    }
+                    // Logged in (or some other status we can't classify) → just go
+                    window.location.href = cartLink.href;
+                })
+                .catch(() => {
+                    // Network error → let the browser try the navigation
+                    window.location.href = cartLink.href;
+                });
+        });
+    })();
+
+    // In openAuthModal() — before showing
+    function setAuthModalLinks() {
+        const here = encodeURIComponent(location.pathname + location.search);
+        const loginLink = document.querySelector('#authModal .auth-btn-primary');
+        const registerLink = document.querySelector('#authModal .auth-btn-secondary');
+        if (loginLink)    loginLink.href    = `/LoginForm.html?redirect=${here}`;
+        if (registerLink) registerLink.href = `/RegistrationForm.html?redirect=${here}`;
+    }
+
 </script>
 </body>
 </html>

@@ -1,0 +1,526 @@
+:root {
+    --bg-wash: #CCCCFF;
+    --bg-wash-soft: #E4E4FB;
+    --surface: #ffffff;
+    --ink: #23213a;
+    --ink-muted: #6b6a85;
+    --brand: #4f46e5;
+    --brand-dark: #3730a3;
+    --price: #0f9d70;
+    --danger-bg: #fee2e2;
+    --danger: #ef4444;
+    --danger-dark: #991b1b;
+    --border: #e7e6f5;
+    --radius-lg: 20px;
+    --radius-md: 12px;
+    --shadow: 0 10px 30px rgba(79, 70, 229, 0.10);
+}
+
+*{
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background: linear-gradient(180deg, var(--bg-wash) 0px, var(--bg-wash) 160px, #f6f6fc 160px, #f6f6fc 100%);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    color: var(--ink);
+    min-height: 100vh;
+}
+
+a {
+    color: inherit;
+}
+
+/* ---------- Header / Navbar ---------- */
+header {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    backdrop-filter: blur(8px);
+}
+
+.navbar {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 14px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    background: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 0 0 18px 18px;
+}
+
+.navbar-brand {
+    font-size: 1.4rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    flex-shrink: 0;                /* never squash the brand */
+    white-space: nowrap;
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;                  /* allow shrink */
+    overflow-x: auto;              /* scroll if too many links */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+.nav-links::-webkit-scrollbar { display: none; }
+
+.nav-link {
+    text-decoration: none;
+    color: #3d3c5c;
+    font-weight: 600;
+    font-size: 0.95rem;
+    padding: 9px 16px;
+    border-radius: 20px;
+    transition: background-color 0.15s ease;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.6);
+}
+
+/* ---------- Cart link with icon + badge ---------- */
+.cart-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+    padding: 8px 14px;           /* slightly tighter than .nav-link */
+}
+
+.cart-icon-wrap {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+}
+
+.cart-icon {
+    width: 22px;
+    height: 22px;
+    color: currentColor;          /* inherits nav-link color */
+    transition: transform 0.2s ease, color 0.15s ease;
+}
+
+/* Hover: icon wiggles slightly and picks up brand color */
+.cart-link:hover .cart-icon {
+    color: var(--brand-dark);
+    transform: translateY(-1px);
+}
+
+/* Badge sits on the top-right corner of the icon */
+.cart-badge {
+    position: absolute;
+    top: -6px;
+    right: -8px;
+    background: var(--brand-dark);
+    color: #fff;
+    font-size: 0.65rem;
+    font-weight: 700;
+    min-width: 16px;
+    height: 16px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 5px;
+    line-height: 1;
+    border: 2px solid #fff;       /* crisp edge against light navbar */
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+    transition: transform 0.2s ease;
+}
+
+/* Hide the badge when the count is zero (cleaner look) */
+.cart-badge[data-empty="true"] {
+    display: none;
+}
+
+.btn-logout {
+background: var(--danger-bg);
+color: var(--danger);
+border: none;
+padding: 9px 18px;
+border-radius: 20px;
+font-weight: 700;
+font-size: 0.9rem;
+cursor: pointer;
+transition: 0.15s ease;
+}
+
+.btn-logout:hover {
+background: #fca5a5;
+color: var(--danger-dark);
+}
+
+/* ---------- Shared Layout ---------- */
+.page-top {
+z-index: 18;
+backdrop-filter: blur(8px);
+max-width: 1200px;
+margin: 30px auto 0 auto;
+padding: 20px 40px 50px 40px;
+}
+
+main {
+max-width: 1100px;
+margin: 30px auto 80px auto;
+padding: 0 40px;
+}
+
+.back {
+display: inline-flex;
+align-items: center;
+gap: 6px;
+margin-bottom: 20px;
+text-decoration: none;
+color: #4a486a;
+font-weight: 600;
+font-size: 0.92rem;
+}
+
+.back:hover {
+color: var(--brand-dark);
+}
+
+h1.page-title {
+font-size: 1.7rem;
+font-weight: 800;
+letter-spacing: -0.02em;
+margin-bottom: 24px;
+}
+
+/* ---------- Shared Components & States ---------- */
+.category-tag {
+position: absolute;
+background: rgba(255, 255, 255, 0.92);
+color: var(--brand-dark);
+font-weight: 700;
+border-radius: 999px;
+}
+
+.unit-note {
+font-size: 0.82rem;
+color: var(--ink-muted);
+}
+
+.state-message {
+text-align: center;
+padding: 100px 20px;
+color: var(--ink-muted);
+}
+
+.state-message h3 {
+color: var(--ink);
+font-size: 1.15rem;
+margin-bottom: 6px;
+}
+
+.state-message .browse-link {
+display: inline-block;
+margin-top: 16px;
+color: var(--brand);
+font-weight: 700;
+text-decoration: none;
+}
+
+.state-message .browse-link:hover {
+color: var(--brand-dark);
+}
+
+.feedback {
+margin-top: 14px;
+font-size: 0.85rem;
+font-weight: 600;
+text-align: center;
+}
+
+.feedback.error {
+color: var(--danger);
+}
+
+.feedback.success {
+color: var(--price);
+}
+
+/* ---------- Navbar responsive ---------- */
+@media (max-width: 640px) {
+    .navbar {
+        padding: 10px 16px;
+        border-radius: 0 0 14px 14px;
+        gap: 8px;
+    }
+    .navbar-brand {
+        font-size: 1.15rem;
+    }
+    .nav-links {
+        gap: 2px;
+    }
+    .nav-link {
+        padding: 7px 10px;
+        font-size: 0.82rem;
+        border-radius: 14px;
+    }
+    .btn-logout {
+        padding: 7px 12px;
+        font-size: 0.78rem;
+        border-radius: 14px;
+    }
+        .cart-link {
+            padding: 6px 10px;
+            gap: 6px;
+        }
+        .cart-icon-wrap {
+            width: 20px;
+            height: 20px;
+        }
+        .cart-icon {
+            width: 20px;
+            height: 20px;
+        }
+        .cart-badge {
+            min-width: 14px;
+            height: 14px;
+            font-size: 0.58rem;
+            padding: 0 4px;
+            top: -5px;
+            right: -6px;
+            border-width: 1.5px;
+        }
+
+    /* Base main padding on mobile */
+    main {
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+}
+
+@media (max-width: 420px) {
+    /* Hide Register link on very small screens to save space
+       (users can still access it from the Login page) */
+    .nav-links a[href="/RegistrationForm.html"] {
+        display: none;
+    }
+    .navbar-brand {
+        font-size: 1.05rem;
+    }
+}
+/* On very small phones, hide the word "Cart" — the icon speaks for itself */
+    @media (max-width: 420px) {
+        .cart-text {
+            display: none;
+        }
+        .cart-link {
+            padding: 6px 8px;
+            gap: 0;
+        }
+    }
+
+    @keyframes cart-wiggle {
+        0%   { transform: rotate(0deg);   }
+        25%  { transform: rotate(-8deg);  }
+        50%  { transform: rotate(6deg);   }
+        75%  { transform: rotate(-3deg);  }
+        100% { transform: rotate(0deg);   }
+    }
+
+    .cart-link:hover .cart-icon {
+        animation: cart-wiggle 0.4s ease-in-out;
+    }
+
+/* ============================================================
+   AUTH PROMPT MODAL
+   ============================================================ */
+
+.auth-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(35, 33, 58, 0.45);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    z-index: 1000;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.22s ease;
+}
+
+.auth-modal-backdrop.show {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.auth-modal {
+    position: relative;
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 24px 60px rgba(35, 33, 58, 0.28);
+    border: 1px solid var(--border);
+    max-width: 420px;
+    width: 100%;
+    padding: 38px 32px 28px 32px;
+    text-align: center;
+
+    transform: translateY(14px) scale(0.97);
+    opacity: 0;
+    transition: transform 0.26s cubic-bezier(0.34, 1.4, 0.64, 1),
+                opacity 0.22s ease;
+}
+
+.auth-modal-backdrop.show .auth-modal {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+}
+
+.auth-modal-close {
+    position: absolute;
+    top: 12px;
+    right: 14px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    color: var(--ink-muted);
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+.auth-modal-close:hover {
+    background: #f1f0fb;
+    color: var(--ink);
+}
+
+.auth-modal-icon {
+    width: 62px;
+    height: 62px;
+    border-radius: 50%;
+    background: #f0efff;
+    color: var(--brand-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 18px auto;
+}
+.auth-modal-icon svg {
+    width: 30px;
+    height: 30px;
+}
+
+.auth-modal h2 {
+    font-size: 1.35rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    margin-bottom: 10px;
+}
+
+.auth-modal-msg {
+    color: var(--ink-muted);
+    font-size: 0.94rem;
+    line-height: 1.55;
+    margin-bottom: 26px;
+    padding: 0 6px;
+}
+
+.auth-modal-actions {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 6px;
+}
+
+.auth-btn {
+    flex: 1;
+    padding: 13px 18px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 0.94rem;
+    text-decoration: none;
+    text-align: center;
+    transition: background-color 0.15s ease, transform 0.12s ease,
+                border-color 0.15s ease, color 0.15s ease;
+    cursor: pointer;
+    border: 1px solid transparent;
+}
+.auth-btn:active {
+    transform: scale(0.97);
+}
+
+.auth-btn-primary {
+    background: var(--brand);
+    color: #fff;
+}
+.auth-btn-primary:hover {
+    background: var(--brand-dark);
+}
+
+.auth-btn-secondary {
+    background: var(--surface);
+    color: var(--brand-dark);
+    border-color: var(--border);
+}
+.auth-btn-secondary:hover {
+    border-color: var(--brand);
+    background: #f8f7ff;
+}
+
+.auth-modal-later {
+    background: none;
+    border: none;
+    color: var(--ink-muted);
+    font-weight: 600;
+    font-size: 0.86rem;
+    padding: 10px 8px 4px 8px;
+    margin-top: 6px;
+    cursor: pointer;
+    transition: color 0.15s ease;
+}
+.auth-modal-later:hover {
+    color: var(--ink);
+}
+
+/* Mobile tweaks */
+@media (max-width: 480px) {
+    .auth-modal {
+        padding: 32px 22px 22px 22px;
+        border-radius: 16px;
+    }
+    .auth-modal h2 {
+        font-size: 1.2rem;
+    }
+    .auth-modal-msg {
+        font-size: 0.88rem;
+        margin-bottom: 22px;
+    }
+    .auth-modal-actions {
+        flex-direction: column;
+        gap: 8px;
+    }
+    .auth-btn {
+        padding: 12px 16px;
+        font-size: 0.9rem;
+    }
+}

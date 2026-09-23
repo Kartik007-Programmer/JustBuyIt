@@ -36,7 +36,8 @@ public class ProductService {
     @Cacheable(value = "products",
             key = "'page:' + #pageable.pageNumber "
                     + "+ ':' + #pageable.pageSize "
-                    + "+ ':' + #pageable.sort.toString()")
+                    + "+ ':' + #pageable.sort.toString() "
+                    + "+ ':cat:' + (#category != null ? #category : 'all')")
     @Transactional(readOnly = true)
     public ProductPageDTO getProducts(String category, Pageable pageable) {
         if (category == null || category.isBlank() || category.equalsIgnoreCase("All")) {

@@ -1,0 +1,82 @@
+/* ============================================================
+   UTILITIES — Small, single-purpose classes
+   ============================================================ */
+
+/* ---- Spacing ---- */
+.mt-0 { margin-top: 0 !important; }
+.mt-1 { margin-top: var(--sp-1) !important; }
+.mt-2 { margin-top: var(--sp-2) !important; }
+.mt-3 { margin-top: var(--sp-3) !important; }
+.mt-4 { margin-top: var(--sp-4) !important; }
+.mt-5 { margin-top: var(--sp-5) !important; }
+.mt-6 { margin-top: var(--sp-6) !important; }
+.mt-8 { margin-top: var(--sp-8) !important; }
+
+.mb-0 { margin-bottom: 0 !important; }
+.mb-1 { margin-bottom: var(--sp-1) !important; }
+.mb-2 { margin-bottom: var(--sp-2) !important; }
+.mb-3 { margin-bottom: var(--sp-3) !important; }
+.mb-4 { margin-bottom: var(--sp-4) !important; }
+.mb-5 { margin-bottom: var(--sp-5) !important; }
+.mb-6 { margin-bottom: var(--sp-6) !important; }
+.mb-8 { margin-bottom: var(--sp-8) !important; }
+
+/* ---- Layout ---- */
+.d-none { display: none !important; }
+.d-flex { display: flex !important; }
+.d-grid { display: grid !important; }
+.d-block { display: block !important; }
+.flex-column { flex-direction: column !important; }
+.flex-wrap { flex-wrap: wrap !important; }
+.align-center { align-items: center !important; }
+.justify-between { justify-content: space-between !important; }
+.justify-end { justify-content: flex-end !important; }
+.gap-1 { gap: var(--sp-1) !important; }
+.gap-2 { gap: var(--sp-2) !important; }
+.gap-3 { gap: var(--sp-3) !important; }
+.gap-4 { gap: var(--sp-4) !important; }
+.gap-5 { gap: var(--sp-5) !important; }
+.gap-6 { gap: var(--sp-6) !important; }
+
+/* ---- Text ---- */
+.text-center { text-align: center !important; }
+.text-right { text-align: right !important; }
+.text-muted { color: var(--c-text-secondary) !important; }
+.text-primary { color: var(--c-primary) !important; }
+.fw-500 { font-weight: 500 !important; }
+.fw-600 { font-weight: 600 !important; }
+.fw-700 { font-weight: 700 !important; }
+.fw-800 { font-weight: 800 !important; }
+.fs-sm { font-size: .85rem !important; }
+.fs-xs { font-size: .75rem !important; }
+
+/* ---- Grid layout shortcuts ---- */
+.grid { display: grid; gap: var(--sp-5); }
+.grid-2 { grid-template-columns: repeat(2, 1fr); }
+.grid-3 { grid-template-columns: repeat(3, 1fr); }
+.grid-4 { grid-template-columns: repeat(4, 1fr); }
+.grid-auto { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+
+@media (max-width: 991.98px) {
+  .grid-3, .grid-4 { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 575.98px) {
+  /* Default: single column on phones */
+  .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+
+  /* Keep stat cards 2-up if they fit (they usually do) */
+  .grid-4.grid-4--stats { grid-template-columns: repeat(2, 1fr); }
+
+  .form-row { flex-direction: column; }
+}
+
+/* ---- Visibility ---- */
+.hidden-mobile { }
+@media (max-width: 575.98px) {
+  .hidden-mobile { display: none !important; }
+}
+.hidden-desktop { display: none !important; }
+@media (max-width: 991.98px) {
+  .hidden-desktop { display: block !important; }
+}

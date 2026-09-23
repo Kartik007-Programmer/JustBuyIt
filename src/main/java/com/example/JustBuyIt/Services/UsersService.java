@@ -2,6 +2,7 @@ package com.example.JustBuyIt.Services;
 
 import com.example.JustBuyIt.Models.Users;
 import com.example.JustBuyIt.Repository.UsersRepo;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -25,5 +26,9 @@ public class UsersService {
 
     public Users getUserByEmail(String name) {
         return (Users) usersRepo.findByEmail(name).orElseThrow(() -> new RuntimeException("User Not Found!"));
+    }
+
+    public List<Users> getAllAdmins() {
+        return usersRepo.findAllAdmins();
     }
 }

@@ -1,0 +1,19 @@
+/* ============================================================
+   ADMIN.CSS — Main Entry Point
+   Import order = cascade priority (later wins)
+   ============================================================ */
+
+/* 1. Tokens (variables only) */
+@import url('tokens.css');
+
+/* 2. Reset & base elements */
+@import url('reset.css');
+
+/* 3. Layout shell (sidebar, topbar, content) */
+@import url('layout.css');
+
+/* 4. Reusable components */
+@import url('components.css');
+
+/* 5. Utilities (highest priority) */
+@import url('utilities.css');

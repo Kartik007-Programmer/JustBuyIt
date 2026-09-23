@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View All Products · JustBuyIt Admin</title>
+
+    <!-- External assets -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="/css/admin/admin.css">
+    <link rel="stylesheet" href="/css/admin/pages/viewAll.css">
+</head>
+<body>
+
+<!-- ============ SIDEBAR ============ -->
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar__brand">
+        <div class="sidebar__logo"><i class="fas fa-bolt"></i></div>
+        <div class="sidebar__title">Just<span>BuyIt</span></div>
+    </div>
+    <div class="sidebar__badge"><i class="fas fa-user-shield"></i> Admin Panel</div>
+
+    <div class="sidebar__section">Overview</div>
+    <nav class="sidebar__nav">
+        <a href="/admin/AdminDashboad.html" class="sidebar__link sidebar__link--dashboard">
+            <i class="fas fa-chart-pie"></i><span>Dashboard</span>
+        </a>
+    </nav>
+
+    <div class="sidebar__section">Catalog</div>
+    <nav class="sidebar__nav sidebar__nav--grow">
+        <a href="/admin/AddProduct.html" class="sidebar__link sidebar__link--add">
+            <i class="fas fa-plus-circle"></i><span>Add Product</span>
+        </a>
+        <a href="/admin/UpdateProduct.html" class="sidebar__link sidebar__link--update">
+            <i class="fas fa-pen-to-square"></i><span>Update Product</span>
+        </a>
+        <a href="/admin/ViewAllProduct.html" class="sidebar__link sidebar__link--view is-active">
+            <i class="fas fa-layer-group"></i><span>View All Products</span>
+        </a>
+    </nav>
+
+    <div class="sidebar__section">Account</div>
+    <nav class="sidebar__nav">
+        <a href="#" class="sidebar__link sidebar__link--logout" onclick="handleLogout(event)">
+            <i class="fas fa-sign-out-alt"></i><span>Logout</span>
+        </a>
+    </nav>
+
+    <div class="sidebar__footer">
+        <div class="sidebar__user">
+            <div class="sidebar__avatar" id="adminAvatar">--</div>
+            <div class="sidebar__user-info">
+                <span class="sidebar__user-name" id="adminName">Loading…</span>
+                <span class="sidebar__user-role" id="adminRole">Administrator</span>
+            </div>
+        </div>
+    </div>
+</aside>
+
+<div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+<!-- ============ MAIN ============ -->
+<div class="app">
+    <header class="topbar">
+        <div class="topbar__left">
+            <button class="topbar__menu-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+            <h1 class="topbar__title">
+                Dashboard
+                <small id="adminWelcome">Welcome back — here's your store overview</small>
+            </h1>
+        </div>
+        <span class="topbar__pill">
+            <i class="fas fa-circle" style="font-size:.5rem;color:#10b981;"></i> System Online
+        </span>
+    </header>
+
+    <main class="content">
+
+        <!-- ============ FILTER TOOLBAR ============ -->
+        <section class="card card--padded mb-6">
+            <div class="d-flex justify-between align-center flex-wrap gap-4 mb-5">
+                <div>
+                    <h2 class="fw-800" style="font-size:1.15rem;letter-spacing:-.02em;">Product Catalog</h2>
+                    <p class="text-muted fs-sm mb-0" id="resultsCount">Loading products…</p>
+                </div>
+                <a href="/admin/AddProduct.html" class="btn btn--success">
+                    <i class="fas fa-plus-circle"></i> Add New Product
+                </a>
+            </div>
+
+            <div class="grid grid-3" style="gap:var(--sp-4);">
+                <!-- Search -->
+                <div>
+                    <label class="form-label"><i class="fas fa-search"></i> Search</label>
+                    <input type="text" class="form-control" id="searchInput"
+                           placeholder="Search by product name…" autocomplete="off">
+                </div>
+
+                <!-- Category Filter -->
+                <div>
+                    <label class="form-label"><i class="fas fa-folder"></i> Category</label>
+                    <select class="form-select" id="categoryFilter">
+                        <option value="">All Categories</option>
+                    </select>
+                </div>
+
+                <!-- Sort -->
+                <div>
+                    <label class="form-label"><i class="fas fa-sort"></i> Sort By</label>
+                    <select class="form-select" id="sortSelect">
+                        <option value="id-asc">Newest first (ID ↑)</option>
+                        <option value="id-desc">Oldest first (ID ↓)</option>
+                        <option value="name-asc">Name (A → Z)</option>
+                        <option value="name-desc">Name (Z → A)</option>
+                        <option value="price-asc">Price (Low → High)</option>
+                        <option value="price-desc">Price (High → Low)</option>
+                        <option value="quantity-desc">Stock (High → Low)</option>
+                        <option value="quantity-asc">Stock (Low → High)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Active filter chips -->
+            <div class="d-flex gap-2 flex-wrap mt-4" id="activeFilters"></div>
+        </section>
+
+        <!-- ============ PRODUCT GRID ============ -->
+        <section id="productGrid" class="grid grid-4">
+            <!-- Rendered via JS -->
+        </section>
+
+        <!-- ============ EMPTY STATE ============ -->
+        <section id="emptyState" class="card card--padded d-none" style="text-align:center;">
+            <div style="font-size:3rem;color:var(--c-text-tertiary);margin-bottom:var(--sp-4);">
+                <i class="fas fa-box-open"></i>
+            </div>
+            <h3 class="fw-800 mb-2">No products found</h3>
+            <p class="text-muted mb-5">Try adjusting your search or filter options.</p>
+            <button class="btn btn--ghost" onclick="resetFilters()">
+                <i class="fas fa-undo"></i> Reset Filters
+            </button>
+        </section>
+
+        <!-- ============ PAGINATION ============ -->
+        <nav id="pagination" class="d-flex justify-between align-center flex-wrap gap-4 mt-6" style="display:none;">
+            <span class="text-muted fs-sm" id="pageInfo"></span>
+            <div class="d-flex gap-2 align-center" id="pageButtons"></div>
+        </nav>
+
+    </main>
+</div>
+
+<script>
+    /* ============================================================
+       STATE
+       ============================================================ */
+    const state = {
+        page: 0,
+        size: 12,
+        keyword: '',
+        category: '',
+        sort: 'id-asc',
+        totalPages: 0,
+        totalElements: 0,
+        loading: false
+    };
+
+    let searchDebounce = null;
+
+    /* ============================================================
+       SIDEBAR & AUTH
+       ============================================================ */
+    function toggleSidebar() {
+        document.getElementById('sidebar').classList.toggle('is-open');
+        document.getElementById('overlay').classList.toggle('is-visible');
+    }
+    async function handleLogout(e) {
+        if (e) e.preventDefault();
+        try { await fetch('/auth/v1/logout', { method: 'POST' }); }
+        catch (err) { console.error(err); }
+        finally { window.location.href = '/LoginForm.html'; }
+    }
+    window.addEventListener('pageshow', e => { if (e.persisted) window.location.reload(); });
+
+    /* ============================================================
+       HELPERS
+       ============================================================ */
+    function esc(s) {
+        return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        }[c]));
+    }
+
+    function formatPrice(n) {
+        return '₹' + Number(n || 0).toFixed(2);
+    }
+
+    /* ============================================================
+       DATA LOADING
+       ============================================================ */
+    function loadProducts() {
+        if (state.loading) return;
+        state.loading = true;
+        showSkeleton();
+
+        const [sortBy, direction] = state.sort.split('-');
+
+        let url;
+        if (state.keyword.trim()) {
+            // Use search endpoint when keyword present
+            const p = new URLSearchParams({
+                keyword: state.keyword.trim(),
+                page: state.page,
+                size: state.size,
+                sortby: sortBy,
+                direction: direction
+            });
+            if (state.category) p.append('category', state.category);
+            url = `/products/search?${p.toString()}`;
+        } else {
+            // Use regular listing endpoint
+            const p = new URLSearchParams({
+                page: state.page,
+                size: state.size,
+                sortby: sortBy,
+                direction: direction
+            });
+            if (state.category) p.append('category', state.category);
+            url = `/products?${p.toString()}`;
+        }
+
+        fetch(url)
+            .then(r => { if (!r.ok) throw new Error('Failed to load products'); return r.json(); })
+            .then(data => {
+                // Both endpoints return a Page-like structure
+                const content = data.content || [];
+                const totalElements = data.totalElements ?? content.length;
+                const totalPages = data.totalPages ?? 1;
+
+                state.totalElements = totalElements;
+                state.totalPages = totalPages;
+
+                renderProducts(content);
+                renderPagination();
+                renderActiveFilters();
+                updateResultsCount();
+            })
+            .catch(err => {
+                console.error(err);
+                document.getElementById('productGrid').innerHTML = '';
+                document.getElementById('emptyState').classList.remove('d-none');
+                document.getElementById('resultsCount').innerText = 'Failed to load products';
+            })
+            .finally(() => { state.loading = false; });
+    }
+
+    /* ============================================================
+       RENDERING — PRODUCT CARDS
+       ============================================================ */
+    function renderProducts(products) {
+        const grid = document.getElementById('productGrid');
+        const empty = document.getElementById('emptyState');
+
+        if (!products || products.length === 0) {
+            grid.innerHTML = '';
+            empty.classList.remove('d-none');
+            return;
+        }
+
+        empty.classList.add('d-none');
+        grid.innerHTML = products.map(p => productCard(p)).join('');
+    }
+
+    function productCard(p) {
+        const imgSrc = p.imagefile
+            ? `/products/${p.id}/image`
+            : 'https://via.placeholder.com/300x300?text=No+Image';
+        const category = p.categoryName || (p.category ? p.category.name : 'Uncategorized');
+        const unit = p.qunatityUnit || 'PIECE';
+        const stock = p.quantity != null ? p.quantity : 0;
+
+        // Color-code stock status
+        let stockClass = 'pill--success';
+        let stockLabel = 'In Stock';
+        if (stock === 0) { stockClass = 'pill--danger'; stockLabel = 'Out of Stock'; }
+        else if (stock < 10) { stockClass = 'pill--warning'; stockLabel = 'Low Stock'; }
+
+        return `
+            <article class="product-card">
+                <div class="product-card__img-wrap" onclick="viewProduct(${p.id})">
+                    <img src="${imgSrc}"
+                         alt="${esc(p.name)}"
+                         class="product-card__img"
+                         onerror="this.src='https://via.placeholder.com/300x300?text=No+Image'">
+                    <span class="pill ${stockClass} product-card__badge">${stockLabel}</span>
+                </div>
+                <div class="product-card__body">
+                    <div class="d-flex justify-between align-center gap-2 mb-2">
+                        <span class="pill pill--info" style="font-size:.62rem;">${esc(category)}</span>
+                        <span class="text-muted fs-xs fw-700">#${p.id}</span>
+                    </div>
+                    <h3 class="product-card__title" onclick="viewProduct(${p.id})">${esc(p.name)}</h3>
+                    <p class="product-card__desc">${esc(p.description) || 'No description available.'}</p>
+
+                    <div class="product-card__meta">
+                        <div class="product-card__price">${formatPrice(p.price)}</div>
+                        <div class="product-card__stock">
+                            <i class="fas fa-cubes"></i> ${stock} ${esc(unit)}
+                        </div>
+                    </div>
+
+                    <div class="product-card__actions">
+                        <button class="btn btn--ghost btn--icon" title="View"
+                                onclick="viewProduct(${p.id})">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn btn--warning btn--icon" title="Edit"
+                                onclick="editProduct(${p.id})">
+                            <i class="fas fa-pen"></i>
+                        </button>
+                        <button class="btn btn--danger btn--icon" title="Delete"
+                                onclick="deleteProduct(${p.id}, '${esc(p.name).replace(/'/g, "\\'")}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            </article>
+        `;
+    }
+
+    /* ============================================================
+       SKELETON LOADER
+       ============================================================ */
+    function showSkeleton() {
+        const grid = document.getElementById('productGrid');
+        grid.innerHTML = Array.from({ length: 8 }).map(() => `
+            <article class="product-card">
+                <div class="product-card__img-wrap" style="background:#eef2ff;animation:pulse 1.4s ease-in-out infinite;"></div>
+                <div class="product-card__body">
+                    <div style="height:12px;background:#eef2ff;border-radius:6px;margin-bottom:10px;animation:pulse 1.4s ease-in-out infinite;"></div>
+                    <div style="height:16px;width:70%;background:#eef2ff;border-radius:6px;margin-bottom:10px;animation:pulse 1.4s ease-in-out infinite;"></div>
+                    <div style="height:12px;width:90%;background:#eef2ff;border-radius:6px;margin-bottom:6px;animation:pulse 1.4s ease-in-out infinite;"></div>
+                    <div style="height:12px;width:60%;background:#eef2ff;border-radius:6px;animation:pulse 1.4s ease-in-out infinite;"></div>
+                </div>
+            </article>
+        `).join('');
+    }
+
+    /* ============================================================
+       PAGINATION
+       ============================================================ */
+    function renderPagination() {
+        const nav = document.getElementById('pagination');
+        const info = document.getElementById('pageInfo');
+        const buttons = document.getElementById('pageButtons');
+
+        if (state.totalPages <= 1) {
+            nav.style.display = 'none';
+            return;
+        }
+        nav.style.display = '';
+
+        const start = state.page * state.size + 1;
+        const end = Math.min((state.page + 1) * state.size, state.totalElements);
+        info.innerText = `Showing ${start}–${end} of ${state.totalElements} products`;
+
+        const btn = (label, page, disabled = false, active = false) => `
+            <button class="page-btn ${active ? 'is-active' : ''}"
+                    ${disabled ? 'disabled' : ''}
+                    onclick="goToPage(${page})">
+                ${label}
+            </button>`;
+
+        let html = '';
+        html += btn('<i class="fas fa-chevron-left"></i>', state.page - 1, state.page === 0);
+
+        const maxVisible = 5;
+        let startPage = Math.max(0, state.page - Math.floor(maxVisible / 2));
+        let endPage = Math.min(state.totalPages - 1, startPage + maxVisible - 1);
+        if (endPage - startPage + 1 < maxVisible) startPage = Math.max(0, endPage - maxVisible + 1);
+
+        if (startPage > 0) {
+            html += btn('1', 0, false, state.page === 0);
+            if (startPage > 1) html += `<span class="text-muted">…</span>`;
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+            html += btn(String(i + 1), i, false, i === state.page);
+        }
+
+        if (endPage < state.totalPages - 1) {
+            if (endPage < state.totalPages - 2) html += `<span class="text-muted">…</span>`;
+            html += btn(String(state.totalPages), state.totalPages - 1, false, state.page === state.totalPages - 1);
+        }
+
+        html += btn('<i class="fas fa-chevron-right"></i>', state.page + 1, state.page >= state.totalPages - 1);
+        buttons.innerHTML = html;
+    }
+
+    function goToPage(page) {
+        if (page < 0 || page >= state.totalPages || page === state.page) return;
+        state.page = page;
+        loadProducts();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    /* ============================================================
+       FILTER CHIPS
+       ============================================================ */
+    function renderActiveFilters() {
+        const container = document.getElementById('activeFilters');
+        const chips = [];
+        if (state.keyword) chips.push({ type: 'keyword', label: `Search: "${state.keyword}"` });
+        if (state.category) chips.push({ type: 'category', label: `Category: ${state.category}` });
+
+        if (chips.length === 0) {
+            container.innerHTML = '';
+            return;
+        }
+
+        container.innerHTML = chips.map(c => `
+            <span class="filter-chip">
+                <span>${esc(c.label)}</span>
+                <button onclick="clearFilter('${c.type}')"><i class="fas fa-times"></i></button>
+            </span>
+        `).join('') + `
+            <button class="btn btn--ghost" style="padding:.35rem .75rem;font-size:.75rem;" onclick="resetFilters()">
+                <i class="fas fa-times"></i> Clear all
+            </button>
+        `;
+    }
+
+    function clearFilter(type) {
+        if (type === 'keyword') {
+            state.keyword = '';
+            document.getElementById('searchInput').value = '';
+        } else if (type === 'category') {
+            state.category = '';
+            document.getElementById('categoryFilter').value = '';
+        }
+        state.page = 0;
+        loadProducts();
+    }
+
+    function resetFilters() {
+        state.keyword = '';
+        state.category = '';
+        state.page = 0;
+        document.getElementById('searchInput').value = '';
+        document.getElementById('categoryFilter').value = '';
+        loadProducts();
+    }
+
+    function updateResultsCount() {
+        const el = document.getElementById('resultsCount');
+        const n = state.totalElements;
+        el.innerText = `${n} product${n === 1 ? '' : 's'} found`;
+    }
+
+    /* ============================================================
+       ACTIONS
+       ============================================================ */
+    function viewProduct(id) { window.location.href = `/admin/AdminOneProduct.html?id=${id}`; }
+    function editProduct(id) { window.location.href = `/admin/UpdateProduct.html?id=${id}`; }
+
+    function deleteProduct(id, name) {
+        if (!confirm(`Delete "${name}" permanently?`)) return;
+        fetch(`/products/${id}`, { method: 'DELETE' })
+            .then(r => {
+                if (!r.ok) throw new Error('Delete failed');
+                // Remove card from DOM immediately for snappy UX
+                const grid = document.getElementById('productGrid');
+                // Re-fetch to keep pagination in sync
+                loadProducts();
+            })
+            .catch(err => { console.error(err); alert('Failed to delete product'); });
+    }
+
+    /* ============================================================
+       LOAD CATEGORIES
+       ============================================================ */
+    function loadCategories() {
+        fetch('/products/categories')
+            .then(r => r.ok ? r.json() : [])
+            .then(categories => {
+                if (!Array.isArray(categories)) return;
+                const select = document.getElementById('categoryFilter');
+                categories.forEach(cat => {
+                    const opt = document.createElement('option');
+                    opt.value = cat;
+                    opt.textContent = cat;
+                    select.appendChild(opt);
+                });
+            })
+            .catch(() => { /* silent */ });
+    }
+
+    /* ============================================================
+       EVENT BINDINGS
+       ============================================================ */
+    document.getElementById('searchInput').addEventListener('input', function () {
+        clearTimeout(searchDebounce);
+        const val = this.value;
+        searchDebounce = setTimeout(() => {
+            state.keyword = val;
+            state.page = 0;
+            loadProducts();
+        }, 350);
+    });
+
+    document.getElementById('categoryFilter').addEventListener('change', function () {
+        state.category = this.value;
+        state.page = 0;
+        loadProducts();
+    });
+
+    document.getElementById('sortSelect').addEventListener('change', function () {
+        state.sort = this.value;
+        state.page = 0;
+        loadProducts();
+    });
+
+    /* ============================================================
+       INIT
+       ============================================================ */
+    loadCategories();
+    loadProducts();
+
+    (function fetchAdmin() {
+        fetch('/admin', { credentials: 'include' })
+            .then(r => r.ok ? r.json() : null)
+            .then(admin => {
+                if (!admin) return;
+
+                const fullName =
+                    admin.name ||
+                    'Admin User';
+
+                const role = 'Administrator';
+
+                // Initials for the avatar (max 2 letters)
+                const initials = fullName
+                    .split(/\s+/)
+                    .map(w => w[0])
+                    .filter(Boolean)
+                    .slice(0, 2)
+                    .join('')
+                    .toUpperCase() || 'AD';
+
+                document.getElementById('adminAvatar').innerText = initials;
+                document.getElementById('adminName').innerText   = fullName;
+                document.getElementById('adminRole').innerText   = role;
+
+                const welcome = document.getElementById('adminWelcome');
+                if (welcome) {
+                    welcome.innerText = `Welcome back, ${fullName} — here's your store overview`;
+                }
+            })
+            .catch(err => console.error('Failed to load admin:', err));
+    })();
+</script>
+</body>
+</html>

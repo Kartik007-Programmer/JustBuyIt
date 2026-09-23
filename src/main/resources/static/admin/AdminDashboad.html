@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard · JustBuyIt</title>
+
+    <!-- External assets -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <!-- Global admin stylesheet -->
+    <link rel="stylesheet" href="/css/admin/admin.css">
+</head>
+<body>
+
+<!-- ============ SIDEBAR ============ -->
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar__brand">
+        <div class="sidebar__logo"><i class="fas fa-bolt"></i></div>
+        <div class="sidebar__title">Just<span>BuyIt</span></div>
+    </div>
+    <div class="sidebar__badge"><i class="fas fa-user-shield"></i> Admin Panel</div>
+
+    <div class="sidebar__section">Overview</div>
+    <nav class="sidebar__nav">
+        <a href="/admin/AdminDashboad.html" class="sidebar__link sidebar__link--dashboard is-active">
+            <i class="fas fa-chart-pie"></i><span>Dashboard</span>
+        </a>
+    </nav>
+
+    <div class="sidebar__section">Catalog</div>
+    <nav class="sidebar__nav sidebar__nav--grow">
+        <a href="/admin/AddProduct.html" class="sidebar__link sidebar__link--add">
+            <i class="fas fa-plus-circle"></i><span>Add Product</span>
+        </a>
+        <a href="/admin/UpdateProduct.html" class="sidebar__link sidebar__link--update">
+            <i class="fas fa-pen-to-square"></i><span>Update Product</span>
+        </a>
+        <a href="/admin/ViewAllProduct.html" class="sidebar__link sidebar__link--view">
+            <i class="fas fa-layer-group"></i><span>View All Products</span>
+        </a>
+    </nav>
+
+    <div class="sidebar__section">Account</div>
+    <nav class="sidebar__nav">
+        <a href="#" class="sidebar__link sidebar__link--logout" onclick="handleLogout(event)">
+            <i class="fas fa-sign-out-alt"></i><span>Logout</span>
+        </a>
+    </nav>
+
+    <div class="sidebar__footer">
+        <div class="sidebar__user">
+            <div class="sidebar__avatar" id="adminAvatar">--</div>
+            <div class="sidebar__user-info">
+                <span class="sidebar__user-name" id="adminName">Loading…</span>
+                <span class="sidebar__user-role" id="adminRole">Administrator</span>
+            </div>
+        </div>
+    </div>
+</aside>
+
+<div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+<!-- ============ MAIN ============ -->
+<div class="app">
+    <header class="topbar">
+        <div class="topbar__left">
+            <button class="topbar__menu-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+            <h1 class="topbar__title">
+                Dashboard
+                <small id="adminWelcome">Welcome back — here's your store overview</small>
+            </h1>
+        </div>
+        <span class="topbar__pill">
+            <i class="fas fa-circle" style="font-size:.5rem;color:#10b981;"></i> System Online
+        </span>
+    </header>
+
+    <main class="content">
+
+        <!-- HERO -->
+        <section class="hero mb-6">
+            <div class="d-flex justify-between align-center flex-wrap gap-6">
+                <div class="hero__content">
+                    <span class="hero__tag"><i class="fas fa-crown"></i> Admin Workspace</span>
+                    <h1 class="hero__title">Manage your store with ease</h1>
+                    <p class="hero__text">
+                        Add new products, update existing ones, and monitor your entire catalog —
+                        all from one colorful, modern control center.
+                    </p>
+                    <div class="hero__actions">
+                        <a href="/admin/AddProduct.html" class="btn btn--ghost"
+                           style="background:#fff;color:var(--c-primary);border-color:transparent;">
+                            <i class="fas fa-plus"></i> New Product
+                        </a>
+                        <a href="/admin/ViewAllProduct.html" class="btn btn--ghost"
+                           style="background:rgba(255,255,255,.15);color:#fff;border-color:rgba(255,255,255,.35);">
+                            <i class="fas fa-layer-group"></i> View Catalog
+                        </a>
+                    </div>
+                </div>
+                <div class="hero__graphic hidden-mobile"><i class="fas fa-store"></i></div>
+            </div>
+        </section>
+
+        <!-- STATS -->
+        <section class="grid grid-4 grid-4--stats mb-6">
+            <div class="stat">
+                <div class="stat__icon stat__icon--violet"><i class="fas fa-box"></i></div>
+                <div class="stat__label">Total Products</div>
+                <div class="stat__value" id="totalProducts">148</div>
+                <span class="stat__trend stat__trend--up"><i class="fas fa-arrow-up"></i> 12% this week</span>
+            </div>
+            <div class="stat">
+                <div class="stat__icon stat__icon--amber"><i class="fas fa-tags"></i></div>
+                <div class="stat__label">Categories</div>
+                <div class="stat__value" id="totalCategories">12</div>
+                <span class="stat__trend stat__trend--up"><i class="fas fa-arrow-up"></i> 2 new</span>
+            </div>
+            <div class="stat">
+                <div class="stat__icon stat__icon--green"><i class="fas fa-warehouse"></i></div>
+                <div class="stat__label">In Stock Units</div>
+                <div class="stat__value">3,842</div>
+                <span class="stat__trend stat__trend--up"><i class="fas fa-arrow-up"></i> Healthy</span>
+            </div>
+            <div class="stat">
+                <div class="stat__icon stat__icon--blue"><i class="fas fa-clock"></i></div>
+                <div class="stat__label">Last Updated</div>
+                <div class="stat__value" style="font-size:1.35rem;">just now</div>
+                <span class="stat__trend stat__trend--up"><i class="fas fa-sync"></i> Synced</span>
+            </div>
+        </section>
+
+        <!-- QUICK ACTIONS -->
+        <section class="mb-6">
+            <h2 class="fw-800 mb-2">Quick Actions</h2>
+            <p class="text-muted fs-sm mb-4">Jump into the most common tasks</p>
+            <div class="grid grid-3">
+                <a href="/admin/AddProduct.html" class="action-card action-card--add">
+                    <div class="action-card__icon"><i class="fas fa-plus"></i></div>
+                    <div class="action-card__title">Add New Product</div>
+                    <div class="action-card__desc">Create a new product listing with image, price, category and stock.</div>
+                    <span class="action-card__cta">Get started <i class="fas fa-arrow-right"></i></span>
+                </a>
+                <a href="/admin/UpdateProduct.html" class="action-card action-card--update">
+                    <div class="action-card__icon"><i class="fas fa-pen"></i></div>
+                    <div class="action-card__title">Update Inventory</div>
+                    <div class="action-card__desc">Modify prices, stock levels, categories or images of existing products.</div>
+                    <span class="action-card__cta">Edit now <i class="fas fa-arrow-right"></i></span>
+                </a>
+                <a href="/admin/ViewAllProduct.html" class="action-card action-card--view">
+                    <div class="action-card__icon"><i class="fas fa-th-large"></i></div>
+                    <div class="action-card__title">View All Products</div>
+                    <div class="action-card__desc">Browse the entire catalog with search, filter and delete options.</div>
+                    <span class="action-card__cta">Browse catalog <i class="fas fa-arrow-right"></i></span>
+                </a>
+            </div>
+        </section>
+
+        <!-- ACTIVITY -->
+        <section class="card card--padded">
+            <h2 class="fw-800 mb-2">Recent Activity</h2>
+            <p class="text-muted fs-sm mb-4">Latest changes in your store</p>
+            <div class="activity-row">
+                <span class="activity-row__dot activity-row__dot--green"></span>
+                <span class="activity-row__text"><b>Espresso Beans 1kg</b> was added to catalog</span>
+                <span class="activity-row__time">2 min ago</span>
+            </div>
+            <div class="activity-row">
+                <span class="activity-row__dot activity-row__dot--amber"></span>
+                <span class="activity-row__text">Stock updated for <b>Wireless Headphones</b></span>
+                <span class="activity-row__time">18 min ago</span>
+            </div>
+            <div class="activity-row">
+                <span class="activity-row__dot activity-row__dot--blue"></span>
+                <span class="activity-row__text">New category <b>Beverages</b> created</span>
+                <span class="activity-row__time">1 hr ago</span>
+            </div>
+        </section>
+
+    </main>
+</div>
+
+<script>
+    function toggleSidebar() {
+        document.getElementById('sidebar').classList.toggle('is-open');
+        document.getElementById('overlay').classList.toggle('is-visible');
+    }
+    async function handleLogout(e) {
+        if (e) e.preventDefault();
+        try { await fetch('/auth/v1/logout', { method: 'POST' }); }
+        catch (err) { console.error(err); }
+        finally { window.location.href = '/LoginForm.html'; }
+    }
+    window.addEventListener('pageshow', e => { if (e.persisted) window.location.reload(); });
+
+    (function fetchStats() {
+        fetch('/products?size=1').then(r => r.ok ? r.json() : null).then(d => {
+            if (d && d.totalElements !== undefined) document.getElementById('totalProducts').innerText = d.totalElements;
+        }).catch(()=>{});
+        fetch('/products/categories').then(r => r.ok ? r.json() : null).then(c => {
+            if (Array.isArray(c)) document.getElementById('totalCategories').innerText = c.length;
+        }).catch(()=>{});
+    })();
+
+    (function fetchAdmin() {
+        fetch('/admin', { credentials: 'include' })
+            .then(r => r.ok ? r.json() : null)
+            .then(admin => {
+                if (!admin) return;
+
+                const fullName =
+                    admin.name ||
+                    'Admin User';
+
+                const role = 'Administrator';
+
+                // Initials for the avatar (max 2 letters)
+                const initials = fullName
+                    .split(/\s+/)
+                    .map(w => w[0])
+                    .filter(Boolean)
+                    .slice(0, 2)
+                    .join('')
+                    .toUpperCase() || 'AD';
+
+                document.getElementById('adminAvatar').innerText = initials;
+                document.getElementById('adminName').innerText   = fullName;
+                document.getElementById('adminRole').innerText   = role;
+
+                const welcome = document.getElementById('adminWelcome');
+                if (welcome) {
+                    welcome.innerText = `Welcome back, ${fullName} — here's your store overview`;
+                }
+            })
+            .catch(err => console.error('Failed to load admin:', err));
+    })();
+</script>
+</body>
+</html>

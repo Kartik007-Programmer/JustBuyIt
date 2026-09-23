@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Product · JustBuyIt Admin</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="/css/admin/admin.css">
+    <link rel="stylesheet" href="/css/admin/pages/addUpdateProduct.css">
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar__brand">
+        <div class="sidebar__logo"><i class="fas fa-bolt"></i></div>
+        <div class="sidebar__title">Just<span>BuyIt</span></div>
+    </div>
+    <div class="sidebar__badge"><i class="fas fa-user-shield"></i> Admin Panel</div>
+
+    <div class="sidebar__section">Overview</div>
+    <nav class="sidebar__nav">
+        <a href="/admin/AdminDashboad.html" class="sidebar__link sidebar__link--dashboard">
+            <i class="fas fa-chart-pie"></i><span>Dashboard</span>
+        </a>
+    </nav>
+
+    <div class="sidebar__section">Catalog</div>
+    <nav class="sidebar__nav sidebar__nav--grow">
+        <a href="/admin/AddProduct.html" class="sidebar__link sidebar__link--add is-active">
+            <i class="fas fa-plus-circle"></i><span>Add Product</span>
+        </a>
+        <a href="/admin/UpdateProduct.html" class="sidebar__link sidebar__link--update">
+            <i class="fas fa-pen-to-square"></i><span>Update Product</span>
+        </a>
+        <a href="/admin/ViewAllProduct.html" class="sidebar__link sidebar__link--view">
+            <i class="fas fa-layer-group"></i><span>View All Products</span>
+        </a>
+    </nav>
+
+    <div class="sidebar__section">Account</div>
+    <nav class="sidebar__nav">
+        <a href="#" class="sidebar__link sidebar__link--logout" onclick="handleLogout(event)">
+            <i class="fas fa-sign-out-alt"></i><span>Logout</span>
+        </a>
+    </nav>
+
+    <div class="sidebar__footer">
+        <div class="sidebar__user">
+            <div class="sidebar__avatar" id="adminAvatar">--</div>
+            <div class="sidebar__user-info">
+                <span class="sidebar__user-name" id="adminName">Loading…</span>
+                <span class="sidebar__user-role" id="adminRole">Administrator</span>
+            </div>
+        </div>
+    </div>
+</aside>
+
+<div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+<div class="app">
+    <header class="topbar">
+        <div class="topbar__left">
+            <button class="topbar__menu-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+            <h1 class="topbar__title">
+                Dashboard
+                <small id="adminWelcome">Welcome back — here's your store overview</small>
+            </h1>
+        </div>
+        <span class="topbar__pill">
+            <i class="fas fa-circle" style="font-size:.5rem;color:#10b981;"></i> System Online
+        </span>
+    </header>
+
+    <main class="content content--narrow">
+
+        <section class="card card--padded">
+            <div class="card__head">
+                <span class="pill pill--success mb-3"><i class="fas fa-plus-circle"></i> New Item</span>
+                <h1 class="card__title">Add a new product</h1>
+                <p class="card__subtitle">Fill in the details below to publish a new product to your catalog.</p>
+            </div>
+
+            <form id="addProductForm">
+                <div class="form-group">
+                    <label class="form-label" for="name">
+                        <i class="fas fa-tag"></i> Product name
+                    </label>
+                    <input type="text" class="form-control" id="name" placeholder="e.g. Espresso Beans 1kg" required>
+                </div>
+
+                <div class="form-row mb-5">
+                    <div>
+                        <label class="form-label" for="price"><i class="fas fa-rupee-sign"></i> Price</label>
+                        <input type="number" step="0.01" class="form-control" id="price" placeholder="0.00" required>
+                    </div>
+                    <div>
+                        <label class="form-label" for="categoryName"><i class="fas fa-folder"></i> Category</label>
+                        <input type="text" class="form-control" id="categoryName" placeholder="e.g. Beverages" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="description">
+                        <i class="fas fa-align-left"></i> Description
+                        <span class="hint">(optional)</span>
+                    </label>
+                    <textarea class="form-control" id="description" placeholder="Add a short description"></textarea>
+                </div>
+
+                <div class="form-row mb-5">
+                    <div>
+                        <label class="form-label" for="quantity"><i class="fas fa-cubes"></i> Quantity</label>
+                        <input type="number" class="form-control" id="quantity" placeholder="0" required>
+                    </div>
+                    <div>
+                        <label class="form-label" for="qunatityUnit"><i class="fas fa-ruler"></i> Unit</label>
+                        <select class="form-select" id="qunatityUnit">
+                            <option value="PIECE">Piece</option>
+                            <option value="KG">KG</option>
+                            <option value="LITER">Liter</option>
+                            <option value="BOX">Box</option>
+                        </select>
+                    </div>
+                </div>
+
+                <hr class="mb-5" style="border:none;border-top:1px solid var(--c-border);">
+
+                <div class="form-group">
+                    <label class="form-label"><i class="fas fa-image"></i> Product image</label>
+                    <div class="segmented">
+                        <input type="radio" id="src-file" name="imageSource" value="file" checked onclick="toggleImageInput('file')">
+                        <label for="src-file"><i class="fas fa-upload me-1"></i> Upload file</label>
+                        <input type="radio" id="src-url" name="imageSource" value="url" onclick="toggleImageInput('url')">
+                        <label for="src-url"><i class="fas fa-link me-1"></i> Image URL</label>
+                    </div>
+                </div>
+
+                <div class="form-group" id="fileInputBlock">
+                    <div class="file-drop">
+                        <i class="fas fa-cloud-upload-alt" style="font-size:1.3rem;color:var(--c-primary);"></i>
+                        <input type="file" id="imagefile" accept="image/*">
+                    </div>
+                </div>
+
+                <div class="form-group d-none" id="urlInputBlock">
+                    <input type="url" class="form-control" id="imageUrl" placeholder="https://example.com/image.jpg">
+                </div>
+
+                <div class="d-flex justify-end gap-3 mt-6">
+                    <button type="reset" class="btn btn--ghost"><i class="fas fa-undo"></i> Reset</button>
+                    <button type="submit" class="btn btn--success"><i class="fas fa-check"></i> Create product</button>
+                </div>
+            </form>
+        </section>
+
+    </main>
+</div>
+
+<script>
+    let usingFileInput = true;
+
+    function toggleSidebar() {
+        document.getElementById('sidebar').classList.toggle('is-open');
+        document.getElementById('overlay').classList.toggle('is-visible');
+    }
+    async function handleLogout(e) {
+        if (e) e.preventDefault();
+        try { await fetch('/auth/v1/logout', { method: 'POST' }); }
+        catch (err) { console.error(err); }
+        finally { window.location.href = '/LoginForm.html'; }
+    }
+    window.addEventListener('pageshow', e => { if (e.persisted) window.location.reload(); });
+
+    function toggleImageInput(mode) {
+        const f = document.getElementById('fileInputBlock');
+        const u = document.getElementById('urlInputBlock');
+        if (mode === 'file') {
+            f.classList.remove('d-none');
+            u.classList.add('d-none');
+            document.getElementById('imageUrl').value = '';
+            usingFileInput = true;
+        } else {
+            u.classList.remove('d-none');
+            f.classList.add('d-none');
+            document.getElementById('imagefile').value = '';
+            usingFileInput = false;
+        }
+    }
+
+    document.getElementById('addProductForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+        const product = {
+            name: document.getElementById('name').value,
+            price: parseFloat(document.getElementById('price').value),
+            description: document.getElementById('description').value,
+            quantity: parseInt(document.getElementById('quantity').value, 10),
+            qunatityUnit: document.getElementById('qunatityUnit').value,
+            categoryName: document.getElementById('categoryName').value,
+            imageUrl: usingFileInput ? null : document.getElementById('imageUrl').value
+        };
+
+        if (usingFileInput) {
+            const fi = document.getElementById('imagefile');
+            if (!fi.files[0]) { alert('Please select an image file to upload.'); return; }
+            const fd = new FormData();
+            fd.append('product', new Blob([JSON.stringify(product)], { type: 'application/json' }));
+            fd.append('imagefile', fi.files[0]);
+            fetch('/products/upload', { method: 'POST', body: fd })
+                .then(r => { if (!r.ok) throw new Error('Server error'); return r.json(); })
+                .then(() => { alert('Product added successfully!'); window.location.href = '/admin/ViewAllProduct.html'; })
+                .catch(() => alert('Error saving product'));
+        } else {
+            fetch('/products', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(product)
+            })
+                .then(r => { if (!r.ok) throw new Error('Server error'); return r.json(); })
+                .then(() => { alert('Product added successfully!'); window.location.href = '/admin/ViewAllProduct.html'; })
+                .catch(() => alert('Error saving product'));
+        }
+    });
+    (function fetchAdmin() {
+        fetch('/admin', { credentials: 'include' })
+            .then(r => r.ok ? r.json() : null)
+            .then(admin => {
+                if (!admin) return;
+
+                const fullName =
+                    admin.name ||
+                    'Admin User';
+
+                const role = 'Administrator';
+
+                // Initials for the avatar (max 2 letters)
+                const initials = fullName
+                    .split(/\s+/)
+                    .map(w => w[0])
+                    .filter(Boolean)
+                    .slice(0, 2)
+                    .join('')
+                    .toUpperCase() || 'AD';
+
+                document.getElementById('adminAvatar').innerText = initials;
+                document.getElementById('adminName').innerText   = fullName;
+                document.getElementById('adminRole').innerText   = role;
+
+                const welcome = document.getElementById('adminWelcome');
+                if (welcome) {
+                    welcome.innerText = `Welcome back, ${fullName} — here's your store overview`;
+                }
+            })
+            .catch(err => console.error('Failed to load admin:', err));
+    })();
+</script>
+</body>
+</html>

@@ -1,0 +1,46 @@
+/* ---------- RESPONSIVE: PRODUCT DETAIL ---------- */
+@media (max-width: 767.98px) {
+  /* Stack image above info */
+  #detailRoot .grid-2 {
+    grid-template-columns: 1fr;
+  }
+
+  /* Image panel: shorter height, smaller padding */
+  #detailRoot .grid-2 > div:first-child {
+    min-height: 260px !important;
+    padding: var(--sp-5) !important;
+  }
+  #detailRoot .grid-2 > div:first-child img {
+    max-width: 220px !important;
+  }
+
+  /* Info panel: tighter padding */
+  #detailRoot .grid-2 > div:last-child {
+    padding: var(--sp-5) !important;
+  }
+
+  /* Title & price scale down */
+  #detailRoot h1 { font-size: 1.35rem !important; }
+  #detailRoot .d-flex.align-center.gap-3 > span:first-child {
+    font-size: 1.6rem !important;
+  }
+
+  /* Meta grid stays 2-col but tighter */
+  #detailRoot .grid-2.mb-6 { gap: var(--sp-2) !important; }
+  #detailRoot .grid-2.mb-6 > div { padding: var(--sp-3) !important; }
+
+  /* Action buttons: full-width stack */
+  #detailRoot .d-flex.gap-3.flex-wrap {
+    flex-direction: column;
+  }
+  #detailRoot .d-flex.gap-3.flex-wrap .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 380px) {
+  /* Very small: meta grid goes single column */
+  #detailRoot .grid-2.mb-6 { grid-template-columns: 1fr; }
+  #detailRoot .grid-2 > div:first-child img { max-width: 180px !important; }
+}

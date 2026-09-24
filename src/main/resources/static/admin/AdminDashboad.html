@@ -43,6 +43,13 @@
         </a>
     </nav>
 
+    <div class="sidebar__section">Users</div>
+    <nav class="sidebar__nav sidebar__nav--grow">
+        <a href="/admin/AdminUsers.html" class="sidebar__link">
+            <i class="fas fa-users"></i><span>Manage Users</span>
+        </a>
+    </nav>
+
     <div class="sidebar__section">Account</div>
     <nav class="sidebar__nav">
         <a href="#" class="sidebar__link sidebar__link--logout" onclick="handleLogout(event)">
@@ -126,10 +133,13 @@
                 <span class="stat__trend stat__trend--up"><i class="fas fa-arrow-up"></i> Healthy</span>
             </div>
             <div class="stat">
-                <div class="stat__icon stat__icon--blue"><i class="fas fa-clock"></i></div>
-                <div class="stat__label">Last Updated</div>
-                <div class="stat__value" style="font-size:1.35rem;">just now</div>
-                <span class="stat__trend stat__trend--up"><i class="fas fa-sync"></i> Synced</span>
+                <div class="stat__icon stat__icon--violet"><i class="fas fa-users"></i></div>
+                <div class="stat__label">Registered Users</div>
+                <div class="stat__value" id="totalUsers">—</div>
+                <a href="/admin/AdminUsers.html" class="stat__trend stat__trend--up"
+                   style="text-decoration:none;">
+                    <i class="fas fa-arrow-right"></i> Manage
+                </a>
             </div>
         </section>
 
@@ -203,6 +213,12 @@
         fetch('/products/categories').then(r => r.ok ? r.json() : null).then(c => {
             if (Array.isArray(c)) document.getElementById('totalCategories').innerText = c.length;
         }).catch(()=>{});
+        fetch('/admin/users?size=1')
+        .then(r => r.ok ? r.json() : null)
+        .then(d => {
+            if (d && d.totalElements !== undefined)
+                document.getElementById('totalUsers').innerText = d.totalElements;
+        }).catch(() => {});
     })();
 
     (function fetchAdmin() {

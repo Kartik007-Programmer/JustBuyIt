@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management · JustBuyIt</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="/css/admin/admin.css">
+</head>
+<body>
+
+<!-- ============ SIDEBAR (same as dashboard, with Users added) ============ -->
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar__brand">
+        <div class="sidebar__logo"><i class="fas fa-bolt"></i></div>
+        <div class="sidebar__title">Just<span>BuyIt</span></div>
+    </div>
+    <div class="sidebar__badge"><i class="fas fa-user-shield"></i> Admin Panel</div>
+
+    <div class="sidebar__section">Overview</div>
+    <nav class="sidebar__nav">
+        <a href="/admin/AdminDashboad.html" class="sidebar__link sidebar__link--dashboard">
+            <i class="fas fa-chart-pie"></i><span>Dashboard</span>
+        </a>
+    </nav>
+
+    <div class="sidebar__section">Catalog</div>
+    <nav class="sidebar__nav">
+        <a href="/admin/AddProduct.html" class="sidebar__link sidebar__link--add">
+            <i class="fas fa-plus-circle"></i><span>Add Product</span>
+        </a>
+        <a href="/admin/UpdateProduct.html" class="sidebar__link sidebar__link--update">
+            <i class="fas fa-pen-to-square"></i><span>Update Product</span>
+        </a>
+        <a href="/admin/ViewAllProduct.html" class="sidebar__link sidebar__link--view">
+            <i class="fas fa-layer-group"></i><span>View All Products</span>
+        </a>
+    </nav>
+
+    <div class="sidebar__section">Users</div>
+    <nav class="sidebar__nav sidebar__nav--grow">
+        <a href="/admin/AdminUsers.html" class="sidebar__link is-active">
+            <i class="fas fa-users"></i><span>Manage Users</span>
+        </a>
+    </nav>
+
+    <div class="sidebar__section">Account</div>
+    <nav class="sidebar__nav">
+        <a href="#" class="sidebar__link sidebar__link--logout" onclick="handleLogout(event)">
+            <i class="fas fa-sign-out-alt"></i><span>Logout</span>
+        </a>
+    </nav>
+
+    <div class="sidebar__footer">
+        <div class="sidebar__user">
+            <div class="sidebar__avatar" id="adminAvatar">--</div>
+            <div class="sidebar__user-info">
+                <span class="sidebar__user-name" id="adminName">Loading…</span>
+                <span class="sidebar__user-role">Administrator</span>
+            </div>
+        </div>
+    </div>
+</aside>
+
+<div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+<!-- ============ MAIN ============ -->
+<div class="app">
+    <header class="topbar">
+        <div class="topbar__left">
+            <button class="topbar__menu-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+            <h1 class="topbar__title">
+                User Management
+                <small>View, search, and moderate user accounts</small>
+            </h1>
+        </div>
+        <span class="topbar__pill">
+            <i class="fas fa-users"></i> <span id="totalUsersPill">0 users</span>
+        </span>
+    </header>
+
+    <main class="content">
+
+        <!-- TOOLBAR -->
+        <section class="card card--padded mb-6">
+            <div class="d-flex justify-between align-center flex-wrap gap-4">
+                <div class="d-flex align-center gap-3" style="flex:1;min-width:240px;">
+                    <i class="fas fa-search text-muted"></i>
+                    <input type="text" id="searchInput" class="form-control"
+                           placeholder="Search by name or email…" style="max-width:420px;">
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn--ghost" id="refreshBtn">
+                        <i class="fas fa-rotate"></i> Refresh
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- USERS TABLE -->
+        <section class="card">
+            <div style="overflow-x:auto;">
+                <table class="table" id="usersTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th style="text-align:right;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersBody">
+                        <tr>
+                            <td colspan="6" class="text-center text-muted" style="padding:40px;">
+                                <div class="spinner" style="margin:0 auto 12px;"></div>
+                                Loading users…
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- PAGINATION -->
+            <div class="d-flex justify-between align-center flex-wrap gap-3"
+                 style="padding:var(--sp-5); border-top:1px solid var(--c-border);">
+                <span class="text-muted fs-sm" id="pageInfo">—</span>
+                <div class="d-flex gap-2" id="pagination"></div>
+            </div>
+        </section>
+
+    </main>
+</div>
+
+<!-- BAN CONFIRM MODAL -->
+<div id="banModal" style="display:none; position:fixed; inset:0; background:rgba(15,15,30,.5);
+     backdrop-filter:blur(3px); z-index:1050; align-items:center; justify-content:center; padding:20px;">
+    <div class="card card--padded" style="max-width:420px; width:100%;">
+        <h3 class="fw-800 mb-2" id="banModalTitle">Suspend user?</h3>
+        <p class="text-muted fs-sm mb-5" id="banModalText">
+            This user will no longer be able to sign in.
+        </p>
+        <div class="d-flex justify-end gap-3">
+            <button class="btn btn--ghost" onclick="closeBanModal()">Cancel</button>
+            <button class="btn btn--danger" id="banConfirmBtn">Suspend</button>
+        </div>
+    </div>
+</div>
+
+<script>
+/* ---------- Sidebar + auth helpers (same as dashboard) ---------- */
+function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('is-open');
+    document.getElementById('overlay').classList.toggle('is-visible');
+}
+async function handleLogout(e) {
+    if (e) e.preventDefault();
+    try { await fetch('/auth/v1/logout', { method: 'POST' }); } catch {}
+    finally { window.location.href = '/LoginForm.html'; }
+}
+window.addEventListener('pageshow', e => { if (e.persisted) window.location.reload(); });
+
+/* ---------- Load current admin (sidebar identity) ---------- */
+fetch('/admin', { credentials: 'include' })
+    .then(r => r.ok ? r.json() : null)
+    .then(admin => {
+        if (!admin) return;
+        const fullName = admin.name || 'Admin User';
+        const initials = fullName.split(/\s+/).map(w => w[0]).filter(Boolean)
+            .slice(0, 2).join('').toUpperCase() || 'AD';
+        document.getElementById('adminAvatar').innerText = initials;
+        document.getElementById('adminName').innerText = fullName;
+    })
+    .catch(() => {});
+
+/* ---------- Pagination state ---------- */
+const state = { page: 0, size: 10, q: '', totalPages: 0, totalElements: 0 };
+
+/* ---------- Fetch users ---------- */
+async function loadUsers() {
+    const tbody = document.getElementById('usersBody');
+    tbody.innerHTML = `
+        <tr><td colspan="6" class="text-center text-muted" style="padding:40px;">
+            <div class="spinner" style="margin:0 auto 12px;"></div>
+            Loading users…
+        </td></tr>`;
+
+    try {
+        const url = `/admin/users?q=${encodeURIComponent(state.q)}&page=${state.page}&size=${state.size}`;
+        const res = await fetch(url, { credentials: 'include' });
+        if (!res.ok) throw new Error('Failed to load');
+
+        const data = await res.json();
+        state.totalPages   = data.totalPages;
+        state.totalElements = data.totalElements;
+
+        renderRows(data.content || []);
+        renderPagination();
+        document.getElementById('totalUsersPill').innerText = `${state.totalElements} users`;
+    } catch (err) {
+        tbody.innerHTML = `
+            <tr><td colspan="6" class="text-center" style="padding:40px; color:#b91c1c;">
+                <i class="fas fa-triangle-exclamation"></i>
+                Could not load users. Please try again.
+            </td></tr>`;
+    }
+}
+
+/* ---------- Render table rows ---------- */
+function renderRows(users) {
+    const tbody = document.getElementById('usersBody');
+
+    if (!users.length) {
+        tbody.innerHTML = `
+            <tr><td colspan="6" class="text-center text-muted" style="padding:40px;">
+                No users found.
+            </td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = users.map(u => {
+        const role = (u.role || 'USER').toUpperCase();
+        const rolePill = role === 'ADMIN'
+            ? `<span class="pill pill--info">ADMIN</span>`
+            : `<span class="pill pill--success">USER</span>`;
+
+        const statusPill = u.banned
+            ? `<span class="pill pill--danger"><i class="fas fa-ban"></i> Suspended</span>`
+            : (u.emailVerified
+                ? `<span class="pill pill--success"><i class="fas fa-check"></i> Active</span>`
+                : `<span class="pill pill--warning"><i class="fas fa-clock"></i> Unverified</span>`);
+
+        const isAdmin = role === 'ADMIN';
+        const actionBtn = isAdmin
+            ? `<span class="text-muted fs-xs">—</span>`
+            : (u.banned
+                ? `<button class="btn btn--ghost" onclick="askUnban(${u.id}, '${escapeAttr(u.name)}')">
+                       <i class="fas fa-unlock"></i> Unban
+                   </button>`
+                : `<button class="btn btn--danger" onclick="askBan(${u.id}, '${escapeAttr(u.name)}')">
+                       <i class="fas fa-ban"></i> Suspend
+                   </button>`);
+
+        return `
+            <tr>
+                <td class="fw-600">#${u.id}</td>
+                <td class="fw-600">${escapeHtml(u.name || '—')}</td>
+                <td class="text-muted">${escapeHtml(u.email || '—')}</td>
+                <td>${rolePill}</td>
+                <td>${statusPill}</td>
+                <td style="text-align:right;">${actionBtn}</td>
+            </tr>`;
+    }).join('');
+}
+
+/* ---------- Pagination controls ---------- */
+function renderPagination() {
+    const wrap = document.getElementById('pagination');
+    const info = document.getElementById('pageInfo');
+    const { page, totalPages, totalElements, size } = state;
+
+    if (totalPages <= 1) {
+        wrap.innerHTML = '';
+        info.innerText = totalElements
+            ? `Showing all ${totalElements} user${totalElements === 1 ? '' : 's'}`
+            : '—';
+        return;
+    }
+
+    const start = page * size + 1;
+    const end = Math.min((page + 1) * size, totalElements);
+    info.innerText = `Showing ${start}–${end} of ${totalElements}`;
+
+    const btns = [];
+    btns.push(`<button class="btn btn--ghost" ${page === 0 ? 'disabled' : ''} onclick="gotoPage(${page - 1})">
+                   <i class="fas fa-chevron-left"></i>
+               </button>`);
+
+    const windowStart = Math.max(0, page - 2);
+    const windowEnd   = Math.min(totalPages - 1, windowStart + 4);
+
+    for (let i = windowStart; i <= windowEnd; i++) {
+        const active = i === page;
+        btns.push(`<button class="btn ${active ? 'btn--primary' : 'btn--ghost'}"
+                   onclick="gotoPage(${i})">${i + 1}</button>`);
+    }
+
+    btns.push(`<button class="btn btn--ghost" ${page >= totalPages - 1 ? 'disabled' : ''} onclick="gotoPage(${page + 1})">
+                   <i class="fas fa-chevron-right"></i>
+               </button>`);
+
+    wrap.innerHTML = btns.join('');
+}
+
+function gotoPage(p) {
+    if (p < 0 || p >= state.totalPages) return;
+    state.page = p;
+    loadUsers();
+}
+
+/* ---------- Ban/Unban modal ---------- */
+let pendingAction = null;
+
+function askBan(id, name) {
+    pendingAction = { id, banned: true };
+    document.getElementById('banModalTitle').innerText = 'Suspend user?';
+    document.getElementById('banModalText').innerHTML =
+        `<b>${escapeHtml(name)}</b> will no longer be able to sign in. You can unban them anytime.`;
+    document.getElementById('banConfirmBtn').innerText = 'Suspend';
+    document.getElementById('banConfirmBtn').className = 'btn btn--danger';
+    document.getElementById('banModal').style.display = 'flex';
+}
+
+function askUnban(id, name) {
+    pendingAction = { id, banned: false };
+    document.getElementById('banModalTitle').innerText = 'Reactivate user?';
+    document.getElementById('banModalText').innerHTML =
+        `<b>${escapeHtml(name)}</b> will be able to sign in again.`;
+    document.getElementById('banConfirmBtn').innerText = 'Unban';
+    document.getElementById('banConfirmBtn').className = 'btn btn--success';
+    document.getElementById('banModal').style.display = 'flex';
+}
+
+function closeBanModal() {
+    document.getElementById('banModal').style.display = 'none';
+    pendingAction = null;
+}
+
+document.getElementById('banConfirmBtn').addEventListener('click', async () => {
+    if (!pendingAction) return;
+    const { id, banned } = pendingAction;
+    const endpoint = banned ? 'ban' : 'unban';
+    const btn = document.getElementById('banConfirmBtn');
+    btn.disabled = true;
+    btn.innerText = 'Working…';
+
+    try {
+        const res = await fetch(`/admin/users/${id}/${endpoint}`, {
+            method: 'PATCH',
+            credentials: 'include'
+        });
+        if (!res.ok) {
+            const msg = await res.text();
+            alert(msg || 'Action failed');
+        } else {
+            await loadUsers();
+        }
+    } catch {
+        alert('Network error');
+    } finally {
+        closeBanModal();
+        btn.disabled = false;
+    }
+});
+
+/* ---------- Search (debounced) ---------- */
+let searchTimer = null;
+document.getElementById('searchInput').addEventListener('input', (e) => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => {
+        state.q = e.target.value.trim();
+        state.page = 0;
+        loadUsers();
+    }, 300);
+});
+
+document.getElementById('refreshBtn').addEventListener('click', () => {
+    state.page = 0;
+    loadUsers();
+});
+
+/* ---------- Utilities ---------- */
+function escapeHtml(s) {
+    return String(s ?? '').replace(/[&<>"']/g, c => ({
+        '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    }[c]));
+}
+function escapeAttr(s) { return escapeHtml(s).replace(/'/g, "\\'"); }
+
+/* ---------- Init ---------- */
+loadUsers();
+</script>
+</body>
+</html>

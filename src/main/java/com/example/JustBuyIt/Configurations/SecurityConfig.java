@@ -30,8 +30,8 @@ public class SecurityConfig {
                 .csrf(obj->obj.disable())
                 .authorizeHttpRequests(authorizeRequests ->
                         authorizeRequests
-                                .requestMatchers("/auth/**","/LoginForm.html","/RegistrationForm.html").permitAll()
-                                .requestMatchers("/","/HomePage.html","/OneProduct.html","/css/**").permitAll()
+                                .requestMatchers("/auth/**","/LoginForm.html","/RegistrationForm.html","/ForgotPassword.html","/ResetPassword.html").permitAll()
+                                .requestMatchers("/","/HomePage.html","/OneProduct.html","/css/**","/js/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/products/**").permitAll()
                                 .requestMatchers(HttpMethod.POST, "/products").hasAuthority("ADMIN")
                                 .requestMatchers(HttpMethod.PUT, "/products/**").hasAuthority("ADMIN")

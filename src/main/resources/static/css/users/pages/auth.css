@@ -1,0 +1,262 @@
+/* ============================================================
+   AUTH PAGES — shared styles for Login / Register /
+   ForgotPassword / ResetPassword
+   ============================================================ */
+
+body.auth-page {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 40px 20px;
+    background:
+        radial-gradient(circle at 15% 15%, rgba(255,255,255,0.55) 0%, transparent 42%),
+        linear-gradient(160deg, var(--bg-wash) 0%, #e8e7fb 55%, #f6f6fc 100%);
+}
+
+/* Brand wordmark */
+.auth-brand {
+    font-size: 1.6rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin-bottom: 22px;
+    text-decoration: none;
+    color: var(--ink);
+}
+.auth-brand span {
+    color: var(--brand-dark);
+}
+
+/* Card */
+.auth-card {
+    background: var(--surface);
+    padding: 40px 38px 34px 38px;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border);
+    box-shadow: 0 18px 40px rgba(79, 70, 229, 0.14);
+    width: 100%;
+    max-width: 420px;
+}
+
+.auth-card h2 {
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    text-align: center;
+    color: var(--ink);
+}
+
+.auth-card .sub {
+    text-align: center;
+    color: var(--ink-muted);
+    font-size: 0.92rem;
+    margin-top: 8px;
+    margin-bottom: 26px;
+}
+
+/* Form fields */
+.form-group {
+    margin-bottom: 18px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 7px;
+    color: #4a486a;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    font-family: inherit;
+    font-size: 0.95rem;
+    outline: none;
+    background: #fbfbfe;
+    transition: 0.15s ease;
+    color: var(--ink);
+}
+
+.form-group input:focus {
+    border-color: var(--brand);
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
+}
+
+.hint {
+    font-size: 0.78rem;
+    color: var(--ink-muted);
+    margin-top: 6px;
+}
+
+/* Primary button */
+.btn-primary {
+    width: 100%;
+    margin-top: 6px;
+    padding: 14px;
+    background-color: var(--brand);
+    border: none;
+    border-radius: var(--radius-md);
+    color: #ffffff;
+    font-family: inherit;
+    font-size: 0.98rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+.btn-primary:hover {
+    background-color: var(--brand-dark);
+}
+.btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Footer link row */
+.auth-footer-text {
+    margin-top: 22px;
+    text-align: center;
+    font-size: 0.9rem;
+    color: var(--ink-muted);
+}
+.auth-footer-text a {
+    color: var(--brand);
+    text-decoration: none;
+    font-weight: 700;
+}
+.auth-footer-text a:hover {
+    color: var(--brand-dark);
+    text-decoration: underline;
+}
+
+/* Small links under the card */
+.auth-home-link {
+    margin-top: 24px;
+    font-size: 0.87rem;
+    color: #4a486a;
+    text-decoration: none;
+    font-weight: 600;
+}
+.auth-home-link:hover {
+    color: var(--brand-dark);
+}
+
+/* Forgot-password inline link inside form */
+.forgot-link-row {
+    text-align: right;
+    margin-top: -6px;
+    margin-bottom: 14px;
+}
+.forgot-link-row a {
+    font-size: 0.83rem;
+    color: var(--brand);
+    text-decoration: none;
+    font-weight: 600;
+}
+.forgot-link-row a:hover {
+    color: var(--brand-dark);
+    text-decoration: underline;
+}
+
+/* ============================================================
+   POP-UP ALERT (top-centered, UI-matched)
+   ============================================================ */
+
+.popup-alert {
+    position: fixed;
+    top: 28px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-20px);
+    width: calc(100% - 48px);
+    max-width: 420px;
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 18px 40px rgba(79, 70, 229, 0.18);
+    border: 1px solid var(--border);
+    padding: 16px 20px;
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--ink);
+    z-index: 9999;
+    opacity: 0;
+    transition: opacity 0.25s ease, transform 0.3s cubic-bezier(0.2, 0.9, 0.3, 1);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    pointer-events: none;
+}
+
+.popup-alert.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+    pointer-events: auto;
+}
+
+.popup-alert .popup-icon {
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    font-weight: 700;
+}
+
+.popup-alert.success .popup-icon {
+    background: #ecfdf5;
+    color: var(--price);
+}
+.popup-alert.error .popup-icon {
+    background: var(--danger-bg);
+    color: var(--danger);
+}
+
+.popup-alert .popup-message {
+    flex: 1;
+    line-height: 1.4;
+}
+
+.popup-alert .popup-close {
+    flex-shrink: 0;
+    background: none;
+    border: none;
+    font-size: 1.4rem;
+    line-height: 1;
+    cursor: pointer;
+    color: var(--ink-muted);
+    padding: 0 4px;
+    transition: color 0.15s;
+    font-weight: 400;
+    pointer-events: auto;
+}
+.popup-alert .popup-close:hover {
+    color: var(--ink);
+}
+
+.popup-alert .popup-progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    background: var(--brand);
+    border-radius: 0 0 0 var(--radius-lg);
+    width: 100%;
+    transform-origin: left;
+    opacity: 0.25;
+}
+.popup-alert.success .popup-progress { background: var(--price); }
+.popup-alert.error   .popup-progress { background: var(--danger); }
+
+/* Mobile tweaks for the auth card */
+@media (max-width: 480px) {
+    .auth-card {
+        padding: 32px 22px 26px 22px;
+        border-radius: 16px;
+    }
+    .auth-card h2 { font-size: 1.3rem; }
+}

@@ -7,159 +7,16 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg-wash: #CCCCFF;
-            --surface: #ffffff;
-            --ink: #23213a;
-            --ink-muted: #6b6a85;
-            --brand: #4f46e5;
-            --brand-dark: #3730a3;
-            --price: #0f9d70;
-            --danger: #ef4444;
-            --border: #e7e6f5;
-            --radius-lg: 20px;
-            --radius-md: 12px;
-            --shadow: 0 18px 40px rgba(79, 70, 229, 0.14);
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-
-        body {
-            background:
-                radial-gradient(circle at 15% 15%, rgba(255,255,255,0.55) 0%, transparent 42%),
-                linear-gradient(160deg, var(--bg-wash) 0%, #e8e7fb 55%, #f6f6fc 100%);
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            color: var(--ink);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 40px 20px;
-        }
-
-        .brand {
-            font-size: 1.6rem;
-            font-weight: 800;
-            letter-spacing: -0.02em;
-            margin-bottom: 22px;
-            text-decoration: none;
-            color: var(--ink);
-        }
-        .brand span { color: var(--brand-dark); }
-
-        .card {
-            background: var(--surface);
-            padding: 40px 38px 34px 38px;
-            border-radius: var(--radius-lg);
-            border: 1px solid var(--border);
-            box-shadow: var(--shadow);
-            width: 100%;
-            max-width: 420px;
-        }
-
-        .card h2 {
-            font-size: 1.5rem;
-            font-weight: 800;
-            letter-spacing: -0.02em;
-            text-align: center;
-        }
-        .card .sub {
-            text-align: center;
-            color: var(--ink-muted);
-            font-size: 0.92rem;
-            margin-top: 8px;
-            margin-bottom: 26px;
-        }
-
-        .form-group { margin-bottom: 18px; }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 7px;
-            color: #4a486a;
-            font-size: 0.85rem;
-            font-weight: 600;
-        }
-
-        .form-group input {
-            width: 100%;
-            padding: 12px 14px;
-            border: 1px solid var(--border);
-            border-radius: var(--radius-md);
-            font-family: inherit;
-            font-size: 0.95rem;
-            outline: none;
-            background: #fbfbfe;
-            transition: 0.15s ease;
-        }
-        .form-group input:focus {
-            border-color: var(--brand);
-            background: #fff;
-            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
-        }
-
-        .btn {
-            width: 100%;
-            margin-top: 6px;
-            padding: 14px;
-            background-color: var(--brand);
-            border: none;
-            border-radius: var(--radius-md);
-            color: #ffffff;
-            font-family: inherit;
-            font-size: 0.98rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: background-color 0.15s ease;
-        }
-        .btn:hover { background-color: var(--brand-dark); }
-        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
-
-        .footer-text {
-            margin-top: 22px;
-            text-align: center;
-            font-size: 0.9rem;
-            color: var(--ink-muted);
-        }
-        .footer-text a {
-            color: var(--brand);
-            text-decoration: none;
-            font-weight: 700;
-        }
-        .footer-text a:hover { color: var(--brand-dark); text-decoration: underline; }
-
-        .alert {
-            padding: 12px 14px;
-            margin-bottom: 20px;
-            border-radius: var(--radius-md);
-            font-size: 0.87rem;
-            font-weight: 600;
-            display: none;
-        }
-        .alert-error { background-color: #fef2f2; border: 1px solid #fecaca; color: #991b1b; }
-        .alert-success { background-color: #ecfdf5; border: 1px solid #a7f3d0; color: #065f46; }
-
-        .home-link {
-            margin-top: 24px;
-            font-size: 0.87rem;
-            color: #4a486a;
-            text-decoration: none;
-            font-weight: 600;
-        }
-        .home-link:hover { color: var(--brand-dark); }
-    </style>
+    <link rel="stylesheet" href="/css/users/common.css">
+    <link rel="stylesheet" href="/css/users/pages/auth.css">
 </head>
-<body>
+<body class="auth-page">
 
-<a href="/" class="brand">Just<span>Buy</span>It</a>
+<a href="/" class="auth-brand">Just<span>Buy</span>It</a>
 
-<div class="card">
+<div class="auth-card">
     <h2>Welcome back</h2>
     <p class="sub">Sign in to pick up where you left off.</p>
-
-    <div id="alert" class="alert"></div>
 
     <form id="loginForm">
         <div class="form-group">
@@ -170,69 +27,65 @@
             <label for="password">Password</label>
             <input type="password" id="password" required placeholder="••••••••" autocomplete="current-password">
         </div>
-        <button type="submit" class="btn" id="submitBtn">Sign in</button>
+        <div class="forgot-link-row">
+            <a href="/ForgotPassword.html">Forgot password?</a>
+        </div>
+        <button type="submit" class="btn-primary" id="submitBtn">Sign in</button>
     </form>
 
-    <div class="footer-text">
+    <div class="auth-footer-text">
         Don't have an account? <a href="/RegistrationForm.html">Create one</a>
     </div>
 </div>
 
-<a href="/HomePage.html" class="home-link">← Continue browsing</a>
+<a href="/HomePage.html" class="auth-home-link">← Continue browsing</a>
 
+<!-- Popup alert markup -->
+<div id="globalPopup" class="popup-alert" role="alert" aria-live="polite">
+    <div class="popup-icon" id="popupIcon">✓</div>
+    <div class="popup-message" id="popupMessage"></div>
+    <button class="popup-close" id="popupCloseBtn" aria-label="Close notification">×</button>
+    <div class="popup-progress" id="popupProgress"></div>
+</div>
+
+<script src="/js/popup.js"></script>
 <script>
-    // ----------------------------------------------------------------
-    //  Redirect-after-login support
-    // ----------------------------------------------------------------
-
-    // Read ?redirect= from the URL, validate it's a safe same-origin path.
-    function getRedirectTarget() {
-        const params = new URLSearchParams(location.search);
-        const raw = params.get("redirect");
-        if (!raw) return null;
-
-        // Must start with a single "/" — blocks "//evil.com", "https://evil.com",
-        // "javascript:...", etc. Also block backslashes which some browsers
-        // normalize to slashes.
-        if (!raw.startsWith("/") || raw.startsWith("//") || raw.includes("\\")) {
-            return null;
+    // Verified banner via popup
+    (function showVerifiedBanner() {
+        const v = new URLSearchParams(location.search).get('verified');
+        if (!v) return;
+        if (v === 'success') {
+            showPopup('Email verified! You can now sign in.', 'success', 5000);
+        } else {
+            showPopup('Verification link is invalid or has expired.', 'error', 5000);
         }
+    })();
 
-        // Optional: reject the login page itself (would loop)
+    // Redirect target
+    function getRedirectTarget() {
+        const raw = new URLSearchParams(location.search).get("redirect");
+        if (!raw) return null;
+        if (!raw.startsWith("/") || raw.startsWith("//") || raw.includes("\\")) return null;
         if (raw.startsWith("/LoginForm.html")) return null;
-
         return raw;
     }
-
     const REDIRECT_TARGET = getRedirectTarget();
 
-    // Forward the redirect param to the Register link so
-    // "Create one" also returns the user to the same page after signup.
     (function forwardRedirectToRegisterLink() {
         if (!REDIRECT_TARGET) return;
-        const regLink = document.querySelector('.footer-text a[href="/RegistrationForm.html"]');
+        const regLink = document.querySelector('.auth-footer-text a[href="/RegistrationForm.html"]');
         if (regLink) {
             regLink.href = `/RegistrationForm.html?redirect=${encodeURIComponent(REDIRECT_TARGET)}`;
         }
     })();
 
-    // ----------------------------------------------------------------
-    //  Login submit
-    // ----------------------------------------------------------------
-    document.getElementById('loginForm').addEventListener('submit', async function(e) {
+    // Submit
+    document.getElementById('loginForm').addEventListener('submit', async function (e) {
         e.preventDefault();
-
-        const alertBox = document.getElementById('alert');
         const submitBtn = document.getElementById('submitBtn');
-        alertBox.style.display = 'none';
-
-        const username = document.getElementById('username').value;
-        const password = document.getElementById('password').value;
-
-        // Uses URLSearchParams because controller expects @RequestParam
         const params = new URLSearchParams();
-        params.append('username', username);
-        params.append('password', password);
+        params.append('username', document.getElementById('username').value);
+        params.append('password', document.getElementById('password').value);
 
         submitBtn.disabled = true;
         submitBtn.textContent = 'Signing in…';
@@ -246,37 +99,23 @@
 
             if (response.ok) {
                 const message = await response.text();
-                alertBox.className = 'alert alert-success';
-                alertBox.textContent = message || 'Login successful!';
-                alertBox.style.display = 'block';
-
-                // ---- Go back to where the user came from ----
+                showPopup(message || 'Login successful!', 'success', 2500);
                 const destination = REDIRECT_TARGET || "/";
-
-                setTimeout(function() {
-                    window.location.href = destination;
-                }, 800);
+                setTimeout(() => window.location.href = destination, 1000);
             } else {
-                alertBox.className = 'alert alert-error';
-                alertBox.textContent = 'Invalid email or password.';
-                alertBox.style.display = 'block';
+                const text = await response.text().catch(() => '');
+                showPopup(text || 'Invalid email or password.', 'error', 5000);
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Sign in';
             }
         } catch (error) {
-            alertBox.className = 'alert alert-error';
-            alertBox.textContent = 'Unable to connect to the server.';
-            alertBox.style.display = 'block';
+            showPopup('Unable to connect to the server.', 'error', 5000);
             submitBtn.disabled = false;
             submitBtn.textContent = 'Sign in';
         }
     });
 
-    window.addEventListener("pageshow", function (event) {
-        if(event.persisted){
-            window.location.reload();
-        }
-    });
+    window.addEventListener("pageshow", e => { if (e.persisted) window.location.reload(); });
 </script>
 
 </body>

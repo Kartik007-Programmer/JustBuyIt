@@ -7,165 +7,16 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg-wash: #CCCCFF;
-            --surface: #ffffff;
-            --ink: #23213a;
-            --ink-muted: #6b6a85;
-            --brand: #4f46e5;
-            --brand-dark: #3730a3;
-            --price: #0f9d70;
-            --danger: #ef4444;
-            --border: #e7e6f5;
-            --radius-lg: 20px;
-            --radius-md: 12px;
-            --shadow: 0 18px 40px rgba(79, 70, 229, 0.14);
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-
-        body {
-            background:
-                radial-gradient(circle at 15% 15%, rgba(255,255,255,0.55) 0%, transparent 42%),
-                linear-gradient(160deg, var(--bg-wash) 0%, #e8e7fb 55%, #f6f6fc 100%);
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            color: var(--ink);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 40px 20px;
-        }
-
-        .brand {
-            font-size: 1.6rem;
-            font-weight: 800;
-            letter-spacing: -0.02em;
-            margin-bottom: 22px;
-            text-decoration: none;
-            color: var(--ink);
-        }
-        .brand span { color: var(--brand-dark); }
-
-        .card {
-            background: var(--surface);
-            padding: 40px 38px 34px 38px;
-            border-radius: var(--radius-lg);
-            border: 1px solid var(--border);
-            box-shadow: var(--shadow);
-            width: 100%;
-            max-width: 420px;
-        }
-
-        .card h2 {
-            font-size: 1.5rem;
-            font-weight: 800;
-            letter-spacing: -0.02em;
-            text-align: center;
-        }
-        .card .sub {
-            text-align: center;
-            color: var(--ink-muted);
-            font-size: 0.92rem;
-            margin-top: 8px;
-            margin-bottom: 26px;
-        }
-
-        .form-group { margin-bottom: 18px; }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 7px;
-            color: #4a486a;
-            font-size: 0.85rem;
-            font-weight: 600;
-        }
-
-        .form-group input {
-            width: 100%;
-            padding: 12px 14px;
-            border: 1px solid var(--border);
-            border-radius: var(--radius-md);
-            font-family: inherit;
-            font-size: 0.95rem;
-            outline: none;
-            background: #fbfbfe;
-            transition: 0.15s ease;
-        }
-        .form-group input:focus {
-            border-color: var(--brand);
-            background: #fff;
-            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
-        }
-
-        .hint {
-            font-size: 0.78rem;
-            color: var(--ink-muted);
-            margin-top: 6px;
-        }
-
-        .btn {
-            width: 100%;
-            margin-top: 6px;
-            padding: 14px;
-            background-color: var(--brand);
-            border: none;
-            border-radius: var(--radius-md);
-            color: #ffffff;
-            font-family: inherit;
-            font-size: 0.98rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: background-color 0.15s ease;
-        }
-        .btn:hover { background-color: var(--brand-dark); }
-        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
-
-        .footer-text {
-            margin-top: 22px;
-            text-align: center;
-            font-size: 0.9rem;
-            color: var(--ink-muted);
-        }
-        .footer-text a {
-            color: var(--brand);
-            text-decoration: none;
-            font-weight: 700;
-        }
-        .footer-text a:hover { color: var(--brand-dark); text-decoration: underline; }
-
-        .alert {
-            padding: 12px 14px;
-            margin-bottom: 20px;
-            border-radius: var(--radius-md);
-            font-size: 0.87rem;
-            font-weight: 600;
-            display: none;
-        }
-        .alert-error { background-color: #fef2f2; border: 1px solid #fecaca; color: #991b1b; }
-        .alert-success { background-color: #ecfdf5; border: 1px solid #a7f3d0; color: #065f46; }
-
-        .home-link {
-            margin-top: 24px;
-            font-size: 0.87rem;
-            color: #4a486a;
-            text-decoration: none;
-            font-weight: 600;
-        }
-        .home-link:hover { color: var(--brand-dark); }
-    </style>
+    <link rel="stylesheet" href="/css/users/common.css">
+    <link rel="stylesheet" href="/css/users/pages/auth.css">
 </head>
-<body>
+<body class="auth-page">
 
-<a href="/" class="brand">Just<span>Buy</span>It</a>
+<a href="/" class="auth-brand">Just<span>Buy</span>It</a>
 
-<div class="card">
+<div class="auth-card">
     <h2>Create your account</h2>
     <p class="sub">It takes less than a minute to get started.</p>
-
-    <div id="alert" class="alert"></div>
 
     <form id="registerForm">
         <div class="form-group">
@@ -181,20 +32,27 @@
             <input type="password" id="password" required minlength="6" placeholder="••••••••" autocomplete="new-password">
             <div class="hint">Use at least 6 characters.</div>
         </div>
-        <button type="submit" class="btn" id="submitBtn">Create account</button>
+        <button type="submit" class="btn-primary" id="submitBtn">Create account</button>
     </form>
 
-    <div class="footer-text">
+    <div class="auth-footer-text">
         Already have an account? <a href="/LoginForm.html">Sign in</a>
     </div>
 </div>
 
-<a href="/HomePage.html" class="home-link">← Continue browsing</a>
+<a href="/HomePage.html" class="auth-home-link">← Continue browsing</a>
 
+<div id="globalPopup" class="popup-alert" role="alert" aria-live="polite">
+    <div class="popup-icon" id="popupIcon">✓</div>
+    <div class="popup-message" id="popupMessage"></div>
+    <button class="popup-close" id="popupCloseBtn" aria-label="Close notification">×</button>
+    <div class="popup-progress" id="popupProgress"></div>
+</div>
+
+<script src="/js/popup.js"></script>
 <script>
     function getRedirectTarget() {
-        const params = new URLSearchParams(location.search);
-        const raw = params.get("redirect");
+        const raw = new URLSearchParams(location.search).get("redirect");
         if (!raw) return null;
         if (!raw.startsWith("/") || raw.startsWith("//") || raw.includes("\\")) return null;
         if (raw.startsWith("/RegistrationForm.html")) return null;
@@ -202,26 +60,19 @@
     }
     const REDIRECT_TARGET = getRedirectTarget();
 
-    // Forward it to the Login link
     (function forwardToLoginLink() {
         if (!REDIRECT_TARGET) return;
-        const loginLink = document.querySelector('a[href="/LoginForm.html"]');
+        const loginLink = document.querySelector('.auth-footer-text a[href="/LoginForm.html"]');
         if (loginLink) {
             loginLink.href = `/LoginForm.html?redirect=${encodeURIComponent(REDIRECT_TARGET)}`;
         }
     })();
 
-
-    // Role is fixed to USER — admin accounts are not created through this form.
     const DEFAULT_ROLE = 'USER';
 
-    document.getElementById('registerForm').addEventListener('submit', async function(e) {
+    document.getElementById('registerForm').addEventListener('submit', async function (e) {
         e.preventDefault();
-
-        const alertBox = document.getElementById('alert');
         const submitBtn = document.getElementById('submitBtn');
-        alertBox.style.display = 'none';
-
         const payload = {
             name: document.getElementById('name').value,
             email: document.getElementById('email').value,
@@ -240,34 +91,31 @@
             });
 
             if (response.ok) {
-                alertBox.className = 'alert alert-success';
-                alertBox.textContent = 'Account created! Redirecting to sign in…';
-                alertBox.style.display = 'block';
+                showPopup(
+                    'Account created! Check your inbox to verify your email before signing in.',
+                    'success',
+                    5000
+                );
+                submitBtn.textContent = 'Awaiting verification…';
+
                 const destination = REDIRECT_TARGET
                     ? `/LoginForm.html?redirect=${encodeURIComponent(REDIRECT_TARGET)}`
                     : "/LoginForm.html";
-                setTimeout(() => window.location.href = destination, 800);
+                setTimeout(() => window.location.href = destination, 1800);
             } else {
-                alertBox.className = 'alert alert-error';
-                alertBox.textContent = 'Registration failed. Please check your details.';
-                alertBox.style.display = 'block';
+                const text = await response.text().catch(() => '');
+                showPopup(text || 'Registration failed. Please check your details.', 'error', 5000);
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Create account';
             }
         } catch (error) {
-            alertBox.className = 'alert alert-error';
-            alertBox.textContent = 'Unable to connect to the server.';
-            alertBox.style.display = 'block';
+            showPopup('Unable to connect to the server.', 'error', 5000);
             submitBtn.disabled = false;
             submitBtn.textContent = 'Create account';
         }
     });
 
-    window.addEventListener("pageshow", function (event) {
-        if(event.persisted){
-            window.location.reload();
-        }
-    });
+    window.addEventListener("pageshow", e => { if (e.persisted) window.location.reload(); });
 </script>
 
 </body>

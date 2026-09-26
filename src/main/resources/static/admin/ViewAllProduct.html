@@ -42,6 +42,13 @@
         </a>
     </nav>
 
+    <div class="sidebar__section">Users</div>
+    <nav class="sidebar__nav sidebar__nav--grow">
+        <a href="/admin/AdminUsers.html" class="sidebar__link">
+            <i class="fas fa-users"></i><span>Manage Users</span>
+        </a>
+    </nav>
+
     <div class="sidebar__section">Account</div>
     <nav class="sidebar__nav">
         <a href="#" class="sidebar__link sidebar__link--logout" onclick="handleLogout(event)">
@@ -277,7 +284,7 @@
     function productCard(p) {
         const imgSrc = p.imagefile
             ? `/products/${p.id}/image`
-            : 'https://via.placeholder.com/300x300?text=No+Image';
+            : 'https://placehold.co/300x300?text=No+Image';
         const category = p.categoryName || (p.category ? p.category.name : 'Uncategorized');
         const unit = p.qunatityUnit || 'PIECE';
         const stock = p.quantity != null ? p.quantity : 0;
@@ -294,7 +301,7 @@
                     <img src="${imgSrc}"
                          alt="${esc(p.name)}"
                          class="product-card__img"
-                         onerror="this.src='https://via.placeholder.com/300x300?text=No+Image'">
+                         onerror="this.src='https://placehold.co/300x300?text=No+Image'">
                     <span class="pill ${stockClass} product-card__badge">${stockLabel}</span>
                 </div>
                 <div class="product-card__body">

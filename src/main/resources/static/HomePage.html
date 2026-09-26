@@ -222,7 +222,7 @@
 
             const imgSrc = p.imagefile
                 ? `${API_BASE}/products/${p.id}/image`
-                : "https://via.placeholder.com/300x200?text=No+Image";
+                : "https://placehold.co/300x200?text=No+Image";
 
             const categoryName = getCategoryName(p);
             const unit = getUnit(p);
@@ -230,7 +230,7 @@
 
             card.innerHTML = `
                 <div class="img-container">
-                    <img src="${imgSrc}" alt="${p.name}" onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
+                    <img src="${imgSrc}" alt="${p.name}" onerror="this.src='https://placehold.co/300x200?text=No+Image'">
                     ${categoryName ? `<span class="category-tag">${categoryName}</span>` : ""}
                 </div>
                 <div class="content">

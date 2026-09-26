@@ -41,6 +41,13 @@
         </a>
     </nav>
 
+    <div class="sidebar__section">Users</div>
+    <nav class="sidebar__nav sidebar__nav--grow">
+        <a href="/admin/AdminUsers.html" class="sidebar__link">
+            <i class="fas fa-users"></i><span>Manage Users</span>
+        </a>
+    </nav>
+
     <div class="sidebar__section">Account</div>
     <nav class="sidebar__nav">
         <a href="#" class="sidebar__link sidebar__link--logout" onclick="handleLogout(event)">
@@ -107,7 +114,7 @@
     }
 
     function render(p) {
-        const imgSrc = p.imagefile ? `/products/${p.id}/image` : 'https://via.placeholder.com/400x400?text=No+Image';
+        const imgSrc = p.imagefile ? `/products/${p.id}/image` : 'https://placehold.co/400x400?text=No+Image';
         const cat = p.categoryName || (p.category ? p.category.name : 'Uncategorized');
         const unit = p.qunatityUnit || 'PIECE';
 
@@ -119,7 +126,7 @@
                         <div style="position:absolute;top:-60px;right:-60px;width:200px;height:200px;background:radial-gradient(circle,rgba(167,139,250,.35),transparent 70%);border-radius:50%;"></div>
                         <img src="${imgSrc}"
                              alt="${esc(p.name)}"
-                             onerror="this.src='https://via.placeholder.com/400x400?text=No+Image'"
+                             onerror="this.src='https://placehold.co/400x400?text=No+Image'"
                              style="position:relative;z-index:1;width:100%;max-width:340px;aspect-ratio:1;object-fit:cover;border-radius:var(--r-xl);box-shadow:0 20px 40px -18px rgba(0,0,0,.3);background:#fff;">
                     </div>
 

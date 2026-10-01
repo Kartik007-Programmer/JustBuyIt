@@ -2,8 +2,8 @@ package com.example.JustBuyIt.Controllers;
 
 import com.example.JustBuyIt.Models.Users;
 import com.example.JustBuyIt.Services.SecurityService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,9 +18,6 @@ public class AuthController {
     public AuthController(SecurityService securityService) {
         this.securityService = securityService;
     }
-
-    //    @Autowired
-//    ModelAndView mv;
 
     @PostMapping("/register")
     ResponseEntity<?> Register(@RequestBody Users users) {
@@ -37,8 +34,8 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(HttpServletResponse response) {
-        return securityService.Logout(response);
+    public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) {
+        return securityService.Logout(request,response);
     }
 
     @GetMapping("/verify-email")

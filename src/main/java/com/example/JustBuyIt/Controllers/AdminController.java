@@ -1,5 +1,6 @@
 package com.example.JustBuyIt.Controllers;
 
+import com.example.JustBuyIt.DTOs.UserPrincipalDto;
 import com.example.JustBuyIt.Models.Users;
 import com.example.JustBuyIt.Services.SecurityService;
 import com.example.JustBuyIt.Services.UsersService;
@@ -28,7 +29,7 @@ public class AdminController {
 
     @GetMapping
     ResponseEntity<?> getCurrentAdmin() {
-        Users admin = securityService.getPresentAuthorizedAdmin();
+        UserPrincipalDto admin = securityService.getPresentAuthorizedAdmin();
         if (admin != null) {
             return ResponseEntity.ok(admin);
         }else {

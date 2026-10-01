@@ -11,6 +11,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,15 +27,37 @@ public class ProductService {
     private final ProductRepo repo;
     private final CategoryRepo categoryRepo;
     private final ImageService imageService;
+    private final StringRedisTemplate stringRedisTemplate;
 
-    public ProductService(ProductRepo repo, CategoryRepo categoryRepo, ImageService imageService) {
+    public ProductService(ProductRepo repo, CategoryRepo categoryRepo, ImageService imageService, StringRedisTemplate stringRedisTemplate) {
         this.repo = repo;
         this.categoryRepo = categoryRepo;
         this.imageService = imageService;
+        this.stringRedisTemplate = stringRedisTemplate;
+    }
+    private static final String PRODUCT_VERSION_KEY = "products:version";
+
+    private volatile String cachedVersion = "1";
+    private volatile long versionFetchedAt = 0;
+    private static final long VERSION_TTL_MS = 5_000;
+
+    public String currentVersion() {
+        long now = System.currentTimeMillis();
+        if (now - versionFetchedAt > VERSION_TTL_MS) {
+            String v = stringRedisTemplate.opsForValue().get(PRODUCT_VERSION_KEY);
+            cachedVersion = (v != null) ? v : "1";
+            versionFetchedAt = now;
+        }
+        return cachedVersion;
+    }
+
+    public void bumpVersion() {
+        stringRedisTemplate.opsForValue().increment(PRODUCT_VERSION_KEY);
     }
 
     @Cacheable(value = "products",
-            key = "'page:' + #pageable.pageNumber "
+            key = "'v' + @productService.currentVersion() "
+                    + "+ ':page:' + #pageable.pageNumber "
                     + "+ ':' + #pageable.pageSize "
                     + "+ ':' + #pageable.sort.toString() "
                     + "+ ':cat:' + (#category != null ? #category : 'all')")
@@ -46,27 +69,31 @@ public class ProductService {
         return toDTO(repo.findByCategory_NameIgnoreCase(category, pageable));
     }
 
-    @Cacheable(value = "products",key = "#prodId")
-    @Transactional(readOnly = true)
+    @Cacheable(value = "products", key = "'v' + @productService.currentVersion() + ':' + #prodId")    @Transactional(readOnly = true)
     public Product getProductById(int prodId) {
-        return repo.findById(prodId).orElseThrow(() -> new UsernameNotFoundException("Product not found."));
+        return loadProduct(prodId);
+    }
+
+    private Product loadProduct(int prodId) {
+        return repo.findById(prodId)
+                .orElseThrow(() -> new UsernameNotFoundException("Product not found."));
     }
 
     @Transactional
-    @CacheEvict(value = "products", allEntries = true)
     public Product addProductWithFile(ProductDTO dto, MultipartFile file) throws IOException {
         Product product = mapDtoToProduct(dto);
 
         if (file != null && !file.isEmpty()) {
             product.setImagefile(file.getBytes());
         }
-
-        return repo.save(product);
+        Product saved = repo.save(product);
+        bumpVersion();
+        return saved;
     }
 
     @Transactional
-    @CacheEvict(value = "products", allEntries = true)
     public Product AddProduct(ProductDTO productDTO) throws IOException {
+        Product saved;
         try {
             Product product = mapDtoToProduct(productDTO);
             if (productDTO.getImageUrl() != null && !productDTO.getImageUrl().isBlank()) {
@@ -78,17 +105,18 @@ public class ProductService {
                     product.setImagefile(null);
                 }
             }
-            return  repo.save(product);
+            saved = repo.save(product);
         }catch (Exception e){
             System.out.println(e.getMessage());
+            saved = repo.save(mapDtoToProduct(productDTO));
         }
-        return  repo.save(mapDtoToProduct(productDTO));
+        bumpVersion();
+        return saved;
     }
 
     @Transactional
-    @CacheEvict(value = "products", allEntries = true)
     public Product  UpdateProductWithFile(int prodId, ProductDTO dto, MultipartFile imagefile) throws IOException {
-        Product existingProduct = getProductById(prodId);
+        Product existingProduct = loadProduct(prodId);
         existingProduct.setName(dto.getName());
         existingProduct.setPrice(dto.getPrice());
         existingProduct.setDescription(dto.getDescription());
@@ -117,13 +145,14 @@ public class ProductService {
             }
         }
 
-        return repo.save(existingProduct);
+        Product saved = repo.save(existingProduct);
+        bumpVersion();
+        return saved;
     }
 
     @Transactional
-    @CacheEvict(value = "products", allEntries = true)
     public Product  UpdateProduct(int prodId, ProductDTO dto) throws IOException {
-        Product existingProduct = getProductById(prodId);
+        Product existingProduct = loadProduct(prodId);
         existingProduct.setName(dto.getName());
         existingProduct.setPrice(dto.getPrice());
         existingProduct.setDescription(dto.getDescription());
@@ -152,13 +181,15 @@ public class ProductService {
             }
         }
 
-        return repo.save(existingProduct);
+        Product saved = repo.save(existingProduct);
+        bumpVersion();
+        return saved;
     }
 
     @Transactional
-    @CacheEvict(value = "products", allEntries = true)
     public void deleteProductById(int prodId) {
         repo.deleteById(prodId);
+        bumpVersion();
     }
 
     @Transactional(readOnly = true)
@@ -174,7 +205,6 @@ public class ProductService {
     }
 
     @Transactional
-    @CacheEvict(value = "products", allEntries = true)
     public List<Product> addProductsBatchWithUrls(List<ProductDTO> productDTOs) {
         List<Product> productsToSave = new ArrayList<>();
 
@@ -191,7 +221,9 @@ public class ProductService {
             }
             productsToSave.add(product);
         }
-        return repo.saveAll(productsToSave);
+        List<Product> savedProducts = repo.saveAll(productsToSave);
+        bumpVersion();
+        return savedProducts;
     }
 
     private Product mapDtoToProduct(ProductDTO dto) {

@@ -30,7 +30,8 @@ public class PaymentService {
     public PaymentResponse processFakePayment(String email, PaymentRequest paymentRequest) {
         Users user = UsersRepo.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found!"));
 
-        ShoppingCart cart = CartRepo.findByUserId(user.getId()).orElseThrow(() -> new RuntimeException("Cart not found!"));
+        ShoppingCart cart = CartRepo.findByEmailForUpdate(email)   // ← lock here
+                .orElseThrow(() -> new RuntimeException("Cart not found!"));
 
         if (cart.getCartItems().isEmpty() || cart.getTotalPrice() <= 0) {
             throw new RuntimeException("Cart not found!");

@@ -10,11 +10,15 @@ import com.example.JustBuyIt.Models.Users;
 import com.example.JustBuyIt.Repository.ProductRepo;
 import com.example.JustBuyIt.Repository.ShoppingCartRepo;
 import com.example.JustBuyIt.Repository.UsersRepo;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,23 +30,26 @@ public class ShoppingCartService {
     private final ShoppingCartRepo cartRepo;
     private final UsersRepo usersRepo;
     private final ProductRepo productRepo;
+    private final CacheManager cacheManager;
 
-    public ShoppingCartService(ShoppingCartRepo shoppingCartRepo, UsersRepo usersRepo, ProductRepo productRepo) {
-        this.cartRepo = shoppingCartRepo;
+    public ShoppingCartService(ShoppingCartRepo cartRepo, UsersRepo usersRepo, ProductRepo productRepo, CacheManager cacheManager) {
+        this.cartRepo = cartRepo;
         this.usersRepo = usersRepo;
         this.productRepo = productRepo;
+        this.cacheManager = cacheManager;
     }
 
     @Transactional(readOnly = true)
     @Cacheable(value = "cart", key = "#Email")
     public ShoppingCartResponse getCartByUser(String Email){
         Users users = usersRepo.findByEmail(Email).orElseThrow(() -> new RuntimeException("User Not Found!"));
-        ShoppingCart cart = getOrCreateCart(users);
+        ShoppingCart cart = cartRepo.findByUserId(users.getId())
+                .orElseThrow(() -> new RuntimeException("Cart not initialized"));
         return mapToCartResponse(cart);
     }
 
     @Transactional
-    @CachePut(value = "cart", key = "#Email")
+    @CacheEvict(value = "cart", key = "#Email")
     public ShoppingCartResponse addItemToCart(String Email, CartItemRequest cartItemRequest){
         Users  users = usersRepo.findByEmail(Email).orElseThrow(() -> new RuntimeException("User Not Found!"));
         Product product = productRepo.findById(cartItemRequest.getProductId()).orElseThrow(() -> new RuntimeException("Product Not Found!"));
@@ -79,7 +86,7 @@ public class ShoppingCartService {
     }
 
     @Transactional
-    @CachePut(value = "cart", key = "#Email")
+    @CacheEvict(value = "cart", key = "#Email")
     public ShoppingCartResponse removeItemFromCart(String Email, Long CartItemId){
         ShoppingCart cart = getUserCart(Email);
 
@@ -91,17 +98,28 @@ public class ShoppingCartService {
     }
 
     @Transactional
-    @CacheEvict(value = "cart", key = "#Email")
-    public void clearCart(String Email){
-        ShoppingCart cart = getUserCart(Email);
+    public void clearCart(String email){
+        ShoppingCart cart = getUserCart(email);
         cart.getCartItems().clear();
         cart.setTotalPrice(0.0);
         cartRepo.save(cart);
+
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    Cache cache = cacheManager.getCache("cart");
+                    if (cache != null) {
+                        cache.evict(email);
+                    }
+                }
+            });
+        }
     }
 
     private ShoppingCart getUserCart(String email) {
-        Users users = usersRepo.findByEmail(email).orElseThrow(() -> new RuntimeException("User Not Found!"));
-        return cartRepo.findByUserId(users.getId()).orElseThrow(() -> new RuntimeException("User not found!"));
+        return cartRepo.findByEmailForUpdate(email)
+                .orElseThrow(() -> new RuntimeException("Cart not found"));
     }
 
     private void reCalculateCartTotal(ShoppingCart cart) {

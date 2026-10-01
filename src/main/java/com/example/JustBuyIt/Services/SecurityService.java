@@ -1,10 +1,14 @@
 package com.example.JustBuyIt.Services;
 
+import com.example.JustBuyIt.DTOs.UserPrincipalDto;
 import com.example.JustBuyIt.Models.Role;
+import com.example.JustBuyIt.Models.ShoppingCart;
 import com.example.JustBuyIt.Models.Users;
+import com.example.JustBuyIt.Repository.ShoppingCartRepo;
 import com.example.JustBuyIt.Repository.UsersRepo;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
@@ -17,7 +21,9 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.util.WebUtils;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.UUID;
@@ -26,29 +32,24 @@ import java.util.Optional;
 @Service
 public class SecurityService {
 
-
     private final JwtService jwtService;
-
     private final UsersRepo usersRepo;
-
     private final AuthenticationManager authenticationManager;
-
-    private PasswordEncoder passwordEncoder;
-
+    private final PasswordEncoder passwordEncoder;
     private final UserDetailsService userDetailsService;
-
     private final RedisCacheService redisCacheService;
-
     private final EmailService  emailService;
+    private final ShoppingCartRepo cartRepo;
 
-    public SecurityService(JwtService jwtService, UsersRepo usersRepo, AuthenticationManager authenticationManager, PasswordEncoder passwordEncoder, UserDetailsService userDetailsService, RedisCacheService redisCacheService, EmailService emailService) {
-        this.jwtService = jwtService;
-        this.usersRepo = usersRepo;
-        this.authenticationManager = authenticationManager;
-        this.passwordEncoder = passwordEncoder;
-        this.userDetailsService = userDetailsService;
-        this.redisCacheService = redisCacheService;
+    public SecurityService(EmailService emailService, ShoppingCartRepo cartRepo, RedisCacheService redisCacheService, UserDetailsService userDetailsService, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, UsersRepo usersRepo, JwtService jwtService) {
         this.emailService = emailService;
+        this.cartRepo = cartRepo;
+        this.redisCacheService = redisCacheService;
+        this.userDetailsService = userDetailsService;
+        this.passwordEncoder = passwordEncoder;
+        this.authenticationManager = authenticationManager;
+        this.usersRepo = usersRepo;
+        this.jwtService = jwtService;
     }
 
     public ResponseEntity<?> RegisterUser(Users users) {
@@ -64,7 +65,6 @@ public class SecurityService {
                     .body(Map.of("error", "Email already registered"));
         }
 
-        passwordEncoder = new BCryptPasswordEncoder();
         users.setPassword(passwordEncoder.encode(users.getPassword()));
         users.setEmailVerified(false);
 
@@ -73,8 +73,12 @@ public class SecurityService {
         users.setVerificationTokenExpiry(LocalDateTime.now().plusMinutes(1440));
 
         Users savedUser = usersRepo.save(users);
+        ShoppingCart cart = new ShoppingCart();
+        cart.setUser(savedUser);
+        cartRepo.save(cart);
+
         // Cache the new user
-        redisCacheService.setCacheUser(savedUser.getEmail(), savedUser);
+        redisCacheService.setCacheUser(savedUser.getEmail(), UserPrincipalDto.fromEntity(savedUser));
 
         try {
             emailService.sendVerificationEmail(savedUser.getEmail(), token);
@@ -101,7 +105,7 @@ public class SecurityService {
         user.setVerificationToken(null);
         user.setVerificationTokenExpiry(null);
         usersRepo.save(user);
-        redisCacheService.setCacheUser(user.getEmail(), user);
+        redisCacheService.setCacheUser(user.getEmail(), UserPrincipalDto.fromEntity(user));
 
         return ResponseEntity.ok("Email verified successfully");
     }
@@ -115,7 +119,7 @@ public class SecurityService {
             user.setPasswordResetToken(token);
             user.setPasswordResetTokenExpiry(LocalDateTime.now().plusMinutes(30));
             usersRepo.save(user);
-            redisCacheService.setCacheUser(user.getEmail(), user);
+            redisCacheService.setCacheUser(user.getEmail(), UserPrincipalDto.fromEntity(user));
 
             try {
                 emailService.sendPasswordResetEmail(user.getEmail(), token);
@@ -138,10 +142,11 @@ public class SecurityService {
         }
 
         user.setPassword(passwordEncoder.encode(newPassword));
+        user.setPasswordChangedAt(Instant.now());
         user.setPasswordResetToken(null);
         user.setPasswordResetTokenExpiry(null);
         usersRepo.save(user);
-        redisCacheService.setCacheUser(user.getEmail(), user);
+        redisCacheService.setCacheUser(user.getEmail(), UserPrincipalDto.fromEntity(user));
 
         return ResponseEntity.ok("Password reset successful");
     }
@@ -154,10 +159,10 @@ public class SecurityService {
                 UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
                 String token = jwtService.generateToken(userDetails);
 
-                System.out.println("token: " + token);
+//                System.out.println("token: " + token);
 
                 // Cache the user and token in Redis
-                redisCacheService.setCacheUser(username, (Users) userDetails);
+                redisCacheService.setCacheUser(username, UserPrincipalDto.fromEntity((Users) userDetails));
                 redisCacheService.setCacheToken(token,username);
 
                 ResponseCookie responseCookie = ResponseCookie.from("JWT_TOKEN",token)
@@ -183,7 +188,7 @@ public class SecurityService {
         }
     }
 
-    public ResponseEntity<?> Logout(HttpServletResponse response) {
+    public ResponseEntity<?> Logout(HttpServletRequest request, HttpServletResponse response) {
         // Get current authentication
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null && auth.getPrincipal() instanceof UserDetails) {
@@ -192,7 +197,25 @@ public class SecurityService {
             redisCacheService.invalidateUserCache(userDetails.getUsername());
         }
 
-        ResponseCookie cookie = ResponseCookie.from("JWT_TOKEN", "")
+        // 1. Try resolving token from Cookie
+        String token = null;
+        Cookie cookie = WebUtils.getCookie(request, "JWT_TOKEN");
+        if (cookie != null) {
+            token = cookie.getValue();
+        }
+
+        // 2. Fallback or override using Authorization Header
+        String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            token = authHeader.substring(7);
+        }
+
+        // Invalidate whichever token was provided
+        if (token != null) {
+            redisCacheService.invalidateTokenCache(token);
+        }
+
+        ResponseCookie deleteCookie = ResponseCookie.from("JWT_TOKEN", "")
                 .httpOnly(true)
                 .secure(false)
                 .path("/")
@@ -200,7 +223,7 @@ public class SecurityService {
                 .sameSite("Lax")
                 .build();
 
-        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+        response.addHeader(HttpHeaders.SET_COOKIE, deleteCookie.toString());
         return ResponseEntity.ok("Logged out successfully");
     }
 
@@ -216,41 +239,44 @@ public class SecurityService {
                 .orElse("USER");
     }
 
-    public Users getPresentAuthorizedUser() {
+    public UserPrincipalDto getPresentAuthorizedUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Users user = null;
-        assert authentication != null;
+        if (authentication == null || !authentication.isAuthenticated()
+                || authentication instanceof AnonymousAuthenticationToken) {
+            throw new AuthenticationCredentialsNotFoundException("No authenticated user");
+        }
         String username = authentication.getName();
+        UserPrincipalDto user = null;
 
-        Users Cachedusers = redisCacheService.getUserFromCache(username);
+        UserPrincipalDto Cachedusers = redisCacheService.getUserFromCache(username);
 
         if (Cachedusers != null) {
             user = Cachedusers;
         }else {
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
             if (userDetails instanceof Users) {
-                user = (Users) userDetails;
+                user = UserPrincipalDto.fromEntity((Users) userDetails);
                 redisCacheService.setCacheUser(username, user);
             }
         }
         return user;
     }
 
-    public Users getPresentAuthorizedAdmin() {
+    public UserPrincipalDto getPresentAuthorizedAdmin() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Users user = null;
+        UserPrincipalDto user = null;
         assert authentication != null;
         String username = authentication.getName();
         String role = getPresentAuthorizedRole();
         if (role.equals("ADMIN")) {
-            Users Cachedusers = redisCacheService.getUserFromCache(username);
+            UserPrincipalDto Cachedusers = redisCacheService.getUserFromCache(username);
 
             if (Cachedusers != null) {
                 user = Cachedusers;
             }else {
                 UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
                 if (userDetails instanceof Users) {
-                    user = (Users) userDetails;
+                    user = UserPrincipalDto.fromEntity((Users) userDetails);
                     redisCacheService.setCacheUser(username, user);
                 }
             }

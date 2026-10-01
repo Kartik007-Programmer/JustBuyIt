@@ -1,5 +1,6 @@
 package com.example.JustBuyIt.Configurations;
 
+import com.example.JustBuyIt.DTOs.UserPrincipalDto;
 import com.example.JustBuyIt.Models.Users;
 import com.example.JustBuyIt.Services.JwtService;
 import com.example.JustBuyIt.Services.RedisCacheService;
@@ -37,47 +38,28 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             HttpServletResponse response,
             FilterChain filterChain) throws ServletException, IOException {
 
-//        if (IsURIsPublicEndPoints(request.getRequestURI())){
-//            filterChain.doFilter(request, response);
-//            return;
-//        }
-
         String authToken = getAuthTokenFromRequest(request);
 
         if (authToken != null && SecurityContextHolder.getContext().getAuthentication() == null){
             try {
                 String CachedUsername = redisCacheService.getUserNameFromTokenCache(authToken);
-                String username = null;
-                if (CachedUsername != null) {
-                    username = CachedUsername;
-                }else {
-                    username = jwtService.getUsernameByToken(authToken);
-                }
+                String username = (CachedUsername != null) ? CachedUsername : jwtService.getUsernameByToken(authToken);
 
                 if (username != null) {
-
-                    Users user = null;
-
-                    Users Cachedusers = redisCacheService.getUserFromCache(username);
-
-                    if (Cachedusers != null) {
-                        user = Cachedusers;
-                    }else {
+                    UserPrincipalDto userDto = redisCacheService.getUserFromCache(username);
+                    if (userDto == null) {
                         UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
                         if (userDetails instanceof Users) {
-                            user = (Users) userDetails;
-                            redisCacheService.setCacheUser(username, user);
+                            userDto = UserPrincipalDto.fromEntity((Users) userDetails);
+                            redisCacheService.setCacheUser(username, userDto);
                         }
                     }
 
-
-                    assert user != null;
-                    if (jwtService.isTokenValid(authToken,user)){
-
+                    if (userDto != null && jwtService.isTokenValid(authToken, userDto)) {
                         if (CachedUsername == null) {
-                            redisCacheService.setCacheToken(authToken,username);
+                            redisCacheService.setCacheToken(authToken, username);
                         }
-                        setAuthenticationByUserDetails(user,request);
+                        setAuthenticationByUserDetails(userDto, request);
                     }
                 }
             } catch (Exception e) {
@@ -101,12 +83,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             return authHeader.substring(7);
         }
         return null;
-    }
-
-    private boolean IsURIsPublicEndPoints(String uri) {
-        return uri.equals("/LoginForm.html") ||
-                uri.equals("RegistrationForm.html") ||
-                uri.startsWith("/auth/");
     }
 
     private void setAuthenticationByUserDetails(UserDetails userDetails, HttpServletRequest request) {

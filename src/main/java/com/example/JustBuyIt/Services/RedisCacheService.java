@@ -1,5 +1,6 @@
 package com.example.JustBuyIt.Services;
 
+import com.example.JustBuyIt.DTOs.UserPrincipalDto;
 import com.example.JustBuyIt.Models.Users;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -18,21 +19,21 @@ public class RedisCacheService {
     private static final long USER_CACHE_TTL = 5; // minutes
     private static final long TOKEN_CACHE_TTL = 1; // hour
 
-    public void setCacheUser(String username, Users users) {
+    public void setCacheUser(String username, UserPrincipalDto users) {
         String Key = USER_CACHE_KEY + username;
         redisTemplate.opsForValue().set(Key, users, Duration.ofMinutes(USER_CACHE_TTL));
     }
 
-    public Users getUserFromCache(String username) {
+    public UserPrincipalDto getUserFromCache(String username) {
         String Key = USER_CACHE_KEY + username;
         Object cached = redisTemplate.opsForValue().get(Key);
-        if (cached instanceof Users) {
-            return (Users) cached;
+        if (cached instanceof UserPrincipalDto) {
+            return (UserPrincipalDto) cached;
         }
         return null;
     }
 
-    public Users getUserDetailsFromCache(String username) {
+    public UserPrincipalDto getUserDetailsFromCache(String username) {
         return getUserFromCache(username);
     }
 
@@ -42,8 +43,8 @@ public class RedisCacheService {
     }
 
     public String getUserNameFromTokenCache(String token) {
-        String Key = TOKEN_CACHE_KEY + token;
-        return (String) redisTemplate.opsForValue().get(Key);
+        Object v = redisTemplate.opsForValue().get(TOKEN_CACHE_KEY + token);
+        return v instanceof String s ? s : null;
     }
 
     public void invalidateUserCache(String username) {

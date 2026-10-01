@@ -6,6 +6,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
@@ -34,6 +35,13 @@ public class Users implements UserDetails {
     private LocalDateTime passwordResetTokenExpiry;
 
     private boolean banned = false;
+
+    private Instant passwordChangedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        passwordChangedAt = Instant.now();
+    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -163,5 +171,13 @@ public class Users implements UserDetails {
 
     public void setBanned(boolean banned) {
         this.banned = banned;
+    }
+
+    public Instant  getPasswordChangedAt() {
+        return passwordChangedAt;
+    }
+
+    public void setPasswordChangedAt(Instant passwordChangedAt) {
+        this.passwordChangedAt = passwordChangedAt;
     }
 }

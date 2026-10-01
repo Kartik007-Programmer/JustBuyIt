@@ -1,15 +1,23 @@
 package com.example.JustBuyIt.Services;
 
+import com.example.JustBuyIt.Models.Users;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.security.Key;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -19,7 +27,13 @@ import java.util.stream.Collectors;
 @Service
 public class JwtService {
 
-    String Secret_key = "kicYck35fjuHfNGM30KHDJaBySUc04hiB4MnBgAjamU";
+    private final Key signingKey;
+
+    public JwtService(@Value("${jwt.secret}") String secret) {
+        // secret must be a Base64-encoded 256-bit key
+        byte[] keyBytes = Decoders.BASE64.decode(secret);
+        this.signingKey = Keys.hmacShaKeyFor(keyBytes);
+    }
 
     String generateToken(UserDetails userDetails) {
 
@@ -44,13 +58,8 @@ public class JwtService {
                 .setSubject(username)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60)) // 1 Hour
-                .signWith(getSecretKey(), SignatureAlgorithm.HS256)
+                .signWith(signingKey, SignatureAlgorithm.HS256)
                 .compact();
-    }
-
-    private Key getSecretKey() {
-        byte[] keybytes = Decoders.BASE64.decode(this.Secret_key);
-        return Keys.hmacShaKeyFor(keybytes);
     }
 
     public String getUsernameByToken(String authToken) {
@@ -66,15 +75,35 @@ public class JwtService {
     private Claims ExtractAllClaims(String token) {
         return Jwts
                 .parserBuilder()
-                .setSigningKey(getSecretKey())
+                .setSigningKey(signingKey)
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
     }
 
     public boolean isTokenValid(String authToken, UserDetails userDetails) {
-        String username = userDetails.getUsername();
-        return username.equals(getUsernameByToken(authToken)) && !isTokenExpiration(authToken);
+        try {
+            String username = getUsernameByToken(authToken);
+
+            if (!username.equals(userDetails.getUsername())) return false;
+            if (isTokenExpiration(authToken)) return false;
+
+            // Password-change invalidation:
+            if (userDetails instanceof Users user) {
+                if (user.getPasswordChangedAt() == null) {
+                    return true;
+                }
+
+                // Truncating to seconds handles JWT's lack of millisecond accuracy
+                Instant pwdChangedAt = user.getPasswordChangedAt().toInstant(ZoneOffset.UTC).truncatedTo(ChronoUnit.SECONDS);
+                Instant issuedAt = ExtractClaims(authToken, Claims::getIssuedAt).toInstant().truncatedTo(ChronoUnit.SECONDS);
+
+                return !issuedAt.isBefore(pwdChangedAt);
+            }
+            return true;
+        } catch (JwtException | IllegalArgumentException e) {
+            return false;
+        }
     }
 
     private boolean isTokenExpiration(String authToken) {

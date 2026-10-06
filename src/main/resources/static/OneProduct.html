@@ -46,7 +46,7 @@
     <div class="nav-links">
         <a href="/LoginForm.html" class="nav-link">Login</a>
         <a href="/RegistrationForm.html" class="nav-link">Register</a>
-        <a href="/users/ShoppingCart.html" class="nav-link cart-link" aria-label="Cart" id="cartNavLink">                <span class="cart-icon-wrap">
+        <a href="/Users_Pages/ShoppingCart.html" class="nav-link cart-link" aria-label="Cart" id="cartNavLink">                <span class="cart-icon-wrap">
                 <span class="cart-icon-wrap">
                     <svg class="cart-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                         <path d="M3 3h2.2l2.1 12.4a2 2 0 0 0 1.97 1.6h9.36a2 2 0 0 0 1.96-1.55L22 8H6.2"
@@ -264,7 +264,7 @@
             .then(() => {
                 refreshCartBadge(true);
                 setTimeout(() => {
-                    window.location.href = "/users/PaymentCheckout.html";
+                    window.location.href = "/Users_Pages/PaymentCheckout.html";
                 }, 350);
             })
             .catch(err => {

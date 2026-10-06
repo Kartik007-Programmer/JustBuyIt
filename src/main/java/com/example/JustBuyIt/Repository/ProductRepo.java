@@ -33,4 +33,7 @@ public interface ProductRepo extends JpaRepository<Product,Integer>{
     Page<Product> searchByKeywordAndCategory(@Param("keyword") String keyword,
                                              @Param("category") String category,
                                              Pageable pageable);
+
+    long countByAddedById(Long userId);
+    List<Product> findByAddedById(Long userId);
 }

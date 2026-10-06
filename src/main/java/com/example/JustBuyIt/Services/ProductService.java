@@ -2,9 +2,8 @@ package com.example.JustBuyIt.Services;
 
 import com.example.JustBuyIt.DTOs.ProductDTO;
 import com.example.JustBuyIt.DTOs.ProductPageDTO;
-import com.example.JustBuyIt.Models.Category;
-import com.example.JustBuyIt.Models.Product;
-import com.example.JustBuyIt.Models.QuantityUnit;
+import com.example.JustBuyIt.DTOs.UserPrincipalDto;
+import com.example.JustBuyIt.Models.*;
 import com.example.JustBuyIt.Repository.CategoryRepo;
 import com.example.JustBuyIt.Repository.ProductRepo;
 import org.springframework.cache.annotation.CacheEvict;
@@ -26,15 +25,20 @@ public class ProductService {
 
     private final ProductRepo repo;
     private final CategoryRepo categoryRepo;
+    private final UsersService usersService;
     private final ImageService imageService;
+    private final SecurityService securityService;
     private final StringRedisTemplate stringRedisTemplate;
 
-    public ProductService(ProductRepo repo, CategoryRepo categoryRepo, ImageService imageService, StringRedisTemplate stringRedisTemplate) {
+    public ProductService(ProductRepo repo, CategoryRepo categoryRepo, UsersService usersService, ImageService imageService, SecurityService securityService, StringRedisTemplate stringRedisTemplate) {
         this.repo = repo;
         this.categoryRepo = categoryRepo;
+        this.usersService = usersService;
         this.imageService = imageService;
+        this.securityService = securityService;
         this.stringRedisTemplate = stringRedisTemplate;
     }
+
     private static final String PRODUCT_VERSION_KEY = "products:version";
 
     private volatile String cachedVersion = "1";
@@ -81,7 +85,11 @@ public class ProductService {
 
     @Transactional
     public Product addProductWithFile(ProductDTO dto, MultipartFile file) throws IOException {
-        Product product = mapDtoToProduct(dto);
+        UserPrincipalDto actor = currentActor();
+        securityService.assertCanCreateProduct(actor);
+
+        Users owner = usersService.getReferenceById(actor.getId());
+        Product product = mapDtoToProduct(dto,owner);
 
         if (file != null && !file.isEmpty()) {
             product.setImagefile(file.getBytes());
@@ -93,9 +101,13 @@ public class ProductService {
 
     @Transactional
     public Product AddProduct(ProductDTO productDTO) throws IOException {
+        UserPrincipalDto actor = currentActor();
+        securityService.assertCanCreateProduct(actor);
+
+        Users owner = usersService.getReferenceById(actor.getId());
         Product saved;
         try {
-            Product product = mapDtoToProduct(productDTO);
+            Product product = mapDtoToProduct(productDTO,owner);
             if (productDTO.getImageUrl() != null && !productDTO.getImageUrl().isBlank()) {
                 try {
                     product.setImagefile(imageService.downloadImageFromUrl(productDTO.getImageUrl()));
@@ -108,7 +120,7 @@ public class ProductService {
             saved = repo.save(product);
         }catch (Exception e){
             System.out.println(e.getMessage());
-            saved = repo.save(mapDtoToProduct(productDTO));
+            saved = repo.save(mapDtoToProduct(productDTO,owner));
         }
         bumpVersion();
         return saved;
@@ -117,6 +129,10 @@ public class ProductService {
     @Transactional
     public Product  UpdateProductWithFile(int prodId, ProductDTO dto, MultipartFile imagefile) throws IOException {
         Product existingProduct = loadProduct(prodId);
+
+        UserPrincipalDto actor = currentActor();
+        securityService.assertCanModifyOrDeleteProduct(existingProduct, actor);
+
         existingProduct.setName(dto.getName());
         existingProduct.setPrice(dto.getPrice());
         existingProduct.setDescription(dto.getDescription());
@@ -153,10 +169,15 @@ public class ProductService {
     @Transactional
     public Product  UpdateProduct(int prodId, ProductDTO dto) throws IOException {
         Product existingProduct = loadProduct(prodId);
+
+        UserPrincipalDto actor = currentActor();
+        securityService.assertCanModifyOrDeleteProduct(existingProduct, actor);
+
         existingProduct.setName(dto.getName());
         existingProduct.setPrice(dto.getPrice());
         existingProduct.setDescription(dto.getDescription());
         existingProduct.setQuantity(dto.getQuantity());
+        existingProduct.setAddedBy(usersService.getUser(dto.getAddedById()));
 
         if (dto.getQunatityUnit() != null) {
             try {
@@ -188,6 +209,11 @@ public class ProductService {
 
     @Transactional
     public void deleteProductById(int prodId) {
+        Product existing = loadProduct(prodId);
+
+        UserPrincipalDto actor = currentActor();
+        securityService.assertCanModifyOrDeleteProduct(existing, actor);
+
         repo.deleteById(prodId);
         bumpVersion();
     }
@@ -206,10 +232,16 @@ public class ProductService {
 
     @Transactional
     public List<Product> addProductsBatchWithUrls(List<ProductDTO> productDTOs) {
+        UserPrincipalDto actor = currentActor();
+        if (actor.getRole() != Role.ADMIN) {
+            throw new IllegalStateException("Only full admins can batch-import products.");
+        }
+
+        Users owner = usersService.getReferenceById(actor.getId());
         List<Product> productsToSave = new ArrayList<>();
 
         for (ProductDTO dto : productDTOs) {
-            Product product = mapDtoToProduct(dto);
+            Product product = mapDtoToProduct(dto,owner);
             if (dto.getImageUrl() != null && !dto.getImageUrl().isBlank()) {
                 try {
                     product.setImagefile(imageService.downloadImageFromUrl(dto.getImageUrl()));
@@ -226,12 +258,13 @@ public class ProductService {
         return savedProducts;
     }
 
-    private Product mapDtoToProduct(ProductDTO dto) {
+    private Product mapDtoToProduct(ProductDTO dto, Users owner) {
         Product product = new Product();
         product.setName(dto.getName());
         product.setPrice(dto.getPrice());
         product.setDescription(dto.getDescription());
         product.setQuantity(dto.getQuantity());
+        product.setAddedBy(owner);
 
         if (dto.getQunatityUnit() != null) {
             try {
@@ -263,5 +296,9 @@ public class ProductService {
 
     public List<String> getAllCategoryNames() {
         return categoryRepo.findAllName();
+    }
+
+    private UserPrincipalDto currentActor() {
+        return securityService.getPresentAuthorizedUser();
     }
 }

@@ -1,9 +1,11 @@
 package com.example.JustBuyIt.Services;
 
 import com.example.JustBuyIt.DTOs.UserPrincipalDto;
+import com.example.JustBuyIt.Models.Product;
 import com.example.JustBuyIt.Models.Role;
 import com.example.JustBuyIt.Models.ShoppingCart;
 import com.example.JustBuyIt.Models.Users;
+import com.example.JustBuyIt.Repository.ProductRepo;
 import com.example.JustBuyIt.Repository.ShoppingCartRepo;
 import com.example.JustBuyIt.Repository.UsersRepo;
 import jakarta.servlet.http.Cookie;
@@ -40,16 +42,19 @@ public class SecurityService {
     private final RedisCacheService redisCacheService;
     private final EmailService  emailService;
     private final ShoppingCartRepo cartRepo;
+    private final ProductRepo productRepo;
+    public static final int SECONDARY_ADMIN_PRODUCT_LIMIT = 3;
 
-    public SecurityService(EmailService emailService, ShoppingCartRepo cartRepo, RedisCacheService redisCacheService, UserDetailsService userDetailsService, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, UsersRepo usersRepo, JwtService jwtService) {
+    public SecurityService(JwtService jwtService, UsersRepo usersRepo, AuthenticationManager authenticationManager, PasswordEncoder passwordEncoder, UserDetailsService userDetailsService, RedisCacheService redisCacheService, EmailService emailService, ShoppingCartRepo cartRepo, ProductRepo productRepo) {
+        this.jwtService = jwtService;
+        this.usersRepo = usersRepo;
+        this.authenticationManager = authenticationManager;
+        this.passwordEncoder = passwordEncoder;
+        this.userDetailsService = userDetailsService;
+        this.redisCacheService = redisCacheService;
         this.emailService = emailService;
         this.cartRepo = cartRepo;
-        this.redisCacheService = redisCacheService;
-        this.userDetailsService = userDetailsService;
-        this.passwordEncoder = passwordEncoder;
-        this.authenticationManager = authenticationManager;
-        this.usersRepo = usersRepo;
-        this.jwtService = jwtService;
+        this.productRepo = productRepo;
     }
 
     public ResponseEntity<?> RegisterUser(Users users) {
@@ -268,7 +273,7 @@ public class SecurityService {
         assert authentication != null;
         String username = authentication.getName();
         String role = getPresentAuthorizedRole();
-        if (role.equals("ADMIN")) {
+        if (role.equals("ADMIN") || role.equals("SECONDARY_ADMIN")) {
             UserPrincipalDto Cachedusers = redisCacheService.getUserFromCache(username);
 
             if (Cachedusers != null) {
@@ -284,4 +289,23 @@ public class SecurityService {
         }
         return null;
     }
+
+    public void assertCanCreateProduct(UserPrincipalDto actor) {
+        if (actor.getRole() == Role.SECONDARY_ADMIN) {
+            long current = productRepo.countByAddedById(actor.getId());
+            if (current >= SECONDARY_ADMIN_PRODUCT_LIMIT) {
+                throw new IllegalStateException(
+                        "Secondary admins can only add up to " + SECONDARY_ADMIN_PRODUCT_LIMIT + " products.");
+            }
+        }
+    }
+
+    public void assertCanModifyOrDeleteProduct(Product existing, UserPrincipalDto actor) {
+        if (actor.getRole() == Role.SECONDARY_ADMIN) {
+            Long ownerId = existing.getAddedBy() != null ? existing.getAddedBy().getId() : null;
+            if (ownerId == null || !ownerId.equals(actor.getId())) {
+                throw new IllegalStateException(
+                        "Secondary admins can only modify or delete products they added.");
+            }
+        }}
 }

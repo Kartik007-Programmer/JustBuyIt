@@ -24,27 +24,27 @@
 
     <div class="sidebar__section">Overview</div>
     <nav class="sidebar__nav">
-        <a href="/admin/AdminDashboad.html" class="sidebar__link sidebar__link--dashboard">
+        <a href="/Admin_Pages/AdminDashboad.html" class="sidebar__link sidebar__link--dashboard">
             <i class="fas fa-chart-pie"></i><span>Dashboard</span>
         </a>
     </nav>
 
     <div class="sidebar__section">Catalog</div>
     <nav class="sidebar__nav sidebar__nav--grow">
-        <a href="/admin/AddProduct.html" class="sidebar__link sidebar__link--add">
+        <a href="/Admin_Pages/AddProduct.html" class="sidebar__link sidebar__link--add">
             <i class="fas fa-plus-circle"></i><span>Add Product</span>
         </a>
-        <a href="/admin/UpdateProduct.html" class="sidebar__link sidebar__link--update">
+        <a href="/Admin_Pages/UpdateProduct.html" class="sidebar__link sidebar__link--update">
             <i class="fas fa-pen-to-square"></i><span>Update Product</span>
         </a>
-        <a href="/admin/ViewAllProduct.html" class="sidebar__link sidebar__link--view is-active">
+        <a href="/Admin_Pages/ViewAllProduct.html" class="sidebar__link sidebar__link--view is-active">
             <i class="fas fa-layer-group"></i><span>View All Products</span>
         </a>
     </nav>
 
     <div class="sidebar__section">Users</div>
     <nav class="sidebar__nav sidebar__nav--grow">
-        <a href="/admin/AdminUsers.html" class="sidebar__link">
+        <a href="/Admin_Pages/AdminUsers.html" class="sidebar__link">
             <i class="fas fa-users"></i><span>Manage Users</span>
         </a>
     </nav>
@@ -93,7 +93,7 @@
                     <h2 class="fw-800" style="font-size:1.15rem;letter-spacing:-.02em;">Product Catalog</h2>
                     <p class="text-muted fs-sm mb-0" id="resultsCount">Loading products…</p>
                 </div>
-                <a href="/admin/AddProduct.html" class="btn btn--success">
+                <a href="/Admin_Pages/AddProduct.html" class="btn btn--success">
                     <i class="fas fa-plus-circle"></i> Add New Product
                 </a>
             </div>
@@ -118,8 +118,8 @@
                 <div>
                     <label class="form-label"><i class="fas fa-sort"></i> Sort By</label>
                     <select class="form-select" id="sortSelect">
-                        <option value="id-asc">Newest first (ID ↑)</option>
-                        <option value="id-desc">Oldest first (ID ↓)</option>
+                        <option value="id-desc">Newest first (ID ↓)</option>
+                        <option value="id-asc">Oldest first (ID ↑)</option>
                         <option value="name-asc">Name (A → Z)</option>
                         <option value="name-desc">Name (Z → A)</option>
                         <option value="price-asc">Price (Low → High)</option>
@@ -160,6 +160,15 @@
     </main>
 </div>
 
+<!-- Global popup markup -->
+<div id="globalPopup" class="popup-alert" role="alert" aria-live="polite">
+    <div class="popup-icon" id="popupIcon">✓</div>
+    <div class="popup-message" id="popupMessage"></div>
+    <button class="popup-close" id="popupCloseBtn" aria-label="Close notification">×</button>
+    <div class="popup-progress" id="popupProgress"></div>
+</div>
+
+<script src="/js/popup.js"></script>
 <script>
     /* ============================================================
        STATE
@@ -169,7 +178,7 @@
         size: 12,
         keyword: '',
         category: '',
-        sort: 'id-asc',
+        sort: 'id-desc',
         totalPages: 0,
         totalElements: 0,
         loading: false
@@ -209,7 +218,7 @@
        DATA LOADING
        ============================================================ */
     function loadProducts() {
-        if (state.loading) return;
+        if (state.loading) return Promise.resolve();
         state.loading = true;
         showSkeleton();
 
@@ -239,7 +248,7 @@
             url = `/products?${p.toString()}`;
         }
 
-        fetch(url)
+        return fetch(url)
             .then(r => { if (!r.ok) throw new Error('Failed to load products'); return r.json(); })
             .then(data => {
                 // Both endpoints return a Page-like structure
@@ -260,6 +269,7 @@
                 document.getElementById('productGrid').innerHTML = '';
                 document.getElementById('emptyState').classList.remove('d-none');
                 document.getElementById('resultsCount').innerText = 'Failed to load products';
+                popupError('Failed to load products.');
             })
             .finally(() => { state.loading = false; });
     }
@@ -328,7 +338,7 @@
                                 onclick="editProduct(${p.id})">
                             <i class="fas fa-pen"></i>
                         </button>
-                        <button class="btn btn--danger btn--icon" title="Delete"
+                        <button type="button" class="btn btn--danger btn--icon" title="Delete"
                                 onclick="deleteProduct(${p.id}, '${esc(p.name).replace(/'/g, "\\'")}')">
                             <i class="fas fa-trash"></i>
                         </button>
@@ -470,20 +480,39 @@
     /* ============================================================
        ACTIONS
        ============================================================ */
-    function viewProduct(id) { window.location.href = `/admin/AdminOneProduct.html?id=${id}`; }
-    function editProduct(id) { window.location.href = `/admin/UpdateProduct.html?id=${id}`; }
+    function viewProduct(id) { window.location.href = `/Admin_Pages/AdminOneProduct.html?id=${id}`; }
+    function editProduct(id) { window.location.href = `/Admin_Pages/UpdateProduct.html?id=${id}`; }
 
-    function deleteProduct(id, name) {
+    let deleting = false;
+    async function deleteProduct(id, name) {
+        if (deleting) return;
         if (!confirm(`Delete "${name}" permanently?`)) return;
-        fetch(`/products/${id}`, { method: 'DELETE' })
-            .then(r => {
-                if (!r.ok) throw new Error('Delete failed');
-                // Remove card from DOM immediately for snappy UX
-                const grid = document.getElementById('productGrid');
-                // Re-fetch to keep pagination in sync
-                loadProducts();
-            })
-            .catch(err => { console.error(err); alert('Failed to delete product'); });
+
+        deleting = true;
+
+        const btns = document.querySelectorAll('button[title="Delete"]');
+        btns.forEach(b => { b.disabled = true; b.style.opacity = 0.5; });
+
+        try {
+            const res = await fetch(`/products/${id}`, {
+                method: 'DELETE',
+                credentials: 'include'
+            });
+            if (!res.ok) {
+                popupError(await readError(res));
+                return;
+            }
+            popupSuccess('Product deleted.');
+            await loadProducts();
+        } catch (err) {
+            console.error(err);
+            popupError('Network error while deleting.');
+        } finally {
+            deleting = false;
+            // If we didn't navigate away, re-enable (loadProducts may have replaced the DOM anyway)
+            document.querySelectorAll('button[title="Delete"]')
+                    .forEach(b => { b.disabled = false; b.style.opacity = 1; });
+        }
     }
 
     /* ============================================================
@@ -568,6 +597,21 @@
             })
             .catch(err => console.error('Failed to load admin:', err));
     })();
+
+    /* Read an error message out of a failed Response, whether it's JSON or plain text */
+    async function readError(res) {
+        try {
+            const data = await res.json();
+            if (data && (data.message || data.error)) return data.message || data.error;
+            return JSON.stringify(data);
+        } catch {
+            try { return await res.text(); } catch { return `HTTP ${res.status}`; }
+        }
+    }
+
+    /* Convenience wrappers */
+    function popupSuccess(msg) { showPopup(msg || 'Done!', 'success', 3000); }
+    function popupError(msg)   { showPopup(msg || 'Something went wrong.', 'error', 5000); }
 </script>
 </body>
 </html>

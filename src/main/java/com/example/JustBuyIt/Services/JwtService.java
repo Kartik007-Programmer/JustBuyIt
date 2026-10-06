@@ -89,14 +89,9 @@ public class JwtService {
             if (isTokenExpiration(authToken)) return false;
 
             // Password-change invalidation:
-            if (userDetails instanceof Users user) {
-                if (user.getPasswordChangedAt() == null) {
-                    return true;
-                }
-
-                // Truncating to seconds handles JWT's lack of millisecond accuracy
-                Instant pwdChangedAt = user.getPasswordChangedAt().toInstant(ZoneOffset.UTC).truncatedTo(ChronoUnit.SECONDS);
+            if (userDetails instanceof Users user && user.getPasswordChangedAt() != null) {
                 Instant issuedAt = ExtractClaims(authToken, Claims::getIssuedAt).toInstant().truncatedTo(ChronoUnit.SECONDS);
+                Instant pwdChangedAt = user.getPasswordChangedAt().truncatedTo(ChronoUnit.SECONDS);
 
                 return !issuedAt.isBefore(pwdChangedAt);
             }

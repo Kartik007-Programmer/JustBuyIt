@@ -1,5 +1,6 @@
 package com.example.JustBuyIt.Models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
@@ -18,9 +19,14 @@ public class Product {
     @Enumerated(EnumType.STRING)
     private QuantityUnit quantityUnit;
 
-    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "category_id")
     private Category category;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "added_by_id")
+    @JsonIgnore
+    private Users addedBy;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -135,5 +141,13 @@ public class Product {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public Users getAddedBy() {
+        return addedBy;
+    }
+
+    public void setAddedBy(Users addedBy) {
+        this.addedBy = addedBy;
     }
 }

@@ -1,5 +1,7 @@
 package com.example.JustBuyIt.Services;
 
+import com.example.JustBuyIt.DTOs.UserPrincipalDto;
+import com.example.JustBuyIt.Exceptions.ApiException;
 import com.example.JustBuyIt.Models.Role;
 import com.example.JustBuyIt.Models.Users;
 import com.example.JustBuyIt.Repository.UsersRepo;
@@ -27,11 +29,11 @@ public class UsersService {
     }
 
     Users getUser(Long id) {
-        return usersRepo.findById(id).orElseThrow(() -> new RuntimeException("User Not Found!"));
+        return usersRepo.findById(id).orElseThrow(() -> ApiException.notFound("User Not Found!"));
     }
 
     public Users getUserByEmail(String name) {
-        return (Users) usersRepo.findByEmail(name).orElseThrow(() -> new RuntimeException("User Not Found!"));
+        return (Users) usersRepo.findByEmail(name).orElseThrow(() -> ApiException.notFound("User Not Found!"));
     }
 
     public List<Users> getAllAdmins() {
@@ -47,13 +49,17 @@ public class UsersService {
 
     public Users setBanned(Long id, boolean banned) {
         Users u = usersRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("User Not Found!"));
+                .orElseThrow(() -> ApiException.notFound("User Not Found!"));
         if (u.getRole() == Role.ADMIN) {
             throw new IllegalStateException("Admins cannot be banned");
         }
         u.setBanned(banned);
         Users saved = usersRepo.save(u);
-        redisCacheService.setCacheUser(saved.getEmail(), saved);
+        redisCacheService.setCacheUser(saved.getEmail(), UserPrincipalDto.fromEntity(saved));
         return saved;
+    }
+
+    public Users getReferenceById(Long id) {
+        return usersRepo.getReferenceById(id);
     }
 }

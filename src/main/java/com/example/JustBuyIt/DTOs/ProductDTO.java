@@ -7,6 +7,7 @@ public class ProductDTO {
     private Integer quantity;
     private String qunatityUnit;
     private String categoryName;
+    private Long addedById;
     private String imageUrl;     // Used for JSON URL batch imports
 
     public ProductDTO() {}
@@ -26,4 +27,6 @@ public class ProductDTO {
     public void setCategoryName(String categoryName) { this.categoryName = categoryName; }
     public String getImageUrl() { return imageUrl; }
     public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
+    public Long getAddedById() {return addedById;}
+    public void setAddedById(Long addedById) {this.addedById = addedById;}
 }

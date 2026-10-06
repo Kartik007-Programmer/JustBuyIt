@@ -3,6 +3,7 @@ package com.example.JustBuyIt.Services;
 import com.example.JustBuyIt.DTOs.CartItemRequest;
 import com.example.JustBuyIt.DTOs.CartItemResponse;
 import com.example.JustBuyIt.DTOs.ShoppingCartResponse;
+import com.example.JustBuyIt.Exceptions.ApiException;
 import com.example.JustBuyIt.Models.CartItem;
 import com.example.JustBuyIt.Models.Product;
 import com.example.JustBuyIt.Models.ShoppingCart;
@@ -42,20 +43,20 @@ public class ShoppingCartService {
     @Transactional(readOnly = true)
     @Cacheable(value = "cart", key = "#Email")
     public ShoppingCartResponse getCartByUser(String Email){
-        Users users = usersRepo.findByEmail(Email).orElseThrow(() -> new RuntimeException("User Not Found!"));
+        Users users = usersRepo.findByEmail(Email).orElseThrow(() -> ApiException.notFound("User Not Found!"));
         ShoppingCart cart = cartRepo.findByUserId(users.getId())
-                .orElseThrow(() -> new RuntimeException("Cart not initialized"));
+                .orElseThrow(() -> ApiException.notFound("Cart not initialized"));
         return mapToCartResponse(cart);
     }
 
     @Transactional
     @CacheEvict(value = "cart", key = "#Email")
     public ShoppingCartResponse addItemToCart(String Email, CartItemRequest cartItemRequest){
-        Users  users = usersRepo.findByEmail(Email).orElseThrow(() -> new RuntimeException("User Not Found!"));
-        Product product = productRepo.findById(cartItemRequest.getProductId()).orElseThrow(() -> new RuntimeException("Product Not Found!"));
+        Users  users = usersRepo.findByEmail(Email).orElseThrow(() -> ApiException.notFound("User Not Found!"));
+        Product product = productRepo.findById(cartItemRequest.getProductId()).orElseThrow(() -> ApiException.notFound("Product Not Found!"));
 
         if (product.getQuantity() < cartItemRequest.getQuantity()){
-            throw new RuntimeException("Product Quantity Not Enough!");
+            throw ApiException.badRequest("Product Quantity Not Enough!");
         }
 
         ShoppingCart cart = getOrCreateCart(users);
@@ -67,7 +68,7 @@ public class ShoppingCartService {
             CartItem item = existingItem.get();
             int newQuantity = item.getQuantity() + cartItemRequest.getQuantity();
             if (product.getQuantity() < newQuantity) {
-                throw new RuntimeException("Product Quantity Not Enough!");
+                throw ApiException.badRequest("Product Quantity Not Enough!");
             }
             item.setQuantity(newQuantity);
             item.setPrice(item.getQuantity()*product.getPrice());
@@ -119,7 +120,7 @@ public class ShoppingCartService {
 
     private ShoppingCart getUserCart(String email) {
         return cartRepo.findByEmailForUpdate(email)
-                .orElseThrow(() -> new RuntimeException("Cart not found"));
+                .orElseThrow(() -> ApiException.notFound("Cart not found!"));
     }
 
     private void reCalculateCartTotal(ShoppingCart cart) {

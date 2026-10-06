@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,8 +38,8 @@ public class ProductController
         String role = securityService.getPresentAuthorizedRole();
         ModelAndView mv = new ModelAndView();
 
-        if (role.equals("ADMIN")) {
-            mv.setViewName("admin/AdminDashboad.html");
+        if (role.equals("ADMIN") || role.equals("SECONDARY_ADMIN")) {
+            mv.setViewName("Admin_Pages/AdminDashboad.html");
         }else {
             mv.setViewName("HomePage.html");
         }
@@ -58,7 +59,8 @@ public class ProductController
                 ? Sort.by(sortby).descending()
                 : Sort.by(sortby).ascending();
         Pageable pageable = PageRequest.of(page, size, sort);
-       return ResponseEntity.ok(productService.getProducts(category, pageable));
+
+        return ResponseEntity.ok(productService.getProducts(category, pageable));
     }
 
     @GetMapping("/products/{ProdId}")
@@ -68,27 +70,28 @@ public class ProductController
 
     @PostMapping("/products/upload")
     public ResponseEntity<?> AddProduct(@RequestPart("product") ProductDTO productDTO,
-                                        @RequestPart("imagefile") MultipartFile imagefile){
-//        System.out.println("New Product : "+productDTO);
-        Product saved;
-        try {
-            saved = productService.addProductWithFile(productDTO, imagefile);
-            return ResponseEntity.ok(saved);
-        }catch (Exception e){
-            return ResponseEntity.internalServerError().body(e.getMessage());
-        }
+                                        @RequestPart("imagefile") MultipartFile imagefile) throws IOException {
+        return ResponseEntity.ok(productService.addProductWithFile(productDTO, imagefile));
     }
 
     @PostMapping("/products")
-    public ResponseEntity<?> AddProduct(@RequestBody ProductDTO productDTO){
-//        System.out.println("New Product : "+prod);
-        Product saved;
-        try {
-            saved = productService.AddProduct(productDTO);
-            return ResponseEntity.ok(saved);
-        }catch (Exception e){
-            return ResponseEntity.internalServerError().body(e.getMessage());
-        }
+    public ResponseEntity<?> AddProduct(@RequestBody ProductDTO productDTO) throws IOException {
+        return ResponseEntity.ok(productService.AddProduct(productDTO));
+    }
+
+    @PutMapping("/products/{id}/upload")
+    public ResponseEntity<?> updateProduct(
+            @PathVariable int id,
+            @RequestPart("product") ProductDTO productDTO,
+            @RequestPart(value = "imagefile", required = false) MultipartFile imagefile) throws IOException {
+        return ResponseEntity.ok(productService.UpdateProductWithFile(id, productDTO, imagefile));
+    }
+
+    @PutMapping("/products/{id}")
+    public ResponseEntity<?> updateProduct(
+            @PathVariable int id,
+            @RequestBody ProductDTO productDTO) throws IOException {
+        return ResponseEntity.ok(productService.UpdateProduct(id, productDTO));
     }
 
     @PostMapping("/multi_products")
@@ -96,36 +99,10 @@ public class ProductController
         return ResponseEntity.ok().body(productService.addProductsBatchWithUrls(productDTO));
     }
 
-    @PutMapping("/products/{id}/upload")
-    public ResponseEntity<?> updateProduct(
-            @PathVariable int id,
-            @RequestPart("product") ProductDTO productDTO ,
-            @RequestPart(value = "imagefile", required = false) MultipartFile imagefile) {
-
-        try {
-            Product updated = productService.UpdateProductWithFile(id,productDTO,imagefile);
-            return ResponseEntity.ok(updated);
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().body(e.getMessage());
-        }
-    }
-
-    @PutMapping("/products/{id}")
-    public ResponseEntity<?> updateProduct(
-            @PathVariable int id,
-            @RequestBody ProductDTO productDTO) {
-
-        try {
-            Product updated = productService.UpdateProduct(id,productDTO);
-            return ResponseEntity.ok(updated);
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().body(e.getMessage());
-        }
-    }
-
     @DeleteMapping("/products/{ProdId}")
-    public void deleteProductById(@PathVariable int ProdId){
+    public ResponseEntity<?> deleteProductById(@PathVariable int ProdId) {
         productService.deleteProductById(ProdId);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/products/{ProdId}/image")

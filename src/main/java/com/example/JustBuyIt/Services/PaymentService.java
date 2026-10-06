@@ -3,6 +3,7 @@ package com.example.JustBuyIt.Services;
 import com.example.JustBuyIt.DTOs.CartItemResponse;
 import com.example.JustBuyIt.DTOs.PaymentRequest;
 import com.example.JustBuyIt.DTOs.PaymentResponse;
+import com.example.JustBuyIt.Exceptions.ApiException;
 import com.example.JustBuyIt.Models.ShoppingCart;
 import com.example.JustBuyIt.Models.Users;
 import com.example.JustBuyIt.Repository.ShoppingCartRepo;
@@ -28,13 +29,13 @@ public class PaymentService {
 
     @Transactional
     public PaymentResponse processFakePayment(String email, PaymentRequest paymentRequest) {
-        Users user = UsersRepo.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found!"));
+        Users user = UsersRepo.findByEmail(email).orElseThrow(() -> ApiException.notFound("User Not Found!"));
 
         ShoppingCart cart = CartRepo.findByEmailForUpdate(email)   // ← lock here
-                .orElseThrow(() -> new RuntimeException("Cart not found!"));
+                .orElseThrow(() -> ApiException.notFound("Cart not found!"));
 
         if (cart.getCartItems().isEmpty() || cart.getTotalPrice() <= 0) {
-            throw new RuntimeException("Cart not found!");
+            throw ApiException.notFound("Cart not found!");
         }
 
         Double TotalAmountInINR = cart.getTotalPrice();

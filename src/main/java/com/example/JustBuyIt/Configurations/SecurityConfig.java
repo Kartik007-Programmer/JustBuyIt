@@ -32,15 +32,24 @@ public class SecurityConfig {
                         authorizeRequests
                                 .requestMatchers("/auth/**","/LoginForm.html","/RegistrationForm.html","/ForgotPassword.html","/ResetPassword.html").permitAll()
                                 .requestMatchers("/","/HomePage.html","/OneProduct.html","/css/**","/js/**").permitAll()
-                                .requestMatchers(HttpMethod.GET, "/products/**").permitAll()
-                                .requestMatchers(HttpMethod.POST, "/products").hasAuthority("ADMIN")
-                                .requestMatchers(HttpMethod.PUT, "/products/**").hasAuthority("ADMIN")
-                                .requestMatchers(HttpMethod.DELETE, "/products/**").hasAuthority("ADMIN")
-                                .requestMatchers(HttpMethod.POST, "/products/upload", "/multi_products").hasAuthority("ADMIN")
-                                .requestMatchers("/users/**")
-                                .hasAuthority("USER")
-                                .requestMatchers("/admin/**")
-                                .hasAuthority("ADMIN")
+                                .requestMatchers(HttpMethod.GET,    "/products/**").permitAll()
+
+                                // Product writes: ADMIN + SECONDARY_ADMIN (fine-grained checks live in the service)
+                                .requestMatchers(HttpMethod.POST,   "/products", "/products/upload").hasAnyAuthority("ADMIN", "SECONDARY_ADMIN")
+                                .requestMatchers(HttpMethod.PUT,    "/products/**").hasAnyAuthority("ADMIN", "SECONDARY_ADMIN")
+                                .requestMatchers(HttpMethod.DELETE, "/products/**").hasAnyAuthority("ADMIN", "SECONDARY_ADMIN")
+
+                                // Batch upload stays ADMIN-only (bypasses the 3-product limit)
+                                .requestMatchers(HttpMethod.POST,   "/multi_products").hasAuthority("ADMIN")
+
+                                // Admin area (ban/unban, list admins) stays ADMIN-only
+                                .requestMatchers("/admin/all", "/admin/users/*/ban", "/admin/users/*/unban").hasAuthority("ADMIN")
+
+                                // Admin area (/admin Frontend) stays for both ADMIN and SECONDARY_ADMIN
+                                .requestMatchers("/Admin_Pages/**","/admin","/admin/users").hasAnyAuthority("ADMIN","SECONDARY_ADMIN")
+
+                                // Regular user endpoints and users frontend
+                                .requestMatchers("/users/**","/Users_Pages/**").hasAuthority("USER")
                                 .anyRequest().authenticated())
                 .exceptionHandling(exception ->
                         exception.authenticationEntryPoint((request, response, authException) -> {

@@ -21,22 +21,29 @@
     </div>
     <div class="sidebar__badge"><i class="fas fa-user-shield"></i> Admin Panel</div>
 
+    <div class="sidebar__section">Overview</div>
+    <nav class="sidebar__nav">
+        <a href="/Admin_Pages/AdminDashboad.html" class="sidebar__link sidebar__link--dashboard is-active">
+            <i class="fas fa-chart-pie"></i><span>Dashboard</span>
+        </a>
+    </nav>
+
     <div class="sidebar__section">Catalog</div>
     <nav class="sidebar__nav sidebar__nav--grow">
-        <a href="/admin/AddProduct.html" class="sidebar__link sidebar__link--add">
+        <a href="/Admin_Pages/AddProduct.html" class="sidebar__link sidebar__link--add">
             <i class="fas fa-plus-circle"></i><span>Add Product</span>
         </a>
-        <a href="/admin/UpdateProduct.html" class="sidebar__link sidebar__link--update is-active">
+        <a href="/Admin_Pages/UpdateProduct.html" class="sidebar__link sidebar__link--update is-active">
             <i class="fas fa-pen-to-square"></i><span>Update Product</span>
         </a>
-        <a href="/admin/ViewAllProduct.html" class="sidebar__link sidebar__link--view">
+        <a href="/Admin_Pages/ViewAllProduct.html" class="sidebar__link sidebar__link--view">
             <i class="fas fa-layer-group"></i><span>View All Products</span>
         </a>
     </nav>
 
     <div class="sidebar__section">Users</div>
     <nav class="sidebar__nav sidebar__nav--grow">
-        <a href="/admin/AdminUsers.html" class="sidebar__link">
+        <a href="/Admin_Pages/AdminUsers.html" class="sidebar__link">
             <i class="fas fa-users"></i><span>Manage Users</span>
         </a>
     </nav>
@@ -182,7 +189,7 @@
                 </div>
 
                 <div class="d-flex justify-end gap-3 mt-6">
-                    <a href="/admin/ViewAllProduct.html" class="btn btn--ghost"><i class="fas fa-times"></i> Cancel</a>
+                    <a href="/Admin_Pages/ViewAllProduct.html" class="btn btn--ghost"><i class="fas fa-times"></i> Cancel</a>
                     <button type="submit" class="btn btn--warning"><i class="fas fa-save"></i> Save changes</button>
                 </div>
             </form>
@@ -191,23 +198,58 @@
     </main>
 </div>
 
+<!-- Global popup markup -->
+<div id="globalPopup" class="popup-alert" role="alert" aria-live="polite">
+    <div class="popup-icon" id="popupIcon">✓</div>
+    <div class="popup-message" id="popupMessage"></div>
+    <button class="popup-close" id="popupCloseBtn" aria-label="Close notification">×</button>
+    <div class="popup-progress" id="popupProgress"></div>
+</div>
+
+<script src="/js/popup.js"></script>
 <script>
     let usingFileInput = true;
     const params = new URLSearchParams(window.location.search);
     let productId = params.get('id');
 
+    /* ---------- Popup helpers (top of script) ---------- */
+    function popupSuccess(msg) { showPopup(msg || 'Done!', 'success', 3000); }
+    function popupError(msg)   { showPopup(msg || 'Something went wrong.', 'error', 5000); }
+
+    async function readError(res) {
+        const text = await res.text();
+        if (!text) return `HTTP ${res.status}`;
+        try {
+            const data = JSON.parse(text);
+            return data.message || data.error || text;
+        } catch {
+            return text;
+        }
+    }
+
+    /* ---------- Sidebar + auth ---------- */
     function toggleSidebar() {
         document.getElementById('sidebar').classList.toggle('is-open');
         document.getElementById('overlay').classList.toggle('is-visible');
     }
+
     async function handleLogout(e) {
         if (e) e.preventDefault();
-        try { await fetch('/auth/v1/logout', { method: 'POST' }); }
-        catch (err) { console.error(err); }
-        finally { window.location.href = '/LoginForm.html'; }
+        try {
+            await fetch('/auth/v1/logout', {
+                method: 'POST',
+                credentials: 'include'
+            });
+        } catch (err) {
+            console.error(err);
+        } finally {
+            window.location.href = '/LoginForm.html';
+        }
     }
+
     window.addEventListener('pageshow', e => { if (e.persisted) window.location.reload(); });
 
+    /* ---------- Image source toggle ---------- */
     function toggleUpdateInput(mode) {
         const f = document.getElementById('fileInputBlock');
         const u = document.getElementById('urlInputBlock');
@@ -224,9 +266,10 @@
         }
     }
 
+    /* ---------- Load product ---------- */
     function loadProductFromInput() {
         const v = document.getElementById('productIdInput').value;
-        if (!v) { alert('Please enter a Product ID'); return; }
+        if (!v) { popupError('Please enter a Product ID'); return; }
         productId = v;
         fetchProductDetails(v);
     }
@@ -239,13 +282,14 @@
     });
 
     function fetchProductDetails(id) {
-        fetch(`/products/${id}`)
+        fetch(`/products/${id}`, { credentials: 'include' })
             .then(res => { if (!res.ok) throw new Error('Product fetch failed'); return res.json(); })
             .then(data => {
                 document.getElementById('labelname').innerText = data.name || '';
                 document.getElementById('name').value = data.name || '';
                 document.getElementById('price').value = data.price || '';
-                document.getElementById('categoryName').value = data.categoryName || (data.category ? data.category.name : '');
+                document.getElementById('categoryName').value =
+                    data.categoryName || (data.category ? data.category.name : '');
                 document.getElementById('description').value = data.description || '';
                 document.getElementById('quantity').value = data.quantity || '';
                 document.getElementById('qunatityUnit').value = data.qunatityUnit || '';
@@ -253,7 +297,10 @@
                     document.getElementById('imagePreview').src = `/products/${data.id}/image`;
                 }
             })
-            .catch(err => { console.error('Error fetching product:', err); alert('Could not load product ' + id); });
+            .catch(err => {
+                console.error('Error fetching product:', err);
+                popupError(`Could not load product #${id}`);
+            });
     }
 
     function handleFileSelect(event) {
@@ -262,66 +309,70 @@
         if (event.target.files[0]) reader.readAsDataURL(event.target.files[0]);
     }
 
-    document.getElementById('updateForm').addEventListener('submit', function (e) {
+    /* ---------- Submit ---------- */
+    document.getElementById('updateForm').addEventListener('submit', async function (e) {
         e.preventDefault();
-        if (!productId) { alert('No product ID set. Please load a product first.'); return; }
+        if (!productId) { popupError('No product loaded. Enter an ID first.'); return; }
 
         const product = {
-            name: document.getElementById('name').value,
-            price: parseFloat(document.getElementById('price').value),
-            description: document.getElementById('description').value,
-            quantity: parseInt(document.getElementById('quantity').value, 10),
+            name:         document.getElementById('name').value,
+            price:        parseFloat(document.getElementById('price').value),
+            description:  document.getElementById('description').value,
+            quantity:     parseInt(document.getElementById('quantity').value, 10),
             qunatityUnit: document.getElementById('qunatityUnit').value,
             categoryName: document.getElementById('categoryName').value,
-            imageUrl: usingFileInput ? null : document.getElementById('imageUrl').value
+            imageUrl:     usingFileInput ? null : document.getElementById('imageUrl').value
         };
 
-        if (usingFileInput) {
-            const fd = new FormData();
-            fd.append('product', new Blob([JSON.stringify(product)], { type: 'application/json' }));
-            const fi = document.getElementById('imagefile');
-            if (fi.files[0]) fd.append('imagefile', fi.files[0]);
-            fetch(`/products/${productId}/upload`, { method: 'PUT', body: fd })
-                .then(r => { if (r.ok) { alert('Updated successfully'); window.location.href = `/admin/AdminOneProduct.html?id=${productId}`; } else alert('Update failed'); });
-        } else {
-            fetch(`/products/${productId}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(product)
-            })
-                .then(r => { if (r.ok) { alert('Updated successfully'); window.location.href = `/admin/AdminOneProduct.html?id=${productId}`; } else alert('Update failed'); });
+        let res;
+        try {
+            if (usingFileInput) {
+                const fd = new FormData();
+                fd.append('product', new Blob([JSON.stringify(product)], { type: 'application/json' }));
+                const fi = document.getElementById('imagefile');
+                if (fi.files[0]) fd.append('imagefile', fi.files[0]);
+                res = await fetch(`/products/${productId}/upload`, {
+                    method: 'PUT',
+                    body: fd,
+                    credentials: 'include'
+                });
+            } else {
+                res = await fetch(`/products/${productId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(product),
+                    credentials: 'include'
+                });
+            }
+        } catch (err) {
+            console.error(err);
+            popupError('Network error — could not reach the server.');
+            return;
         }
+
+        if (!res.ok) {
+            popupError(await readError(res));
+            return;
+        }
+
+        popupSuccess('Product updated successfully!');
+        setTimeout(() => window.location.href = `/Admin_Pages/AdminOneProduct.html?id=${productId}`, 900);
     });
 
+    /* ---------- Admin identity ---------- */
     (function fetchAdmin() {
         fetch('/admin', { credentials: 'include' })
             .then(r => r.ok ? r.json() : null)
             .then(admin => {
                 if (!admin) return;
-
-                const fullName =
-                    admin.name ||
-                    'Admin User';
-
-                const role = 'Administrator';
-
-                // Initials for the avatar (max 2 letters)
-                const initials = fullName
-                    .split(/\s+/)
-                    .map(w => w[0])
-                    .filter(Boolean)
-                    .slice(0, 2)
-                    .join('')
-                    .toUpperCase() || 'AD';
-
+                const fullName = admin.name || 'Admin User';
+                const initials = fullName.split(/\s+/).map(w => w[0]).filter(Boolean)
+                    .slice(0, 2).join('').toUpperCase() || 'AD';
                 document.getElementById('adminAvatar').innerText = initials;
                 document.getElementById('adminName').innerText   = fullName;
-                document.getElementById('adminRole').innerText   = role;
-
+                document.getElementById('adminRole').innerText   = 'Administrator';
                 const welcome = document.getElementById('adminWelcome');
-                if (welcome) {
-                    welcome.innerText = `Welcome back, ${fullName} — here's your store overview`;
-                }
+                if (welcome) welcome.innerText = `Welcome back, ${fullName} — here's your store overview`;
             })
             .catch(err => console.error('Failed to load admin:', err));
     })();

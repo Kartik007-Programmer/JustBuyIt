@@ -1,6 +1,7 @@
 package com.example.JustBuyIt.Controllers;
 
 import com.example.JustBuyIt.DTOs.UserPrincipalDto;
+import com.example.JustBuyIt.Models.Role;
 import com.example.JustBuyIt.Models.Users;
 import com.example.JustBuyIt.Services.SecurityService;
 import com.example.JustBuyIt.Services.UsersService;
@@ -54,6 +55,11 @@ public class AdminController {
 
     @PatchMapping("/users/{id}/ban")
     ResponseEntity<?> banUser(@PathVariable Long id) {
+        UserPrincipalDto actor = securityService.getPresentAuthorizedUser();
+        if (actor.getRole() != Role.ADMIN) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("Only full admins can ban users.");
+        }
         try {
             return ResponseEntity.ok(usersService.setBanned(id, true));
         } catch (IllegalStateException e) {
@@ -65,6 +71,11 @@ public class AdminController {
 
     @PatchMapping("/users/{id}/unban")
     ResponseEntity<?> unbanUser(@PathVariable Long id) {
+        UserPrincipalDto actor = securityService.getPresentAuthorizedUser();
+        if (actor.getRole() != Role.ADMIN) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("Only full admins can ban users.");
+        }
         try {
             return ResponseEntity.ok(usersService.setBanned(id, false));
         } catch (RuntimeException e) {

@@ -13,7 +13,6 @@
 </head>
 <body>
 
-<!-- SIDEBAR -->
 <aside class="sidebar" id="sidebar">
     <div class="sidebar__brand">
         <div class="sidebar__logo"><i class="fas fa-bolt"></i></div>
@@ -73,8 +72,8 @@
         <div class="topbar__left">
             <button class="topbar__menu-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
             <h1 class="topbar__title">
-                Dashboard
-                <small id="adminWelcome">Welcome back — here's your store overview</small>
+                Add Product
+                <small id="adminWelcome">Create products one at a time or in bulk</small>
             </h1>
         </div>
         <span class="topbar__pill">
@@ -84,105 +83,208 @@
 
     <main class="content content--narrow">
 
+        <!-- Mode toggle + card -->
         <section class="card card--padded">
-            <div class="card__head">
-                <span class="pill pill--success mb-3"><i class="fas fa-plus-circle"></i> New Item</span>
-                <h1 class="card__title">Add a new product</h1>
-                <p class="card__subtitle">Fill in the details below to publish a new product to your catalog.</p>
+
+            <!-- ---- NAMED TOGGLE ---- -->
+            <div class="mode-toggle" role="tablist" aria-label="Add product mode">
+                <button type="button"
+                        id="modeBtnSingle"
+                        class="mode-toggle__btn is-active"
+                        role="tab"
+                        aria-selected="true"
+                        onclick="setMode('single')">
+                    <i class="fas fa-plus-circle"></i> Add Product
+                </button>
+                <button type="button"
+                        id="modeBtnBatch"
+                        class="mode-toggle__btn mode-toggle__btn--batch"
+                        role="tab"
+                        aria-selected="false"
+                        onclick="setMode('batch')">
+                    <i class="fas fa-file-import"></i> Batch Import
+                </button>
             </div>
 
-            <form id="addProductForm">
-                <div class="form-group">
-                    <label class="form-label" for="name">
-                        <i class="fas fa-tag"></i> Product name
-                    </label>
-                    <input type="text" class="form-control" id="name" placeholder="e.g. Espresso Beans 1kg" required>
+            <!-- =========================================================
+                 PANEL 1 — SINGLE PRODUCT (existing form)
+                 ========================================================= -->
+            <div id="panelSingle">
+                <div class="card__head">
+                    <span class="pill pill--success mb-3"><i class="fas fa-plus-circle"></i> New Item</span>
+                    <h1 class="card__title">Add a new product</h1>
+                    <p class="card__subtitle">Fill in the details below to publish a new product to your catalog.</p>
                 </div>
 
-                <div class="form-row mb-5">
-                    <div>
-                        <label class="form-label" for="price"><i class="fas fa-rupee-sign"></i> Price</label>
-                        <input type="number" step="0.01" min="0" class="form-control" id="price" placeholder="0.00" required>
-                    </div>
-                    <div>
-                        <label class="form-label" for="categorySelect">
-                            <i class="fas fa-folder"></i> Category
+                <form id="addProductForm">
+                    <div class="form-group">
+                        <label class="form-label" for="name">
+                            <i class="fas fa-tag"></i> Product name
                         </label>
-                        <select class="form-select" id="categorySelect" required>
-                            <option value="" disabled selected>Loading categories…</option>
-                        </select>
-                        <input type="text"
-                               class="form-control mt-2 d-none"
-                               id="newCategoryName"
-                               placeholder="Type new category name"
-                               autocomplete="off">
+                        <input type="text" class="form-control" id="name" placeholder="e.g. Espresso Beans 1kg" required>
                     </div>
+
+                    <div class="form-row mb-5">
+                        <div>
+                            <label class="form-label" for="price"><i class="fas fa-rupee-sign"></i> Price</label>
+                            <input type="number" step="0.01" min="0" class="form-control" id="price" placeholder="0.00" required>
+                        </div>
+                        <div>
+                            <label class="form-label" for="categorySelect">
+                                <i class="fas fa-folder"></i> Category
+                            </label>
+                            <select class="form-select" id="categorySelect" required>
+                                <option value="" disabled selected>Loading categories…</option>
+                            </select>
+                            <input type="text"
+                                   class="form-control mt-2 d-none"
+                                   id="newCategoryName"
+                                   placeholder="Type new category name"
+                                   autocomplete="off">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="description">
+                            <i class="fas fa-align-left"></i> Description
+                            <span class="hint">(optional)</span>
+                        </label>
+                        <textarea class="form-control" id="description" placeholder="Add a short description"></textarea>
+                    </div>
+
+                    <div class="form-row mb-5">
+                        <div>
+                            <label class="form-label" for="quantity"><i class="fas fa-cubes"></i> Quantity</label>
+                            <input type="number"
+                                   class="form-control"
+                                   id="quantity"
+                                   min="1"
+                                   step="1"
+                                   value="1"
+                                   required>
+                        </div>
+                        <div>
+                            <label class="form-label" for="qunatityUnit"><i class="fas fa-ruler"></i> Unit</label>
+                            <select class="form-select" id="qunatityUnit">
+                                <option value="PIECE">Piece</option>
+                                <option value="KG">KG</option>
+                                <option value="LITER">Liter</option>
+                                <option value="BOX">Box</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <hr class="mb-5" style="border:none;border-top:1px solid var(--c-border);">
+
+                    <div class="form-group">
+                        <label class="form-label"><i class="fas fa-image"></i> Product image</label>
+                        <div class="segmented">
+                            <input type="radio" id="src-file" name="imageSource" value="file" checked onclick="toggleImageInput('file')">
+                            <label for="src-file"><i class="fas fa-upload me-1"></i> Upload file</label>
+                            <input type="radio" id="src-url" name="imageSource" value="url" onclick="toggleImageInput('url')">
+                            <label for="src-url"><i class="fas fa-link me-1"></i> Image URL</label>
+                        </div>
+                    </div>
+
+                    <div class="form-group" id="fileInputBlock">
+                        <div class="file-drop">
+                            <i class="fas fa-cloud-upload-alt" style="font-size:1.3rem;color:var(--c-primary);"></i>
+                            <input type="file" id="imagefile" accept="image/*">
+                        </div>
+                    </div>
+
+                    <div class="form-group d-none" id="urlInputBlock">
+                        <input type="url" class="form-control" id="imageUrl" placeholder="https://example.com/image.jpg">
+                    </div>
+
+                    <div class="d-flex justify-end gap-3 mt-6">
+                        <button type="reset" class="btn btn--ghost"><i class="fas fa-undo"></i> Reset</button>
+                        <button type="submit" class="btn btn--success"><i class="fas fa-check"></i> Create product</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- =========================================================
+                 PANEL 2 — BATCH IMPORT (hidden by default)
+                 ========================================================= -->
+            <div id="panelBatch" style="display:none;">
+                <div class="card__head">
+                    <span class="pill pill--info mb-3"><i class="fas fa-file-import"></i> Bulk Operation</span>
+                    <h1 class="card__title">Batch import products</h1>
+                    <p class="card__subtitle">
+                        Paste a JSON array of products or upload a <code>.json</code> file.
+                        Images are downloaded from each product's <code>imageUrl</code>.
+                    </p>
+                </div>
+
+                <!-- Placeholder banner -->
+                <div id="sampleBanner"
+                     class="pill pill--warning mb-4"
+                     style="display:none; width:100%; padding: var(--sp-3) var(--sp-4); font-size:.82rem; text-transform:none; letter-spacing:0;">
+                    <i class="fas fa-triangle-exclamation"></i>
+                    <span>
+                        <b>Placeholder text detected.</b> Replace all sample values (name, description, etc.)
+                        before importing.
+                    </span>
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label" for="description">
-                        <i class="fas fa-align-left"></i> Description
-                        <span class="hint">(optional)</span>
+                    <label class="form-label" for="batchJsonInput">
+                        <i class="fas fa-code"></i> JSON payload
+                        <span class="hint">(array of ProductDTO)</span>
                     </label>
-                    <textarea class="form-control" id="description" placeholder="Add a short description"></textarea>
+                    <textarea class="form-control" id="batchJsonInput" rows="14"
+                              spellcheck="false"
+                              placeholder='[
+  {
+    "name": "Product Name",
+    "price": 0.00,
+    "description": "Product Description in one line",
+    "quantity": 0,
+    "qunatityUnit": "{KG,GRAM,LITER,ML,PIECE,BOX}",
+    "categoryName": "Product Category",
+    "imageUrl": "Product Online Image Url"
+  }
+]'></textarea>
                 </div>
-
-                <div class="form-row mb-5">
-                    <div>
-                        <label class="form-label" for="quantity"><i class="fas fa-cubes"></i> Quantity</label>
-                        <input type="number"
-                               class="form-control"
-                               id="quantity"
-                               min="1"
-                               step="1"
-                               value="1"
-                               required>
-                    </div>
-                    <div>
-                        <label class="form-label" for="qunatityUnit"><i class="fas fa-ruler"></i> Unit</label>
-                        <select class="form-select" id="qunatityUnit">
-                            <option value="PIECE">Piece</option>
-                            <option value="KG">KG</option>
-                            <option value="LITER">Liter</option>
-                            <option value="BOX">Box</option>
-                        </select>
-                    </div>
-                </div>
-
-                <hr class="mb-5" style="border:none;border-top:1px solid var(--c-border);">
 
                 <div class="form-group">
-                    <label class="form-label"><i class="fas fa-image"></i> Product image</label>
-                    <div class="segmented">
-                        <input type="radio" id="src-file" name="imageSource" value="file" checked onclick="toggleImageInput('file')">
-                        <label for="src-file"><i class="fas fa-upload me-1"></i> Upload file</label>
-                        <input type="radio" id="src-url" name="imageSource" value="url" onclick="toggleImageInput('url')">
-                        <label for="src-url"><i class="fas fa-link me-1"></i> Image URL</label>
-                    </div>
-                </div>
-
-                <div class="form-group" id="fileInputBlock">
+                    <label class="form-label"><i class="fas fa-upload"></i> …or load from file</label>
                     <div class="file-drop">
-                        <i class="fas fa-cloud-upload-alt" style="font-size:1.3rem;color:var(--c-primary);"></i>
-                        <input type="file" id="imagefile" accept="image/*">
+                        <i class="fas fa-file-code" style="font-size:1.3rem;color:var(--c-primary);"></i>
+                        <input type="file" id="batchJsonFile" accept=".json,application/json">
                     </div>
                 </div>
 
-                <div class="form-group d-none" id="urlInputBlock">
-                    <input type="url" class="form-control" id="imageUrl" placeholder="https://example.com/image.jpg">
+                <div class="d-flex gap-3 flex-wrap align-center">
+                    <button type="button" class="btn btn--ghost" onclick="fillSample()">
+                        <i class="fas fa-wand-magic-sparkles"></i> Insert sample
+                    </button>
+                    <button type="button" class="btn btn--ghost" onclick="clearBatch()">
+                        <i class="fas fa-eraser"></i> Clear
+                    </button>
+                    <button type="button" class="btn btn--ghost" onclick="validateOnly()">
+                        <i class="fas fa-check-double"></i> Validate
+                    </button>
+                    <button type="button" class="btn btn--success" id="batchSubmitBtn" onclick="submitBatch()">
+                        <i class="fas fa-cloud-upload-alt"></i> Import products
+                    </button>
                 </div>
 
-                <div class="d-flex justify-end gap-3 mt-6">
-                    <button type="reset" class="btn btn--ghost"><i class="fas fa-undo"></i> Reset</button>
-                    <button type="submit" class="btn btn--success"><i class="fas fa-check"></i> Create product</button>
+                <!-- Preview -->
+                <div id="previewCard" style="display:none; margin-top: var(--sp-6);">
+                    <h2 class="fw-800 mb-2" id="previewTitle">Preview</h2>
+                    <p class="text-muted fs-sm mb-4" id="previewSubtitle"></p>
+                    <div id="previewBody"></div>
                 </div>
-            </form>
+            </div>
+
         </section>
 
     </main>
 </div>
 
-<!-- Global popup markup -->
+<!-- Global popup -->
 <div id="globalPopup" class="popup-alert" role="alert" aria-live="polite">
     <div class="popup-icon" id="popupIcon">✓</div>
     <div class="popup-message" id="popupMessage"></div>
@@ -191,17 +293,15 @@
 </div>
 
 <script src="/js/popup.js"></script>
-<script src="/js/popup.js"></script>
 <script>
-    let usingFileInput = true;
-    const NEW_CATEGORY_VALUE = "__NEW__";
-
-    /* ---------- Popup helpers ---------- */
+    /* ============================================================
+       Popup helpers
+       ============================================================ */
     function popupSuccess(msg) { showPopup(msg || 'Done!', 'success', 3000); }
-    function popupError(msg)   { showPopup(msg || 'Something went wrong.', 'error', 5000); }
+    function popupError(msg)   { showPopup(msg || 'Something went wrong.', 'error', 6000); }
 
     async function readError(res) {
-        const text = await res.text();
+        const text = await res.text().catch(() => '');
         if (!text) return `HTTP ${res.status}`;
         try {
             const data = JSON.parse(text);
@@ -211,7 +311,9 @@
         }
     }
 
-    /* ---------- Sidebar + auth ---------- */
+    /* ============================================================
+       Sidebar + auth
+       ============================================================ */
     function toggleSidebar() {
         document.getElementById('sidebar').classList.toggle('is-open');
         document.getElementById('overlay').classList.toggle('is-visible');
@@ -219,18 +321,43 @@
 
     async function handleLogout(e) {
         if (e) e.preventDefault();
-        try {
-            await fetch('/auth/v1/logout', { method: 'POST', credentials: 'include' });
-        } catch (err) {
-            console.error(err);
-        } finally {
-            window.location.href = '/LoginForm.html';
-        }
+        try { await fetch('/auth/v1/logout', { method: 'POST', credentials: 'include' }); }
+        catch (err) { console.error(err); }
+        finally { window.location.href = '/LoginForm.html'; }
     }
 
     window.addEventListener('pageshow', e => { if (e.persisted) window.location.reload(); });
 
-    /* ---------- Image source toggle ---------- */
+    /* ============================================================
+       MODE TOGGLE — Add Product ⇄ Batch Import
+       ============================================================ */
+    let currentMode = 'single';
+
+    function setMode(mode) {
+        currentMode = (mode === 'batch') ? 'batch' : 'single';
+
+        const singlePanel = document.getElementById('panelSingle');
+        const batchPanel  = document.getElementById('panelBatch');
+        const btnSingle   = document.getElementById('modeBtnSingle');
+        const btnBatch    = document.getElementById('modeBtnBatch');
+
+        const isSingle = currentMode === 'single';
+
+        singlePanel.style.display = isSingle ? '' : 'none';
+        batchPanel.style.display  = isSingle ? 'none' : '';
+
+        btnSingle.classList.toggle('is-active', isSingle);
+        btnBatch .classList.toggle('is-active', !isSingle);
+        btnSingle.setAttribute('aria-selected', String(isSingle));
+        btnBatch .setAttribute('aria-selected', String(!isSingle));
+    }
+
+    /* ============================================================
+       SINGLE PRODUCT FORM (existing behaviour, unchanged)
+       ============================================================ */
+    let usingFileInput = true;
+    const NEW_CATEGORY_VALUE = "__NEW__";
+
     function toggleImageInput(mode) {
         const f = document.getElementById('fileInputBlock');
         const u = document.getElementById('urlInputBlock');
@@ -247,7 +374,6 @@
         }
     }
 
-    /* ---------- Category dropdown ---------- */
     async function loadCategories() {
         const select = document.getElementById('categorySelect');
         try {
@@ -285,7 +411,6 @@
     function onCategoryChange() {
         const select   = document.getElementById('categorySelect');
         const newInput = document.getElementById('newCategoryName');
-
         if (select.value === NEW_CATEGORY_VALUE) {
             newInput.classList.remove('d-none');
             newInput.required = true;
@@ -305,33 +430,21 @@
         return select.value;
     }
 
-    /* ---------- Quantity guard ---------- */
     function enforceQuantityFloor() {
         const qtyInput = document.getElementById('quantity');
         const v = parseInt(qtyInput.value, 10);
-        if (isNaN(v) || v < 1) {
-            qtyInput.value = 1;
-        }
+        if (isNaN(v) || v < 1) qtyInput.value = 1;
     }
 
-    /* ---------- Submit ---------- */
     document.getElementById('addProductForm').addEventListener('submit', async function (e) {
         e.preventDefault();
 
-        /* --- Validate category --- */
         const categoryName = resolveCategoryName();
-        if (!categoryName) {
-            popupError('Please select or enter a category.');
-            return;
-        }
+        if (!categoryName) { popupError('Please select or enter a category.'); return; }
 
-        /* --- Validate quantity --- */
         const qtyInput = document.getElementById('quantity');
         let qty = parseInt(qtyInput.value, 10);
-        if (isNaN(qty) || qty < 1) {
-            qty = 1;
-            qtyInput.value = 1;
-        }
+        if (isNaN(qty) || qty < 1) { qty = 1; qtyInput.value = 1; }
 
         const product = {
             name:         document.getElementById('name').value,
@@ -347,18 +460,11 @@
         try {
             if (usingFileInput) {
                 const fi = document.getElementById('imagefile');
-                if (!fi.files[0]) {
-                    popupError('Please select an image file to upload.');
-                    return;
-                }
+                if (!fi.files[0]) { popupError('Please select an image file to upload.'); return; }
                 const fd = new FormData();
                 fd.append('product', new Blob([JSON.stringify(product)], { type: 'application/json' }));
                 fd.append('imagefile', fi.files[0]);
-                res = await fetch('/products/upload', {
-                    method: 'POST',
-                    body: fd,
-                    credentials: 'include'
-                });
+                res = await fetch('/products/upload', { method: 'POST', body: fd, credentials: 'include' });
             } else {
                 res = await fetch('/products', {
                     method: 'POST',
@@ -373,23 +479,290 @@
             return;
         }
 
-        if (!res.ok) {
-            popupError(await readError(res));
-            return;
-        }
+        if (!res.ok) { popupError(await readError(res)); return; }
 
         popupSuccess('Product added successfully!');
         setTimeout(() => window.location.href = '/Admin_Pages/ViewAllProduct.html', 900);
     });
 
-    /* ---------- Wire up new elements ---------- */
     document.getElementById('categorySelect').addEventListener('change', onCategoryChange);
-
-    /* Re-clamp quantity whenever the user types or spins */
     document.getElementById('quantity').addEventListener('input', enforceQuantityFloor);
     document.getElementById('quantity').addEventListener('blur',  enforceQuantityFloor);
 
-    /* ---------- Admin identity ---------- */
+    /* ============================================================
+       BATCH IMPORT (logic from BatchImport.html)
+       ============================================================ */
+
+    const SAMPLE_PRODUCTS = [
+        {
+            name: "Product Name",
+            price: 0.00,
+            description: "Product Description in one line",
+            quantity: 0,
+            qunatityUnit: "{KG,GRAM,LITER,ML,PIECE,BOX}",
+            categoryName: "Product Category",
+            imageUrl: "Product Online Image Url"
+        }
+    ];
+
+    const FORBIDDEN_PLACEHOLDERS = [
+        { field: 'name',        needle: 'Product Name' },
+        { field: 'description', needle: 'Product Description in one line' }
+    ];
+
+    function findPlaceholderViolations(products) {
+        const violations = [];
+        products.forEach((p, i) => {
+            const row = i + 1;
+            FORBIDDEN_PLACEHOLDERS.forEach(({ field, needle }) => {
+                const value = p[field];
+                if (typeof value === 'string' &&
+                    value.toLowerCase().includes(needle.toLowerCase())) {
+                    violations.push(
+                        `Item ${row}: "${field}" still contains the placeholder text "${needle}".`
+                    );
+                }
+            });
+        });
+        return violations;
+    }
+
+    function setSampleBanner(visible) {
+        const banner = document.getElementById('sampleBanner');
+        banner.style.display = visible ? 'inline-flex' : 'none';
+    }
+
+    const ALLOWED_FIELDS = [
+        'name', 'price', 'description', 'quantity',
+        'qunatityUnit', 'categoryName', 'imageUrl'
+    ];
+
+    function parseProducts() {
+        const raw = document.getElementById('batchJsonInput').value.trim();
+        if (!raw) return { ok: false, error: 'JSON input is empty.' };
+
+        let parsed;
+        try { parsed = JSON.parse(raw); }
+        catch (err) { return { ok: false, error: `Invalid JSON: ${err.message}` }; }
+
+        if (!Array.isArray(parsed))
+            return { ok: false, error: 'Top-level JSON value must be an array of products.' };
+        if (parsed.length === 0)
+            return { ok: false, error: 'Array is empty — nothing to import.' };
+
+        const violations = findPlaceholderViolations(parsed);
+        if (violations.length > 0) {
+            setSampleBanner(true);
+            return {
+                ok: false,
+                error:
+                    'The following items still contain the sample placeholder text. ' +
+                    'Please edit them before importing:\n' +
+                    violations.slice(0, 8).join('\n') +
+                    (violations.length > 8 ? `\n…and ${violations.length - 8} more.` : '')
+            };
+        }
+
+        const products = [];
+        const errors   = [];
+
+        parsed.forEach((item, i) => {
+            const row = i + 1;
+            if (item === null || typeof item !== 'object' || Array.isArray(item)) {
+                errors.push(`Item ${row}: must be an object.`);
+                return;
+            }
+            if (!item.name || typeof item.name !== 'string' || !item.name.trim())
+                errors.push(`Item ${row}: "name" is required and must be a non-empty string.`);
+            if (item.price === undefined || item.price === null ||
+                typeof item.price !== 'number' || isNaN(item.price) || item.price < 0)
+                errors.push(`Item ${row}: "price" is required and must be a non-negative number.`);
+            if (item.quantity !== undefined && item.quantity !== null) {
+                if (!Number.isInteger(item.quantity) || item.quantity < 0)
+                    errors.push(`Item ${row}: "quantity" must be a non-negative integer.`);
+            }
+            if (item.qunatityUnit !== undefined && item.qunatityUnit !== null) {
+                const allowedUnits = ['PIECE', 'KG', 'LITER', 'BOX'];
+                const u = String(item.qunatityUnit).toUpperCase().trim();
+                if (!allowedUnits.includes(u))
+                    errors.push(`Item ${row}: "qunatityUnit" must be one of ${allowedUnits.join(', ')}.`);
+            }
+            if (item.imageUrl !== undefined && item.imageUrl !== null &&
+                typeof item.imageUrl !== 'string')
+                errors.push(`Item ${row}: "imageUrl" must be a string.`);
+
+            if (errors.length === 0) {
+                const clean = {};
+                ALLOWED_FIELDS.forEach(k => { if (item[k] !== undefined) clean[k] = item[k]; });
+                if (clean.qunatityUnit) clean.qunatityUnit = String(clean.qunatityUnit).toUpperCase().trim();
+                products.push(clean);
+            }
+        });
+
+        if (errors.length) {
+            return { ok: false, error: errors.slice(0, 8).join('\n') + (errors.length > 8 ? `\n…and ${errors.length - 8} more.` : '') };
+        }
+
+        return { ok: true, products };
+    }
+
+    function renderPreview(products) {
+        const card = document.getElementById('previewCard');
+        const body = document.getElementById('previewBody');
+        document.getElementById('previewTitle').textContent    = 'Preview';
+        document.getElementById('previewSubtitle').textContent = `${products.length} product(s) ready to import.`;
+
+        const rows = products.map((p, i) => `
+            <tr>
+                <td>${i + 1}</td>
+                <td>${escapeHtml(p.name ?? '')}</td>
+                <td>${p.price ?? ''}</td>
+                <td>${p.quantity ?? ''}</td>
+                <td>${escapeHtml(p.qunatityUnit ?? '')}</td>
+                <td>${escapeHtml(p.categoryName ?? '')}</td>
+                <td>${p.imageUrl ? '<i class="fas fa-image text-primary"></i>' : '—'}</td>
+            </tr>
+        `).join('');
+
+        body.innerHTML = `
+            <div style="overflow-x:auto;">
+                <table class="table">
+                    <thead>
+                        <tr><th>#</th><th>Name</th><th>Price</th><th>Qty</th>
+                            <th>Unit</th><th>Category</th><th>Img</th></tr>
+                    </thead>
+                    <tbody>${rows}</tbody>
+                </table>
+            </div>
+        `;
+        card.style.display = '';
+    }
+
+    function escapeHtml(s) {
+        return String(s)
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
+    function validateOnly() {
+        const r = parseProducts();
+        if (!r.ok) { popupError(r.error); return; }
+        setSampleBanner(false);
+        renderPreview(r.products);
+        popupSuccess(`Valid JSON — ${r.products.length} product(s) ready.`);
+    }
+
+    async function submitBatch() {
+        const parsed = parseProducts();
+        if (!parsed.ok) { popupError(parsed.error); return; }
+
+        setSampleBanner(false);
+
+        const products = parsed.products;
+        if (products.length > 200) {
+            popupError('Too many products in one request (max 200). Please split into smaller batches.');
+            return;
+        }
+
+        renderPreview(products);
+
+        const btn = document.getElementById('batchSubmitBtn');
+        const originalHtml = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Importing…';
+
+        let res;
+        try {
+            res = await fetch('/multi_products', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify(products)
+            });
+        } catch (err) {
+            console.error(err);
+            btn.disabled = false;
+            btn.innerHTML = originalHtml;
+            popupError('Network error — could not reach the server.');
+            return;
+        }
+
+        btn.disabled = false;
+        btn.innerHTML = originalHtml;
+
+        if (!res.ok) { popupError(await readError(res)); return; }
+
+        const created = await res.json().catch(() => null);
+        const count = Array.isArray(created) ? created.length : products.length;
+        popupSuccess(`Imported ${count} product(s) successfully!`);
+        if (Array.isArray(created) && created.length) renderResult(created);
+    }
+
+    function renderResult(created) {
+        document.getElementById('previewTitle').textContent    = 'Imported products';
+        document.getElementById('previewSubtitle').textContent = `${created.length} product(s) created.`;
+        const rows = created.map((p, i) => `
+            <tr>
+                <td>${i + 1}</td>
+                <td>${escapeHtml(p.name ?? '')}</td>
+                <td>#${p.id ?? ''}</td>
+                <td>${p.price ?? ''}</td>
+                <td>${p.quantity ?? ''}</td>
+                <td>${escapeHtml(p.category?.name ?? '')}</td>
+            </tr>
+        `).join('');
+        document.getElementById('previewBody').innerHTML = `
+            <div style="overflow-x:auto;">
+                <table class="table">
+                    <thead>
+                        <tr><th>#</th><th>Name</th><th>ID</th><th>Price</th><th>Qty</th><th>Category</th></tr>
+                    </thead>
+                    <tbody>${rows}</tbody>
+                </table>
+            </div>
+        `;
+        document.getElementById('previewCard').style.display = '';
+    }
+
+    function fillSample() {
+        document.getElementById('batchJsonInput').value = JSON.stringify(SAMPLE_PRODUCTS, null, 2);
+        setSampleBanner(true);
+    }
+
+    function clearBatch() {
+        document.getElementById('batchJsonInput').value = '';
+        document.getElementById('batchJsonFile').value  = '';
+        document.getElementById('previewCard').style.display = 'none';
+        setSampleBanner(false);
+    }
+
+    document.getElementById('batchJsonFile').addEventListener('change', async (e) => {
+        const f = e.target.files[0];
+        if (!f) return;
+        try {
+            const text = await f.text();
+            document.getElementById('batchJsonInput').value = text;
+            try {
+                const parsed = JSON.parse(text);
+                if (Array.isArray(parsed) && findPlaceholderViolations(parsed).length > 0) {
+                    setSampleBanner(true);
+                } else {
+                    setSampleBanner(false);
+                }
+            } catch { /* parse errors surface on validate */ }
+            validateOnly();
+        } catch (err) {
+            popupError('Could not read file: ' + err.message);
+        }
+    });
+
+    document.getElementById('batchJsonInput').addEventListener('input', () => {
+        setSampleBanner(false);
+    });
+
+    /* ============================================================
+       Admin identity
+       ============================================================ */
     (function fetchAdmin() {
         fetch('/admin', { credentials: 'include' })
             .then(r => r.ok ? r.json() : null)
@@ -402,13 +775,16 @@
                 document.getElementById('adminName').innerText   = fullName;
                 document.getElementById('adminRole').innerText   = 'Administrator';
                 const welcome = document.getElementById('adminWelcome');
-                if (welcome) welcome.innerText = `Welcome back, ${fullName} — here's your store overview`;
+                if (welcome) welcome.innerText = `Welcome back, ${fullName} — create products one at a time or in bulk`;
             })
             .catch(err => console.error('Failed to load admin:', err));
     })();
 
-    /* ---------- Init ---------- */
+    /* ============================================================
+       Init
+       ============================================================ */
     loadCategories();
+    setMode('single');
 </script>
 </body>
 </html>

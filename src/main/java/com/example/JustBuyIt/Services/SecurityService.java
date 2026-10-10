@@ -86,7 +86,7 @@ public class SecurityService {
         redisCacheService.setCacheUser(savedUser.getEmail(), UserPrincipalDto.fromEntity(savedUser));
 
         try {
-            emailService.sendVerificationEmail(savedUser.getEmail(), token);
+            emailService.sendVerificationEmail(savedUser.getEmail(), token, savedUser.getName());
         } catch (Exception e) {
             // don't fail registration if mail is down
             System.err.println("Failed to send verification email: " + e.getMessage());
@@ -127,7 +127,7 @@ public class SecurityService {
             redisCacheService.setCacheUser(user.getEmail(), UserPrincipalDto.fromEntity(user));
 
             try {
-                emailService.sendPasswordResetEmail(user.getEmail(), token);
+                emailService.sendPasswordResetEmail(user.getEmail(), token, user.getName());
             } catch (Exception e) {
                 System.err.println("Failed to send reset email: " + e.getMessage());
             }
@@ -307,5 +307,43 @@ public class SecurityService {
                 throw new IllegalStateException(
                         "Secondary admins can only modify or delete products they added.");
             }
-        }}
+        }
+    }
+
+    /**
+     * Guard for batch product creation.
+     * - ADMIN: unlimited.
+     * - SECONDARY_ADMIN: total owned products (existing + incoming) must stay ≤ SECONDARY_ADMIN_PRODUCT_LIMIT.
+     * - Others: denied.
+     */
+    public void assertCanBatchCreateProducts(UserPrincipalDto actor, int incomingCount) {
+        if (actor == null) {
+            throw new IllegalStateException("No authenticated admin.");
+        }
+
+        Role role = actor.getRole();
+
+        if (role == Role.ADMIN) {
+            return; // full admins: no cap
+        }
+
+        if (role == Role.SECONDARY_ADMIN) {
+            long current = productRepo.countByAddedById(actor.getId());
+            long total   = current + incomingCount;
+
+            if (total > SECONDARY_ADMIN_PRODUCT_LIMIT) {
+                long remaining = Math.max(0, SECONDARY_ADMIN_PRODUCT_LIMIT - current);
+                throw new IllegalStateException(
+                        "Secondary admins can only own up to " + SECONDARY_ADMIN_PRODUCT_LIMIT
+                                + " products. You currently own " + current
+                                + " and tried to add " + incomingCount
+                                + " (remaining slots: " + remaining + ")."
+                );
+            }
+            return;
+        }
+
+        throw new IllegalStateException("Only admins can batch-import products.");
+    }
+    
 }

@@ -21,3 +21,50 @@
     text-align: center;
   }
 }
+
+/* ---- Mode toggle (Add Product ⇄ Batch Import) ---- */
+    .mode-toggle {
+            display: inline-flex;
+            padding: 4px;
+            background: var(--c-bg);
+            border: 1.5px solid var(--c-border);
+            border-radius: var(--r-md);
+            gap: 4px;
+            margin-bottom: var(--sp-5);
+        }
+    .mode-toggle__btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: var(--sp-2) var(--sp-5);
+            border: none;
+            background: transparent;
+            border-radius: 9px;
+            font-size: .85rem;
+            font-weight: 700;
+            color: var(--c-text-secondary);
+            cursor: pointer;
+            transition: all var(--t-base);
+            white-space: nowrap;
+        }
+    .mode-toggle__btn i { font-size: .9rem; }
+    .mode-toggle__btn:hover { color: var(--c-primary); }
+    .mode-toggle__btn.is-active {
+            background: #fff;
+            color: var(--c-primary);
+            box-shadow: 0 2px 6px rgba(79,70,229,.18);
+        }
+    .mode-toggle__btn--batch.is-active {
+            color: #059669;
+            box-shadow: 0 2px 6px rgba(16,185,129,.22);
+        }
+    @media (max-width: 575.98px) {
+            .mode-toggle { width: 100%; }
+            .mode-toggle__btn { flex: 1; justify-content: center; padding: var(--sp-2) var(--sp-3); font-size: .78rem; }
+        }
+
+    /* Batch panel — monospace textarea */
+    #batchJsonInput {
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+            font-size: .82rem;
+        }

@@ -91,6 +91,11 @@ header {
     background-color: rgba(255, 255, 255, 0.6);
 }
 
+.navbar-brand span {
+    color: var(--brand-dark);
+}
+
+
 /* ---------- Cart link with icon + badge ---------- */
 .cart-link {
     display: inline-flex;
@@ -267,6 +272,9 @@ color: var(--price);
     .navbar-brand {
         font-size: 1.15rem;
     }
+    .navbar-brand span {
+        color: var(--brand-dark);
+    }
     .nav-links {
         gap: 2px;
     }
@@ -317,6 +325,9 @@ color: var(--price);
     }
     .navbar-brand {
         font-size: 1.05rem;
+    }
+    .navbar-brand span {
+        color: var(--brand-dark);
     }
 }
 /* On very small phones, hide the word "Cart" — the icon speaks for itself */

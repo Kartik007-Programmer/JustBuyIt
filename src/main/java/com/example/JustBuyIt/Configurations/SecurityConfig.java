@@ -31,7 +31,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorizeRequests ->
                         authorizeRequests
                                 .requestMatchers("/auth/**","/LoginForm.html","/RegistrationForm.html","/ForgotPassword.html","/ResetPassword.html").permitAll()
-                                .requestMatchers("/","/HomePage.html","/OneProduct.html","/css/**","/js/**").permitAll()
+                                .requestMatchers("/","/HomePage.html","/OneProduct.html","/css/**","/js/**","/Icons/**").permitAll()
                                 .requestMatchers(HttpMethod.GET,    "/products/**").permitAll()
 
                                 // Product writes: ADMIN + SECONDARY_ADMIN (fine-grained checks live in the service)
@@ -39,8 +39,9 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.PUT,    "/products/**").hasAnyAuthority("ADMIN", "SECONDARY_ADMIN")
                                 .requestMatchers(HttpMethod.DELETE, "/products/**").hasAnyAuthority("ADMIN", "SECONDARY_ADMIN")
 
-                                // Batch upload stays ADMIN-only (bypasses the 3-product limit)
-                                .requestMatchers(HttpMethod.POST,   "/multi_products").hasAuthority("ADMIN")
+                                // Batch upload: both admin roles allowed.
+                                // The 3-product cap for SECONDARY_ADMIN is enforced in SecurityService.assertCanBatchCreateProducts.
+                                .requestMatchers(HttpMethod.POST, "/multi_products").hasAnyAuthority("ADMIN", "SECONDARY_ADMIN")
 
                                 // Admin area (ban/unban, list admins) stays ADMIN-only
                                 .requestMatchers("/admin/all", "/admin/users/*/ban", "/admin/users/*/unban").hasAuthority("ADMIN")

@@ -233,19 +233,23 @@ public class ProductService {
     @Transactional
     public List<Product> addProductsBatchWithUrls(List<ProductDTO> productDTOs) {
         UserPrincipalDto actor = currentActor();
-        if (actor.getRole() != Role.ADMIN) {
-            throw new IllegalStateException("Only full admins can batch-import products.");
+
+        if (productDTOs == null || productDTOs.isEmpty()) {
+            throw new IllegalStateException("No products supplied for batch import.");
         }
+
+        // Single shared guard: ADMIN unlimited, SECONDARY_ADMIN capped at 3 total.
+        securityService.assertCanBatchCreateProducts(actor, productDTOs.size());
 
         Users owner = usersService.getReferenceById(actor.getId());
         List<Product> productsToSave = new ArrayList<>();
 
         for (ProductDTO dto : productDTOs) {
-            Product product = mapDtoToProduct(dto,owner);
+            Product product = mapDtoToProduct(dto, owner);
             if (dto.getImageUrl() != null && !dto.getImageUrl().isBlank()) {
                 try {
                     product.setImagefile(imageService.downloadImageFromUrl(dto.getImageUrl()));
-                }catch (Exception e){
+                } catch (Exception e) {
                     System.out.println("Failed downloading image for " + dto.getName() + ": " + e.getMessage());
                     System.err.println("Failed downloading image for " + dto.getName() + ": " + e.getMessage());
                     product.setImagefile(null);
@@ -253,6 +257,7 @@ public class ProductService {
             }
             productsToSave.add(product);
         }
+
         List<Product> savedProducts = repo.saveAll(productsToSave);
         bumpVersion();
         return savedProducts;

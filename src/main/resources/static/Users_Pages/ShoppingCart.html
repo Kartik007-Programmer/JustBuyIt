@@ -10,28 +10,86 @@
     <link rel="stylesheet" href="/css/users/pages/cart.css">
     <link rel="stylesheet" href="/css/users/common.css">
 </head>
+
 <body>
 
-<nav class="navbar">
-    <div class="navbar-brand">Just<span>Buy</span>It</div>
-    <div class="nav-links">
-        <a href="/LoginForm.html" class="nav-link">Login</a>
-        <a href="/RegistrationForm.html" class="nav-link">Register</a>
-        <a href="#" class="nav-link cart-link" aria-label="Cart">
+<!-- ============ LOGIN PROMPT MODAL ============ -->
+<div class="auth-modal-backdrop" id="authModal" aria-hidden="true">
+    <div class="auth-modal" role="dialog" aria-modal="true" aria-labelledby="authModalTitle">
+        <button class="auth-modal-close" onclick="closeAuthModal()" aria-label="Close">×</button>
+
+        <div class="auth-modal-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 15v2m-6 4h12a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2Zm10-10V7a4 4 0 0 0-8 0v4h8Z"
+                      stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </div>
+
+        <h2 id="authModalTitle">Sign in to continue</h2>
+        <p class="auth-modal-msg">
+            You need an account to add items to your cart and check out.
+        </p>
+
+        <div class="auth-modal-actions">
+            <a href="/LoginForm.html" class="auth-btn auth-btn-primary">Log in</a>
+            <a href="/RegistrationForm.html" class="auth-btn auth-btn-secondary">Create account</a>
+        </div>
+
+        <button class="auth-modal-later" onclick="closeAuthModal()">
+            Continue browsing
+        </button>
+    </div>
+</div>
+
+<!-- ============ HEADER ============ -->
+<header>
+    <nav class="navbar">
+        <div class="navbar-brand">Just<span>Buy</span>It</div>
+
+        <div class="nav-links">
+            <a href="/LoginForm.html"        class="nav-link guest-only">Login</a>
+            <a href="/RegistrationForm.html" class="nav-link guest-only">Register</a>
+
+            <a href="/Users_Pages/ShoppingCart.html"
+               class="nav-link cart-link"
+               id="cartNavLink"
+               aria-label="Cart">
                 <span class="cart-icon-wrap">
-                    <svg class="cart-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <svg class="cart-icon" viewBox="0 0 24 24" fill="none"
+                         xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                         <path d="M3 3h2.2l2.1 12.4a2 2 0 0 0 1.97 1.6h9.36a2 2 0 0 0 1.96-1.55L22 8H6.2"
-                              stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                        <circle cx="9" cy="20" r="1.6" fill="currentColor"/>
+                              stroke="currentColor" stroke-width="1.8"
+                              stroke-linecap="round" stroke-linejoin="round"/>
+                        <circle cx="9"  cy="20" r="1.6" fill="currentColor"/>
                         <circle cx="18" cy="20" r="1.6" fill="currentColor"/>
                     </svg>
-                    <span class="cart-badge" id="cartBadge">0</span>
+                    <span class="cart-badge" id="cartBadge" data-empty="true">0</span>
                 </span>
-            <span class="cart-text">Cart</span>
-        </a>
-        <button class="btn-logout" onclick="logout()">Logout</button>
-    </div>
-</nav>
+                <span class="cart-text">Cart</span>
+            </a>
+        </div>
+
+        <div class="user-menu auth-only" id="userMenu" hidden>
+            <button class="user-pill" id="userPill"
+                    aria-haspopup="true" aria-expanded="false"
+                    aria-controls="userDropdown">
+                <span class="user-avatar" id="userAvatar">U</span>
+                <span class="user-name"   id="userName">User</span>
+                <svg class="chev" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+                    <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2"
+                          fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+
+            <div class="user-dropdown" id="userDropdown" role="menu">
+                <a href="/Users_Pages/Profile.html" role="menuitem">My Profile</a>
+                <a href="/Users_Pages/Orders.html"  role="menuitem">My Orders</a>
+                <hr>
+                <button class="danger" onclick="logout()" role="menuitem">Logout</button>
+            </div>
+        </div>
+    </nav>
+</header>
 
 <div class="page-top">
     <a href="/HomePage.html" class="back">← Back to products</a>
@@ -44,11 +102,18 @@
     </div>
 </main>
 
+<script src="/js/users/navbar.js"></script>
 <script>
-    const API_BASE = "http://localhost:8080";
+    /* ============================================================
+       PAGE STATE
+       ============================================================ */
+    const API_BASE  = window.API_BASE;
     const CART_BASE = `${API_BASE}/users/cart`;
     let currentCart = null;
 
+    /* ============================================================
+       LOAD CART
+       ============================================================ */
     function loadCart() {
         fetch(CART_BASE, { credentials: "include" })
             .then(res => {
@@ -71,6 +136,9 @@
             });
     }
 
+    /* ============================================================
+       RENDER CART
+       ============================================================ */
     function renderCart(cart) {
         const container = document.getElementById("cartContent");
         const items = cart.items || [];
@@ -127,10 +195,9 @@
         `;
     }
 
-    // The controller has no endpoint to update a line item's quantity directly —
-    // only POST /users/cart/items (add) and DELETE /users/cart/items/{id} (remove).
-    // So a quantity change removes the existing line, then re-adds it at the new
-    // quantity, which works regardless of whether addItemToCart merges or replaces.
+    /* ============================================================
+       UPDATE QUANTITY (delete + re-add since there's no PATCH endpoint)
+       ============================================================ */
     function updateQuantity(itemId, newQuantity) {
         const item = (currentCart.items || []).find(i => i.id === itemId);
         if (!item) return;
@@ -166,6 +233,9 @@
             });
     }
 
+    /* ============================================================
+       REMOVE ITEM
+       ============================================================ */
     function removeItem(itemId) {
         fetch(`${CART_BASE}/items/${itemId}`, { method: "DELETE", credentials: "include" })
             .then(res => {
@@ -183,6 +253,9 @@
             });
     }
 
+    /* ============================================================
+       CLEAR CART
+       ============================================================ */
     function clearCart() {
         if (!confirm("Remove all items from your cart?")) return;
         fetch(CART_BASE, { method: "DELETE", credentials: "include" })
@@ -196,6 +269,9 @@
             });
     }
 
+    /* ============================================================
+       FEEDBACK + NAVIGATION
+       ============================================================ */
     function showFeedback(message) {
         const el = document.getElementById("feedback");
         if (el) {
@@ -210,28 +286,26 @@
 
     function updateBadge(cart) {
         const badge = document.getElementById("cartBadge");
+        if (!badge) return;
         const count = (cart.items || []).reduce((sum, i) => sum + (i.quantity || 0), 0);
         badge.innerText = count;
         badge.dataset.empty = count === 0 ? "true" : "false";
     }
 
-    function logout() {
-        try {
-            fetch("/auth/v1/logout", { method: "POST" });
-        } catch (error) {
-            console.error("Logout error:", error);
-        } finally {
-            window.location.href = "/LoginForm.html";
-        }
-    }
+    /* ============================================================
+       INIT — wait for auth, redirect guests, then load cart
+       ============================================================ */
+    (async function initPage() {
+        const user = await window.__authReady;
 
-    loadCart();
-
-    window.addEventListener("pageshow", function (event) {
-        if (event.persisted) {
-            window.location.reload();
+        // Guests shouldn't be here
+        if (!user) {
+            window.location.href = "/HomePage.html";
+            return;
         }
-    });
+
+        loadCart();
+    })();
 </script>
 </body>
 </html>

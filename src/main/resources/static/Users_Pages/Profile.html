@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile — JustBuyIt</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/users/pages/profile.css">
+    <link rel="stylesheet" href="/css/users/common.css">
+</head>
+
+<body>
+
+<!-- ============ LOGIN PROMPT MODAL ============ -->
+<div class="auth-modal-backdrop" id="authModal" aria-hidden="true">
+    <div class="auth-modal" role="dialog" aria-modal="true" aria-labelledby="authModalTitle">
+        <button class="auth-modal-close" onclick="closeAuthModal()" aria-label="Close">×</button>
+        <div class="auth-modal-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 15v2m-6 4h12a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2Zm10-10V7a4 4 0 0 0-8 0v4h8Z"
+                      stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </div>
+        <h2>Sign in to continue</h2>
+        <p class="auth-modal-msg">You need an account to view your profile.</p>
+        <div class="auth-modal-actions">
+            <a href="/LoginForm.html" class="auth-btn auth-btn-primary">Log in</a>
+            <a href="/RegistrationForm.html" class="auth-btn auth-btn-secondary">Create account</a>
+        </div>
+        <button class="auth-modal-later" onclick="closeAuthModal()">Continue browsing</button>
+    </div>
+</div>
+
+<!-- ============ HEADER ============ -->
+<header>
+    <nav class="navbar">
+        <div class="navbar-brand">Just<span>Buy</span>It</div>
+        <div class="nav-links">
+            <a href="/LoginForm.html"        class="nav-link guest-only">Login</a>
+            <a href="/RegistrationForm.html" class="nav-link guest-only">Register</a>
+            <a href="/Users_Pages/ShoppingCart.html"
+               class="nav-link cart-link" id="cartNavLink" aria-label="Cart">
+                <span class="cart-icon-wrap">
+                    <svg class="cart-icon" viewBox="0 0 24 24" fill="none"
+                         xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <path d="M3 3h2.2l2.1 12.4a2 2 0 0 0 1.97 1.6h9.36a2 2 0 0 0 1.96-1.55L22 8H6.2"
+                              stroke="currentColor" stroke-width="1.8"
+                              stroke-linecap="round" stroke-linejoin="round"/>
+                        <circle cx="9"  cy="20" r="1.6" fill="currentColor"/>
+                        <circle cx="18" cy="20" r="1.6" fill="currentColor"/>
+                    </svg>
+                    <span class="cart-badge" id="cartBadge" data-empty="true">0</span>
+                </span>
+                <span class="cart-text">Cart</span>
+            </a>
+        </div>
+        <div class="user-menu auth-only" id="userMenu" hidden>
+            <button class="user-pill" id="userPill"
+                    aria-haspopup="true" aria-expanded="false" aria-controls="userDropdown">
+                <span class="user-avatar" id="userAvatar">U</span>
+                <span class="user-name"   id="userName">User</span>
+                <svg class="chev" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+                    <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2"
+                          fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+            <div class="user-dropdown" id="userDropdown" role="menu">
+                <a href="/Users_Pages/Profile.html" role="menuitem">My Profile</a>
+                <a href="/Users_Pages/Orders.html"  role="menuitem">My Orders</a>
+                <hr>
+                <button class="danger" onclick="logout()" role="menuitem">Logout</button>
+            </div>
+        </div>
+    </nav>
+</header>
+
+<div class="page-top">
+    <a href="/HomePage.html" class="back">← Back to products</a>
+</div>
+
+<main>
+    <h1 class="page-title">My Profile</h1>
+
+    <div class="profile-layout">
+        <aside class="profile-summary">
+            <div class="avatar-big" id="profileAvatar">U</div>
+            <div class="profile-name" id="profileName">—</div>
+            <div class="profile-email" id="profileEmail">—</div>
+            <div class="profile-role" id="profileRole"></div>
+        </aside>
+
+        <section class="profile-card">
+            <h2>Personal details</h2>
+            <form id="profileForm" onsubmit="saveProfile(event)">
+                <div class="field">
+                    <label for="nameInput">Full name</label>
+                    <input type="text" id="nameInput" placeholder="Your name" required>
+                </div>
+
+                <div class="field">
+                    <label for="emailInput">Email</label>
+                    <input type="email" id="emailInput" disabled>
+                    <div class="field-hint">Email cannot be changed.</div>
+                </div>
+
+                <div class="field">
+                    <label for="phoneInput">Phone</label>
+                    <input type="tel" id="phoneInput" placeholder="+91 ...">
+                </div>
+
+                <div class="field">
+                    <label for="addressInput">Delivery address</label>
+                    <textarea id="addressInput" rows="3"
+                              placeholder="Street, City, State, PIN"></textarea>
+                </div>
+
+                <div class="action-row">
+                    <button type="submit" class="btn-save" id="saveBtn">Save changes</button>
+                    <button type="button" class="btn-logout-inline" onclick="logout()">Log out</button>
+                </div>
+
+                <div class="feedback" id="profileFeedback"></div>
+            </form>
+        </section>
+    </div>
+</main>
+
+<script src="/js/users/navbar.js"></script>
+<script>
+    const API_BASE = window.API_BASE;
+
+    function setAvatarAndName(user) {
+        const display = (user.name && user.name.trim()) || user.email || "U";
+        const initials = display.trim().split(/\s+/).map(s => s[0]).slice(0, 2).join("").toUpperCase();
+
+        document.getElementById("profileAvatar").textContent = initials;
+        document.getElementById("profileName").textContent = display;
+        document.getElementById("profileEmail").textContent = user.email;
+        document.getElementById("profileRole").textContent = user.role || "";
+
+        document.getElementById("nameInput").value  = user.name || "";
+        document.getElementById("emailInput").value = user.email || "";
+        document.getElementById("phoneInput").value = user.phone || "";
+        document.getElementById("addressInput").value = user.address || "";
+    }
+
+    function loadProfile() {
+        fetch(`${API_BASE}/users/profile`, {
+            credentials: "include",
+            headers: { "Accept": "application/json" }
+        })
+            .then(res => {
+                if (!res.ok) throw new Error("Failed to load profile");
+                return res.json();
+            })
+            .then(setAvatarAndName)
+            .catch(err => {
+                console.error("Profile load error:", err);
+                document.getElementById("profileFeedback").innerText =
+                    "Couldn't load your profile. Try refreshing.";
+                document.getElementById("profileFeedback").className = "feedback error";
+            });
+    }
+
+    function saveProfile(e) {
+        e.preventDefault();
+        const btn = document.getElementById("saveBtn");
+        const feedback = document.getElementById("profileFeedback");
+        feedback.innerText = "";
+        feedback.className = "feedback";
+
+        btn.disabled = true;
+        btn.innerText = "Saving…";
+
+        const payload = {
+            name: document.getElementById("nameInput").value.trim(),
+            phone: document.getElementById("phoneInput").value.trim(),
+            address: document.getElementById("addressInput").value.trim()
+        };
+
+        fetch(`${API_BASE}/users/profile`, {
+            method: "PUT",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        })
+            .then(res => {
+                if (!res.ok) throw new Error("Save failed");
+                return res.json();
+            })
+            .then(() => {
+                feedback.innerText = "✓ Profile updated";
+                feedback.className = "feedback success";
+                // Reflect new name in the top-right pill + big card
+                const display = payload.name || "User";
+                const initials = display.trim().split(/\s+/).map(s => s[0]).slice(0, 2).join("").toUpperCase();
+                document.getElementById("profileAvatar").textContent = initials;
+                document.getElementById("profileName").textContent   = display;
+                document.getElementById("userAvatar").textContent    = initials;
+                document.getElementById("userName").textContent      = display;
+            })
+            .catch(err => {
+                console.error("Profile save error:", err);
+                feedback.innerText = "Couldn't save. Try again.";
+                feedback.className = "feedback error";
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btn.innerText = "Save changes";
+            });
+    }
+
+    (async function initPage() {
+        const user = await window.__authReady;
+        if (!user) {
+            window.location.href = "/HomePage.html";
+            return;
+        }
+        loadProfile();
+    })();
+</script>
+</body>
+</html>

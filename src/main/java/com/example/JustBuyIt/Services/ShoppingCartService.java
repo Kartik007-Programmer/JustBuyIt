@@ -99,23 +99,14 @@ public class ShoppingCartService {
     }
 
     @Transactional
-    public void clearCart(String email){
+    public void clearCart(String email) {
         ShoppingCart cart = getUserCart(email);
         cart.getCartItems().clear();
         cart.setTotalPrice(0.0);
-        cartRepo.save(cart);
+        cartRepo.saveAndFlush(cart);
 
-        if (TransactionSynchronizationManager.isSynchronizationActive()) {
-            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-                @Override
-                public void afterCommit() {
-                    Cache cache = cacheManager.getCache("cart");
-                    if (cache != null) {
-                        cache.evict(email);
-                    }
-                }
-            });
-        }
+        Cache cache = cacheManager.getCache("cart");
+        if (cache != null) cache.evict(email);
     }
 
     private ShoppingCart getUserCart(String email) {

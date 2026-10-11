@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Details — JustBuyIt</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/users/pages/orders.css">
+    <link rel="stylesheet" href="/css/users/common.css">
+</head>
+
+<body>
+
+<!-- ============ LOGIN PROMPT MODAL ============ -->
+<div class="auth-modal-backdrop" id="authModal" aria-hidden="true">
+    <div class="auth-modal" role="dialog" aria-modal="true" aria-labelledby="authModalTitle">
+        <button class="auth-modal-close" onclick="closeAuthModal()" aria-label="Close">×</button>
+        <div class="auth-modal-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 15v2m-6 4h12a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2Zm10-10V7a4 4 0 0 0-8 0v4h8Z"
+                      stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </div>
+        <h2>Sign in to continue</h2>
+        <p class="auth-modal-msg">You need an account to view your order.</p>
+        <div class="auth-modal-actions">
+            <a href="/LoginForm.html" class="auth-btn auth-btn-primary">Log in</a>
+            <a href="/RegistrationForm.html" class="auth-btn auth-btn-secondary">Create account</a>
+        </div>
+        <button class="auth-modal-later" onclick="closeAuthModal()">Continue browsing</button>
+    </div>
+</div>
+
+<!-- ============ HEADER ============ -->
+<header>
+    <nav class="navbar">
+        <div class="navbar-brand">Just<span>Buy</span>It</div>
+
+        <div class="nav-links">
+            <a href="/LoginForm.html"        class="nav-link guest-only">Login</a>
+            <a href="/RegistrationForm.html" class="nav-link guest-only">Register</a>
+
+            <a href="/Users_Pages/ShoppingCart.html"
+               class="nav-link cart-link" id="cartNavLink" aria-label="Cart">
+                <span class="cart-icon-wrap">
+                    <svg class="cart-icon" viewBox="0 0 24 24" fill="none"
+                         xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <path d="M3 3h2.2l2.1 12.4a2 2 0 0 0 1.97 1.6h9.36a2 2 0 0 0 1.96-1.55L22 8H6.2"
+                              stroke="currentColor" stroke-width="1.8"
+                              stroke-linecap="round" stroke-linejoin="round"/>
+                        <circle cx="9"  cy="20" r="1.6" fill="currentColor"/>
+                        <circle cx="18" cy="20" r="1.6" fill="currentColor"/>
+                    </svg>
+                    <span class="cart-badge" id="cartBadge" data-empty="true">0</span>
+                </span>
+                <span class="cart-text">Cart</span>
+            </a>
+        </div>
+
+        <div class="user-menu auth-only" id="userMenu" hidden>
+            <button class="user-pill" id="userPill"
+                    aria-haspopup="true" aria-expanded="false" aria-controls="userDropdown">
+                <span class="user-avatar" id="userAvatar">U</span>
+                <span class="user-name"   id="userName">User</span>
+                <svg class="chev" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+                    <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2"
+                          fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+            <div class="user-dropdown" id="userDropdown" role="menu">
+                <a href="/Users_Pages/Profile.html" role="menuitem">My Profile</a>
+                <a href="/Users_Pages/Orders.html"  role="menuitem">My Orders</a>
+                <hr>
+                <button class="danger" onclick="logout()" role="menuitem">Logout</button>
+            </div>
+        </div>
+    </nav>
+</header>
+
+<div class="page-top">
+    <a href="/Users_Pages/Orders.html" class="back">← Back to orders</a>
+</div>
+
+<main id="mainContent">
+    <div class="state-message"><h3>Loading order…</h3></div>
+</main>
+
+<script src="/js/users/navbar.js"></script>
+<script>
+    /* ============================================================
+       PAGE STATE
+       ============================================================ */
+    const API_BASE = window.API_BASE;
+    const params   = new URLSearchParams(window.location.search);
+    const orderId  = params.get("id");
+
+    /* ============================================================
+       HELPERS
+       ============================================================ */
+    function fmtDate(iso) {
+        if (!iso) return "—";
+        return new Date(iso).toLocaleString(undefined, {
+            year: "numeric", month: "short", day: "numeric",
+            hour: "2-digit", minute: "2-digit"
+        });
+    }
+
+    function statusClass(status) {
+        switch (status) {
+            case "PLACED":     return "status-placed";
+            case "CONFIRMED":  return "status-confirmed";
+            case "DISPATCHED": return "status-dispatched";
+            case "DELIVERED":  return "status-delivered";
+            case "CANCELLED":  return "status-cancelled";
+            default:           return "";
+        }
+    }
+
+    function escapeHtml(s) {
+        if (s == null) return "";
+        return String(s)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#39;");
+    }
+
+    /* ============================================================
+       RENDER
+       ============================================================ */
+    function renderOrder(o) {
+        const items   = o.items || [];
+        const totalQty = items.reduce((s, i) => s + (i.quantity || 0), 0);
+
+        // Fall back to the current user's profile for delivery fields when
+        // an older order was placed before we started snapshotting them.
+        const me = window.currentUser || {};
+        const deliveryName    = o.deliveryName    || me.name    || "";
+        const deliveryPhone   = o.deliveryPhone   || me.phone   || "";
+        const deliveryAddress = o.deliveryAddress || me.address || "";
+
+        const rows = items.map(i => `
+            <div class="order-line">
+                <div class="line-thumb">
+                    <img src="${API_BASE}/products/${i.productId}/image"
+                         alt="${escapeHtml(i.productName)}"
+                         onerror="this.src='https://placehold.co/80?text=No+Image'">
+                </div>
+                <div class="line-info">
+                    <a class="line-name"
+                       href="/OneProduct.html?id=${i.productId}">${escapeHtml(i.productName)}</a>
+                    <div class="line-price">₹${i.unitPrice} × ${i.quantity}</div>
+                </div>
+                <div class="line-subtotal">₹${i.subTotal}</div>
+            </div>
+        `).join("");
+
+        document.getElementById("mainContent").innerHTML = `
+            <h1 class="page-title">Order #${o.id}</h1>
+
+            <div class="order-detail-grid">
+
+                <!-- ===== Left: Items ===== -->
+                <section class="order-items-panel">
+                    <div class="panel-head">
+                        <h2>Items (${totalQty})</h2>
+                        <span class="status-badge ${statusClass(o.status)}">${o.status}</span>
+                    </div>
+                    ${rows}
+                    <div class="order-total-row">
+                        <span>Total</span>
+                        <span class="amount">₹${o.totalAmount}</span>
+                    </div>
+                </section>
+
+                <!-- ===== Right: Meta ===== -->
+                <aside class="order-meta-panel">
+                    <h2>Order information</h2>
+
+                    <div class="meta-row">
+                        <span>Transaction ID</span>
+                        <span class="mono">${escapeHtml(o.transactionId || "—")}</span>
+                    </div>
+                    <div class="meta-row">
+                        <span>Placed on</span>
+                        <span>${fmtDate(o.placedAt)}</span>
+                    </div>
+                    <div class="meta-row">
+                        <span>Payment method</span>
+                        <span>${escapeHtml(o.paymentMethod || "—")}</span>
+                    </div>
+
+                    <hr class="meta-divider">
+
+                    <h2>Delivery details</h2>
+
+                    <div class="meta-row">
+                        <span>Name</span>
+                        <span>${deliveryName ? escapeHtml(deliveryName) : "Not provided"}</span>
+                    </div>
+                    <div class="meta-row">
+                        <span>Phone</span>
+                        <span>${deliveryPhone ? escapeHtml(deliveryPhone) : "Not provided"}</span>
+                    </div>
+                    <div class="meta-row">
+                        <span>Address</span>
+                        <span>${deliveryAddress ? escapeHtml(deliveryAddress) : "Not provided"}</span>
+                    </div>
+
+                    ${(!o.deliveryPhone || !o.deliveryAddress)
+                        ? `<div class="meta-hint">
+                               Delivery details are missing on this order.
+                               <a href="/Users_Pages/Profile.html">Update your profile</a>
+                               so future orders include them.
+                           </div>`
+                        : ``}
+
+                    <a class="btn-outline full" href="/Users_Pages/Orders.html">
+                        ← All orders
+                    </a>
+                </aside>
+            </div>
+        `;
+    }
+
+    /* ============================================================
+       LOAD ORDER
+       ============================================================ */
+    function loadOrder() {
+        if (!orderId) {
+            document.getElementById("mainContent").innerHTML = `
+                <div class="state-message"><h3>No order selected</h3></div>`;
+            return;
+        }
+
+        fetch(`${API_BASE}/users/orders/${orderId}`, {
+            credentials: "include",
+            headers: { "Accept": "application/json" }
+        })
+            .then(res => {
+                if (res.status === 404) throw new Error("NOT_FOUND");
+                if (!res.ok) throw new Error("Failed to load order");
+                return res.json();
+            })
+            .then(renderOrder)
+            .catch(err => {
+                console.error("Order load error:", err);
+                const msg = err.message === "NOT_FOUND"
+                    ? "We couldn't find that order."
+                    : "Couldn't load this order right now.";
+                document.getElementById("mainContent").innerHTML = `
+                    <div class="state-message">
+                        <h3>${msg}</h3>
+                        <a href="/Users_Pages/Orders.html" class="browse-link">Back to orders →</a>
+                    </div>`;
+            });
+    }
+
+    /* ============================================================
+       INIT — wait for auth, then load order (and refresh profile
+       so the delivery fallback has phone/address available)
+       ============================================================ */
+    (async function initPage() {
+        const user = await window.__authReady;
+        if (!user) {
+            window.location.href = "/HomePage.html";
+            return;
+        }
+
+        // Populate phone/address on window.currentUser for the fallback
+        try {
+            const res = await fetch(`${API_BASE}/users/profile`, {
+                credentials: "include",
+                headers: { "Accept": "application/json" }
+            });
+            if (res.ok) {
+                const profile = await res.json();
+                window.currentUser = Object.assign({}, window.currentUser, profile);
+            }
+        } catch (_) { /* ignore */ }
+
+        loadOrder();
+    })();
+</script>
+</body>
+</html>

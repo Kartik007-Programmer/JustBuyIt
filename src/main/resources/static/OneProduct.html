@@ -11,6 +11,8 @@
     <link rel="stylesheet" href="/css/users/common.css">
 </head>
 
+<body>
+
 <!-- ============ LOGIN PROMPT MODAL ============ -->
 <div class="auth-modal-backdrop" id="authModal" aria-hidden="true">
     <div class="auth-modal" role="dialog" aria-modal="true" aria-labelledby="authModalTitle">
@@ -39,28 +41,55 @@
     </div>
 </div>
 
-<body>
+<!-- ============ HEADER ============ -->
+<header>
+    <nav class="navbar">
+        <div class="navbar-brand">Just<span>Buy</span>It</div>
 
-<nav class="navbar">
-    <div class="navbar-brand">Just<span>Buy</span>It</div>
-    <div class="nav-links">
-        <a href="/LoginForm.html" class="nav-link">Login</a>
-        <a href="/RegistrationForm.html" class="nav-link">Register</a>
-        <a href="/Users_Pages/ShoppingCart.html" class="nav-link cart-link" aria-label="Cart" id="cartNavLink">                <span class="cart-icon-wrap">
+        <div class="nav-links">
+            <a href="/LoginForm.html"        class="nav-link guest-only">Login</a>
+            <a href="/RegistrationForm.html" class="nav-link guest-only">Register</a>
+
+            <a href="/Users_Pages/ShoppingCart.html"
+               class="nav-link cart-link"
+               id="cartNavLink"
+               aria-label="Cart">
                 <span class="cart-icon-wrap">
-                    <svg class="cart-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <svg class="cart-icon" viewBox="0 0 24 24" fill="none"
+                         xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                         <path d="M3 3h2.2l2.1 12.4a2 2 0 0 0 1.97 1.6h9.36a2 2 0 0 0 1.96-1.55L22 8H6.2"
-                              stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                        <circle cx="9" cy="20" r="1.6" fill="currentColor"/>
+                              stroke="currentColor" stroke-width="1.8"
+                              stroke-linecap="round" stroke-linejoin="round"/>
+                        <circle cx="9"  cy="20" r="1.6" fill="currentColor"/>
                         <circle cx="18" cy="20" r="1.6" fill="currentColor"/>
                     </svg>
                     <span class="cart-badge" id="cartBadge" data-empty="true">0</span>
                 </span>
-            <span class="cart-text">Cart</span>
-        </a>
-        <button class="btn-logout" onclick="logout()">Logout</button>
-    </div>
-</nav>
+                <span class="cart-text">Cart</span>
+            </a>
+        </div>
+
+        <div class="user-menu auth-only" id="userMenu" hidden>
+            <button class="user-pill" id="userPill"
+                    aria-haspopup="true" aria-expanded="false"
+                    aria-controls="userDropdown">
+                <span class="user-avatar" id="userAvatar">U</span>
+                <span class="user-name"   id="userName">User</span>
+                <svg class="chev" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+                    <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2"
+                          fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+
+            <div class="user-dropdown" id="userDropdown" role="menu">
+                <a href="/Users_Pages/Profile.html" role="menuitem">My Profile</a>
+                <a href="/Users_Pages/Orders.html"  role="menuitem">My Orders</a>
+                <hr>
+                <button class="danger" onclick="logout()" role="menuitem">Logout</button>
+            </div>
+        </div>
+    </nav>
+</header>
 
 <div class="page-top">
     <a href="/HomePage.html" class="back">← Back to products</a>
@@ -70,15 +99,19 @@
     <div class="state-message"><h3>Loading product…</h3></div>
 </main>
 
+<script src="/js/users/navbar.js"></script>
 <script>
-    const API_BASE = "http://localhost:8080";
+    /* ============================================================
+       PAGE STATE
+       ============================================================ */
+    const API_BASE = window.API_BASE;
     const params = new URLSearchParams(window.location.search);
     const id = params.get("id");
     let currentProduct = null;
-    let isGuestUser = null;
 
-    // Product API may return the raw Product entity (nested `category: { name }`)
-    // or a ProductDTO (`categoryName` string, `qunatityUnit` string). Support both.
+    /* ============================================================
+       HELPERS
+       ============================================================ */
     function getCategoryName(p) {
         return p.category?.name || p.categoryName || null;
     }
@@ -86,6 +119,9 @@
         return p.quantityUnit || p.qunatityUnit || null;
     }
 
+    /* ============================================================
+       RENDER PRODUCT
+       ============================================================ */
     function renderProduct(p) {
         currentProduct = p;
         const imgSrc = p.imagefile
@@ -138,6 +174,9 @@
         `;
     }
 
+    /* ============================================================
+       LOAD PRODUCT
+       ============================================================ */
     function loadProduct() {
         if (!id) {
             document.getElementById("mainContent").innerHTML = `
@@ -160,6 +199,9 @@
             });
     }
 
+    /* ============================================================
+       QTY CONTROLS
+       ============================================================ */
     function changeQty(delta) {
         const input = document.getElementById("qtyInput");
         const max = currentProduct?.quantity ?? 1;
@@ -180,11 +222,14 @@
         el.className = `feedback ${type}`;
     }
 
+    /* ============================================================
+       ADD TO CART
+       ============================================================ */
     function addToCart(event) {
         const btn = document.getElementById("cartBtn");
         if (!btn || btn.classList.contains("loading") || btn.classList.contains("added")) return;
 
-        if (event) spawnRipple(btn, event);
+        if (event) window.spawnRipple(btn, event);
         btn.classList.add("loading");
 
         const qty = getQty();
@@ -198,7 +243,7 @@
             body: JSON.stringify({ productId: currentProduct.id, quantity: qty })
         })
             .then(res => {
-                if (isUnauthorized(res)) {
+                if (window.isUnauthorized(res)) {
                     const e = new Error("UNAUTHORIZED");
                     e.code = "UNAUTHORIZED";
                     throw e;
@@ -212,7 +257,7 @@
                 const original = btn.innerText;
                 btn.innerText = "✓ Added to cart";
                 showFeedback("Added to cart.", "success");
-                refreshCartBadge(true);
+                window.refreshCartBadge(true);
                 setTimeout(() => {
                     btn.classList.remove("added");
                     btn.innerText = original || "Add to cart";
@@ -224,7 +269,7 @@
 
                 if (err.code === "UNAUTHORIZED") {
                     btn.innerText = "Add to cart";
-                    openAuthModal();
+                    window.openAuthModal();
                     return;
                 }
 
@@ -234,12 +279,14 @@
             });
     }
 
-    // Buy now — same loading treatment, then redirect
+    /* ============================================================
+       BUY NOW
+       ============================================================ */
     function buyProduct(event) {
         const btn = document.getElementById("buyBtn");
         if (!btn || btn.classList.contains("loading")) return;
 
-        if (event) spawnRipple(btn, event);
+        if (event) window.spawnRipple(btn, event);
         btn.classList.add("loading");
 
         const qty = getQty();
@@ -253,7 +300,7 @@
             body: JSON.stringify({ productId: currentProduct.id, quantity: qty })
         })
             .then(res => {
-                if (isUnauthorized(res)) {
+                if (window.isUnauthorized(res)) {
                     const e = new Error("UNAUTHORIZED");
                     e.code = "UNAUTHORIZED";
                     throw e;
@@ -262,7 +309,7 @@
                 return res.json();
             })
             .then(() => {
-                refreshCartBadge(true);
+                window.refreshCartBadge(true);
                 setTimeout(() => {
                     window.location.href = "/Users_Pages/PaymentCheckout.html";
                 }, 350);
@@ -272,177 +319,21 @@
                 btn.classList.remove("loading");
 
                 if (err.code === "UNAUTHORIZED") {
-                    openAuthModal();
+                    window.openAuthModal();
                     return;
                 }
                 showFeedback("Couldn't start checkout. Try again.", "error");
             });
     }
 
-    function spawnRipple(btn, event) {
-        const rect = btn.getBoundingClientRect();
-        const ripple = document.createElement("span");
-        ripple.className = "ripple";
-        const size = Math.max(rect.width, rect.height) * 2;
-        ripple.style.width = ripple.style.height = `${size}px`;
-        ripple.style.left = `${event.clientX - rect.left - size / 2}px`;
-        ripple.style.top  = `${event.clientY - rect.top  - size / 2}px`;
-        btn.appendChild(ripple);
-        setTimeout(() => ripple.remove(), 600);
-    }
-
-    function refreshCartBadge(animate = false) {
-        fetch(`${API_BASE}/users/cart`, {
-            credentials: "include",
-            headers: { "Accept": "application/json" }
-        })
-            .then(res => {
-                if (isUnauthorized(res)) {
-                isGuestUser = true;
-                return null;
-            }
-            if (!res.ok) return null;
-            isGuestUser = false;
-            return res.json();
-            })
-            .then(cart => {
-                if (!cart) return;
-                const badge = document.getElementById("cartBadge");
-                const count = (cart.items || []).reduce((sum, item) => sum + (item.quantity || 0), 0);
-                const changed = badge.innerText !== String(count);
-                badge.innerText = count;
-                badge.dataset.empty = count === 0 ? "true" : "false";
-                if (animate && changed && count > 0) {
-                    badge.classList.remove("pop");
-                    void badge.offsetWidth;
-                    badge.classList.add("pop");
-                    setTimeout(() => badge.classList.remove("pop"), 500);
-                }
-            })
-            .catch(() => {});
-    }
-
-    function logout() {
-        try {
-            fetch("/auth/v1/logout", { method: "POST" });
-        } catch (error) {
-            console.error("Logout error:", error);
-        } finally {
-            window.location.href = "/LoginForm.html";
-        }
-    }
-
-    loadProduct();
-    refreshCartBadge();
-
-    window.addEventListener("pageshow", function (event) {
-        if (event.persisted) {
-            window.location.reload();
-        }
-    });
-
-    // ---------- Auth Prompt Modal ----------
-    let authModalEl = null;
-
-    function openAuthModal() {
-        authModalEl = authModalEl || document.getElementById("authModal");
-        if (!authModalEl) return;
-
-        setAuthModalLinks();
-
-        authModalEl.classList.add("show");
-        authModalEl.setAttribute("aria-hidden", "false");
-        document.body.style.overflow = "hidden";
-    }
-
-    function closeAuthModal() {
-        authModalEl = authModalEl || document.getElementById("authModal");
-        if (!authModalEl) return;
-        authModalEl.classList.remove("show");
-        authModalEl.setAttribute("aria-hidden", "true");
-        document.body.style.overflow = "";
-    }
-
-    // Close on backdrop click + Escape key
-    document.addEventListener("click", (e) => {
-        if (e.target && e.target.id === "authModal") closeAuthModal();
-    });
-    document.addEventListener("keydown", (e) => {
-        if (e.key === "Escape") closeAuthModal();
-    });
-
-    // Helper: detect a 401/403 from a fetch response
-    function isUnauthorized(res) {
-        return res.status === 401 || res.status === 403;
-    }
-
-    // Hide logout if not logged in
-    (function hideLogoutIfGuest() {
-        fetch(`${API_BASE}/users/cart`, {
-            credentials: "include",
-            headers: { "Accept": "application/json" }
-        })
-            .then(res => {
-                const btn = document.querySelector(".btn-logout");
-                if (!btn) return;
-                if (res.status === 401 || res.status === 403) {
-                    btn.style.display = "none";
-                }
-            })
-            .catch(() => {});
+    /* ============================================================
+       INIT — wait for navbar.js auth check, then load product
+       ============================================================ */
+    (async function initPage() {
+        await window.__authReady;
+        loadProduct();
+        window.refreshCartBadge();
     })();
-
-    // ---------- Navbar Cart: gate for guests ----------
-    (function setupCartNavGate() {
-        const cartLink = document.getElementById("cartNavLink");
-        if (!cartLink) return;
-
-        cartLink.addEventListener("click", (e) => {
-            // Let modifier clicks / middle-click / target=_blank behave normally
-            if (e.ctrlKey || e.metaKey || e.shiftKey || e.altKey || e.button !== 0) return;
-
-            // Fast path: we already know the user is a guest
-            if (isGuestUser === true) {
-                e.preventDefault();
-                openAuthModal();
-                return;
-            }
-
-            // Fast path: we already know the user is logged in
-            if (isGuestUser === false) {
-                return;   // let the browser navigate normally
-            }
-
-            e.preventDefault();
-
-            // Probe the cart endpoint — if we get 401, user is a guest
-            fetch(`${API_BASE}/users/cart`, {
-                credentials: "include",
-                headers: { "Accept": "application/json" }
-            })
-                .then(res => {
-                    if (isUnauthorized(res)) {
-                        openAuthModal();
-                        return;
-                    }
-                    // Logged in (or some other status we can't classify) → just go
-                    window.location.href = cartLink.href;
-                })
-                .catch(() => {
-                    // Network error → let the browser try the navigation
-                    window.location.href = cartLink.href;
-                });
-        });
-    })();
-
-    // In openAuthModal() — before showing
-    function setAuthModalLinks() {
-        const here = encodeURIComponent(location.pathname + location.search);
-        const loginLink = document.querySelector('#authModal .auth-btn-primary');
-        const registerLink = document.querySelector('#authModal .auth-btn-secondary');
-        if (loginLink)    loginLink.href    = `/LoginForm.html?redirect=${here}`;
-        if (registerLink) registerLink.href = `/RegistrationForm.html?redirect=${here}`;
-    }
 </script>
 </body>
 </html>

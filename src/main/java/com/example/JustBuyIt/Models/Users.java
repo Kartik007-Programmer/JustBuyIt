@@ -20,6 +20,8 @@ public class Users implements UserDetails {
     private String name;
     private String email;
     private String password;
+    private String phone;
+    private String address;
 
     @Enumerated(EnumType.STRING)
     private Role role ;
@@ -179,5 +181,21 @@ public class Users implements UserDetails {
 
     public void setPasswordChangedAt(Instant passwordChangedAt) {
         this.passwordChangedAt = passwordChangedAt;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
     }
 }

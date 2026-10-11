@@ -404,3 +404,28 @@ display: inline-block;
         font-size: 0.68rem;
     }
 }
+
+/* ---- Checkout left column (stacks two panels) ---- */
+.checkout-left {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* ---- COD note ---- */
+.cod-note {
+    color: var(--ink-muted);
+    font-size: 0.92rem;
+    line-height: 1.6;
+}
+
+/* ---- Field error styling for textarea ---- */
+.field textarea.invalid {
+    border-color: var(--danger);
+    background: #fff5f5;
+}
+
+/* ---- Mobile: keep panels stacked nicely ---- */
+@media (max-width: 900px) {
+    .checkout-left { gap: 16px; }
+}

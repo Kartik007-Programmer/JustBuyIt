@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Orders — JustBuyIt</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/users/pages/orders.css">
+    <link rel="stylesheet" href="/css/users/common.css">
+</head>
+
+<body>
+
+<!-- ============ LOGIN PROMPT MODAL ============ -->
+<div class="auth-modal-backdrop" id="authModal" aria-hidden="true">
+    <div class="auth-modal" role="dialog" aria-modal="true" aria-labelledby="authModalTitle">
+        <button class="auth-modal-close" onclick="closeAuthModal()" aria-label="Close">×</button>
+        <div class="auth-modal-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 15v2m-6 4h12a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2Zm10-10V7a4 4 0 0 0-8 0v4h8Z"
+                      stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </div>
+        <h2>Sign in to continue</h2>
+        <p class="auth-modal-msg">You need an account to view your orders.</p>
+        <div class="auth-modal-actions">
+            <a href="/LoginForm.html" class="auth-btn auth-btn-primary">Log in</a>
+            <a href="/RegistrationForm.html" class="auth-btn auth-btn-secondary">Create account</a>
+        </div>
+        <button class="auth-modal-later" onclick="closeAuthModal()">Continue browsing</button>
+    </div>
+</div>
+
+<!-- ============ HEADER ============ -->
+<header>
+    <nav class="navbar">
+        <div class="navbar-brand">Just<span>Buy</span>It</div>
+        <div class="nav-links">
+            <a href="/LoginForm.html"        class="nav-link guest-only">Login</a>
+            <a href="/RegistrationForm.html" class="nav-link guest-only">Register</a>
+            <a href="/Users_Pages/ShoppingCart.html"
+               class="nav-link cart-link" id="cartNavLink" aria-label="Cart">
+                <span class="cart-icon-wrap">
+                    <svg class="cart-icon" viewBox="0 0 24 24" fill="none"
+                         xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <path d="M3 3h2.2l2.1 12.4a2 2 0 0 0 1.97 1.6h9.36a2 2 0 0 0 1.96-1.55L22 8H6.2"
+                              stroke="currentColor" stroke-width="1.8"
+                              stroke-linecap="round" stroke-linejoin="round"/>
+                        <circle cx="9"  cy="20" r="1.6" fill="currentColor"/>
+                        <circle cx="18" cy="20" r="1.6" fill="currentColor"/>
+                    </svg>
+                    <span class="cart-badge" id="cartBadge" data-empty="true">0</span>
+                </span>
+                <span class="cart-text">Cart</span>
+            </a>
+        </div>
+        <div class="user-menu auth-only" id="userMenu" hidden>
+            <button class="user-pill" id="userPill"
+                    aria-haspopup="true" aria-expanded="false" aria-controls="userDropdown">
+                <span class="user-avatar" id="userAvatar">U</span>
+                <span class="user-name"   id="userName">User</span>
+                <svg class="chev" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+                    <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2"
+                          fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+            <div class="user-dropdown" id="userDropdown" role="menu">
+                <a href="/Users_Pages/Profile.html" role="menuitem">My Profile</a>
+                <a href="/Users_Pages/Orders.html"  role="menuitem">My Orders</a>
+                <hr>
+                <button class="danger" onclick="logout()" role="menuitem">Logout</button>
+            </div>
+        </div>
+    </nav>
+</header>
+
+<div class="page-top">
+    <a href="/HomePage.html" class="back">← Back to products</a>
+</div>
+
+<main>
+    <h1 class="page-title">My Orders</h1>
+    <div id="ordersContent">
+        <div class="state-message"><h3>Loading your orders…</h3></div>
+    </div>
+</main>
+
+<script src="/js/users/navbar.js"></script>
+<script>
+    const API_BASE = window.API_BASE;
+
+    function fmtDate(iso) {
+        if (!iso) return "—";
+        const d = new Date(iso);
+        return d.toLocaleString(undefined, {
+            year: "numeric", month: "short", day: "numeric",
+            hour: "2-digit", minute: "2-digit"
+        });
+    }
+
+    function statusClass(status) {
+        switch (status) {
+            case "PLACED":    return "status-placed";
+            case "CONFIRMED": return "status-confirmed";
+            case "DISPATCHED":return "status-dispatched";
+            case "DELIVERED": return "status-delivered";
+            case "CANCELLED": return "status-cancelled";
+            default:          return "";
+        }
+    }
+
+    function renderOrders(orders) {
+        const container = document.getElementById("ordersContent");
+
+        if (!orders || orders.length === 0) {
+            container.innerHTML = `
+                <div class="state-message">
+                    <h3>No orders yet</h3>
+                    <p>When you place an order, it'll show up here.</p>
+                    <a href="/HomePage.html" class="browse-link">Browse products →</a>
+                </div>`;
+            return;
+        }
+
+        const cards = orders.map(o => `
+            <div class="order-card" onclick="location.href='/Users_Pages/OrderDetail.html?id=${o.id}'">
+                <div class="order-head">
+                    <div>
+                        <div class="order-txn">${o.transactionId}</div>
+                        <div class="order-date">${fmtDate(o.placedAt)}</div>
+                    </div>
+                    <span class="status-badge ${statusClass(o.status)}">${o.status}</span>
+                </div>
+                <div class="order-body">
+                    <div class="order-meta">
+                        <span><strong>${o.itemCount}</strong> item${o.itemCount === 1 ? "" : "s"}</span>
+                        <span>Paid via <strong>${o.paymentMethod}</strong></span>
+                    </div>
+                    <div class="order-amount">₹${o.totalAmount}</div>
+                </div>
+            </div>
+        `).join("");
+
+        container.innerHTML = `<div class="orders-grid">${cards}</div>`;
+    }
+
+    function loadOrders() {
+        fetch(`${API_BASE}/users/orders`, {
+            credentials: "include",
+            headers: { "Accept": "application/json" }
+        })
+            .then(res => {
+                if (!res.ok) throw new Error("Failed to load orders");
+                return res.json();
+            })
+            .then(renderOrders)
+            .catch(err => {
+                console.error("Load orders error:", err);
+                document.getElementById("ordersContent").innerHTML = `
+                    <div class="state-message">
+                        <h3>Couldn't load your orders</h3>
+                        <p>Please try again in a moment.</p>
+                    </div>`;
+            });
+    }
+
+    (async function initPage() {
+        const user = await window.__authReady;
+        if (!user) {
+            window.location.href = "/HomePage.html";
+            return;
+        }
+        loadOrders();
+    })();
+</script>
+</body>
+</html>

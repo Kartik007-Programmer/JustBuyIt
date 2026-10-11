@@ -5,12 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="theme-color" content="#CCCCFF">
     <title>JustBuyIt — Product Gallery</title>
+    <link rel="icon" type="image/png" sizes="48x48" href="/Icons/Favicon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/css/users/pages/home.css">
     <link rel="stylesheet" href="/css/users/common.css">
 </head>
+
+<body>
 
 <!-- ============ LOGIN PROMPT MODAL ============ -->
 <div class="auth-modal-backdrop" id="authModal" aria-hidden="true">
@@ -40,44 +43,76 @@
     </div>
 </div>
 
-<body>
-
+<!-- ============ HEADER ============ -->
 <header>
     <nav class="navbar">
         <div class="navbar-brand">Just<span>Buy</span>It</div>
+
         <div class="nav-links">
-            <a href="/LoginForm.html" class="nav-link">Login</a>
-            <a href="/RegistrationForm.html" class="nav-link">Register</a>
-            <a href="/Users_Pages/ShoppingCart.html" class="nav-link cart-link" aria-label="Cart" id="cartNavLink">
+
+            <!-- ===== GUEST ONLY ===== -->
+            <a href="/LoginForm.html"        class="nav-link guest-only">Login</a>
+            <a href="/RegistrationForm.html" class="nav-link guest-only">Register</a>
+
+            <!-- ===== ALWAYS VISIBLE: CART ===== -->
+            <a href="/Users_Pages/ShoppingCart.html"
+               class="nav-link cart-link"
+               id="cartNavLink"
+               aria-label="Cart">
                 <span class="cart-icon-wrap">
-                    <svg class="cart-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <svg class="cart-icon" viewBox="0 0 24 24" fill="none"
+                         xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                         <path d="M3 3h2.2l2.1 12.4a2 2 0 0 0 1.97 1.6h9.36a2 2 0 0 0 1.96-1.55L22 8H6.2"
-                              stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                        <circle cx="9" cy="20" r="1.6" fill="currentColor"/>
+                              stroke="currentColor" stroke-width="1.8"
+                              stroke-linecap="round" stroke-linejoin="round"/>
+                        <circle cx="9"  cy="20" r="1.6" fill="currentColor"/>
                         <circle cx="18" cy="20" r="1.6" fill="currentColor"/>
                     </svg>
                     <span class="cart-badge" id="cartBadge" data-empty="true">0</span>
                 </span>
-                            <span class="cart-text">Cart</span>
+                <span class="cart-text">Cart</span>
             </a>
-            <button class="btn-logout" onclick="logout()">Logout</button>
+        </div>
+        <!-- ===== LOGGED-IN ONLY: USER PILL ===== -->
+        <div class="user-menu auth-only" id="userMenu">
+            <button class="user-pill" id="userPill"
+                    aria-haspopup="true" aria-expanded="false"
+                    aria-controls="userDropdown">
+                <span class="user-avatar" id="userAvatar">U</span>
+                <span class="user-name"   id="userName">User</span>
+                <svg class="chev" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+                    <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2"
+                          fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+
+            <div class="user-dropdown" id="userDropdown" role="menu">
+                <a href="/Users_Pages/Profile.html" role="menuitem">My Profile</a>
+                <a href="/Users_Pages/Orders.html"  role="menuitem">My Orders</a>
+                <hr>
+                <button class="danger" onclick="logout()" role="menuitem">Logout</button>
+            </div>
         </div>
     </nav>
 </header>
 
+<!-- ============ HERO ============ -->
 <div class="hero">
-    <h1>Everything on your list, in one place.</h1>
-    <p class="sub">Browse fresh stock across every category and check out in a couple of clicks.</p>
+    <h1 id="heroTitle">Everything on your list, in one place.</h1>
+    <p class="sub" id="heroSub">Browse fresh stock across every category and check out in a couple of clicks.</p>
     <div class="search-row">
-        <input type="text" id="searchInput" placeholder="Search products by name..." onkeyup="filterProducts()">
+        <input type="text" id="searchInput"
+               placeholder="Search products by name..."
+               onkeyup="filterProducts()">
     </div>
     <div class="category-wrapper">
-        <button class="scroll-btn left" onclick="scrollCats(-1)">‹</button>
+        <button class="scroll-btn left"  onclick="scrollCats(-1)">‹</button>
         <div class="category-row" id="categoryRow"></div>
         <button class="scroll-btn right" onclick="scrollCats(1)">›</button>
     </div>
 </div>
 
+<!-- ============ MAIN ============ -->
 <main>
     <div class="grid" id="productList"></div>
     <div class="pagination" id="pagination"></div>
@@ -88,23 +123,32 @@
 </footer>
 
 <script>
-    // ---------- Config ----------
-    const API_BASE = "http://localhost:8080";
-    const PAGE_SIZE = 15;
+    /* ============================================================
+       CONFIG
+       ============================================================ */
+    const API_BASE     = "http://localhost:8080";
+    const PAGE_SIZE    = 15;
     const DRAG_THRESHOLD = 6;
 
-    // ---------- State ----------
-    let activeCategory = "All";
-    let currentPage = 0;
-    let totalPages = 0;
-    let currentSearchTerm = "";
+    /* ============================================================
+       STATE
+       ============================================================ */
+    let activeCategory     = "All";
+    let currentPage        = 0;
+    let totalPages         = 0;
+    let currentSearchTerm  = "";
     let availableCategories = [];
-    let isGuestUser = null;
+    let isGuestUser        = true;    // assume guest until proven otherwise
+    let currentUser        = null;    // { id, name, email, role } when logged in
 
-    // ---------- Init year ----------
+    /* ============================================================
+       INIT: YEAR
+       ============================================================ */
     document.getElementById("year").innerText = new Date().getFullYear();
 
-    // ---------- Helpers ----------
+    /* ============================================================
+       HELPERS
+       ============================================================ */
     function getCategoryName(p) {
         const c = p.category;
         if (!c) return p.categoryName || null;
@@ -116,7 +160,126 @@
         return p.quantityUnit || p.qunatityUnit || "";
     }
 
-    // ---------- Skeleton: render N placeholder cards ----------
+    function isUnauthorized(res) {
+        return res.status === 401 || res.status === 403;
+    }
+
+    /* ============================================================
+       AUTH BOOTSTRAP
+       ============================================================ */
+    async function bootstrapAuth() {
+        try {
+            const res = await fetch(`${API_BASE}/users/me`, {
+                credentials: "include",
+                headers: { "Accept": "application/json" }
+            });
+
+            if (isUnauthorized(res) || !res.ok) {
+                setGuestUI();
+                return;
+            }
+
+            currentUser = await res.json();
+
+            // Admins get redirected to their own dashboard
+            if (currentUser.role === "ADMIN") {
+                window.location.replace("/Admin_Pages/Dashboard.html");
+                return;
+            }
+
+            setLoggedInUI(currentUser);
+
+        } catch (err) {
+            console.warn("Auth check failed, treating as guest:", err);
+            setGuestUI();
+        }
+    }
+
+    function setGuestUI() {
+        isGuestUser = true;
+        currentUser = null;
+        document.body.classList.remove("is-logged-in");
+        // Remove leftover open state
+        document.getElementById("userMenu")?.classList.remove("open");
+    }
+
+    function setLoggedInUI(user) {
+        isGuestUser = false;
+        document.body.classList.add("is-logged-in");
+
+        // Initials: "John Doe" → "JD" · "john@x.com" → "JO"
+        const display = (user.name && user.name.trim()) || user.email || "U";
+        const initials = display
+            .trim()
+            .split(/\s+/)
+            .map(s => s[0])
+            .slice(0, 2)
+            .join("")
+            .toUpperCase();
+
+        const avatarEl = document.getElementById("userAvatar");
+        const nameEl   = document.getElementById("userName");
+        if (avatarEl) avatarEl.textContent = initials;
+        if (nameEl)   nameEl.textContent   = display;
+
+        // Personal hero
+        const heroTitle = document.getElementById("heroTitle");
+        const heroSub   = document.getElementById("heroSub");
+        if (heroTitle) heroTitle.textContent = `Welcome back, ${user.name || "shopper"} 👋`;
+        if (heroSub)   heroSub.textContent   = "Pick up where you left off — your cart is waiting.";
+    }
+
+    /* ============================================================
+       USER PILL DROPDOWN
+       ============================================================ */
+    (function setupUserMenu() {
+        const menu = document.getElementById("userMenu");
+        const pill = document.getElementById("userPill");
+        if (!menu || !pill) return;
+
+        function openMenu() {
+            menu.classList.add("open");
+            pill.setAttribute("aria-expanded", "true");
+        }
+
+        function closeMenu() {
+            menu.classList.remove("open");
+            pill.setAttribute("aria-expanded", "false");
+        }
+
+        // Toggle on pill click
+        pill.addEventListener("click", (e) => {
+            e.stopPropagation();
+            if (menu.classList.contains("open")) closeMenu();
+            else openMenu();
+        });
+
+        // Prevent clicks *inside* the dropdown from bubbling up
+        // (otherwise clicking a link toggles the menu closed before navigating)
+        const dropdown = document.getElementById("userDropdown");
+        if (dropdown) {
+            dropdown.addEventListener("click", (e) => {
+                // Only stop the *toggle* logic; let real navigation happen.
+                if (!e.target.closest("a")) {
+                    e.stopPropagation();
+                }
+            });
+        }
+
+        // Close on outside click — use capture so we see it even if inner handlers stop propagation
+        document.addEventListener("click", (e) => {
+            if (!menu.contains(e.target)) closeMenu();
+        });
+
+        // Close on Escape
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape") closeMenu();
+        });
+    })();
+
+    /* ============================================================
+       SKELETON
+       ============================================================ */
     function renderSkeletons(count = PAGE_SIZE) {
         const container = document.getElementById("productList");
         container.innerHTML = "";
@@ -138,15 +301,14 @@
         }
     }
 
-    // ---------- Products: fetch one page ----------
+    /* ============================================================
+       PRODUCTS: LOAD PAGE
+       ============================================================ */
     function loadProducts(page = 0, searchTerm = "", category = activeCategory) {
-        currentPage = page;
+        currentPage       = page;
         currentSearchTerm = searchTerm;
 
-        // Show skeletons immediately (but keep the row height stable)
         renderSkeletons(PAGE_SIZE);
-
-        // Hide pagination while loading to avoid stale buttons
         document.getElementById("pagination").innerHTML = "";
 
         const params = new URLSearchParams({ page, size: PAGE_SIZE });
@@ -164,9 +326,7 @@
             .then(data => {
                 const content = data.content || data;
                 displayProducts(content);
-                if (data.totalPages !== undefined) {
-                    renderPagination(data);
-                }
+                if (data.totalPages !== undefined) renderPagination(data);
             })
             .catch(err => {
                 console.error("Failed to load products:", err);
@@ -180,7 +340,9 @@
             });
     }
 
-    // ---------- Categories: render chips ----------
+    /* ============================================================
+       CATEGORIES: RENDER CHIPS
+       ============================================================ */
     function renderCategories() {
         const row = document.getElementById("categoryRow");
         row.innerHTML = "";
@@ -197,7 +359,9 @@
         requestAnimationFrame(updateArrows);
     }
 
-    // ---------- Products: render cards ----------
+    /* ============================================================
+       PRODUCTS: RENDER CARDS
+       ============================================================ */
     function displayProducts(products) {
         const container = document.getElementById("productList");
         container.innerHTML = "";
@@ -225,12 +389,13 @@
                 : "https://placehold.co/300x200?text=No+Image";
 
             const categoryName = getCategoryName(p);
-            const unit = getUnit(p);
-            const unitLabel = unit ? ` ${unit}` : "";
+            const unit         = getUnit(p);
+            const unitLabel    = unit ? ` ${unit}` : "";
 
             card.innerHTML = `
                 <div class="img-container">
-                    <img src="${imgSrc}" alt="${p.name}" onerror="this.src='https://placehold.co/300x200?text=No+Image'">
+                    <img src="${imgSrc}" alt="${p.name}"
+                         onerror="this.src='https://placehold.co/300x200?text=No+Image'">
                     ${categoryName ? `<span class="category-tag">${categoryName}</span>` : ""}
                 </div>
                 <div class="content">
@@ -246,7 +411,9 @@
         });
     }
 
-    // ---------- Pagination UI ----------
+    /* ============================================================
+       PAGINATION
+       ============================================================ */
     function renderPagination(pageData) {
         const el = document.getElementById("pagination");
         el.innerHTML = "";
@@ -257,7 +424,7 @@
         const makeBtn = (label, targetPage, opts = {}) => {
             const btn = document.createElement("button");
             btn.innerText = label;
-            if (opts.active) btn.classList.add("active");
+            if (opts.active)   btn.classList.add("active");
             if (opts.disabled) btn.disabled = true;
             btn.onclick = () => {
                 if (!opts.disabled && targetPage !== currentPage) {
@@ -303,12 +470,16 @@
         return range;
     }
 
-    // ---------- Filtering ----------
+    /* ============================================================
+       FILTER
+       ============================================================ */
     function filterProducts() {
         loadProducts(0, document.getElementById("searchInput").value.trim(), activeCategory);
     }
 
-    // ---------- Category arrows ----------
+    /* ============================================================
+       CATEGORY ARROWS
+       ============================================================ */
     function scrollCats(dir) {
         const row = document.getElementById("categoryRow");
         row.scrollBy({ left: dir * 260, behavior: "smooth" });
@@ -338,7 +509,9 @@
         right.style.pointerEvents = atEnd   ? "none" : "auto";
     }
 
-    // ---------- Cart ----------
+    /* ============================================================
+       CART: ADD ITEM
+       ============================================================ */
     function addToCart(event, productId) {
         event.stopPropagation();
         event.preventDefault();
@@ -354,7 +527,7 @@
             credentials: "include",
             headers: {
                 "Content-Type": "application/json",
-                "Accept": "application/json"        // <-- forces JSON 401 from entry point
+                "Accept": "application/json"
             },
             body: JSON.stringify({ productId: productId, quantity: 1 })
         })
@@ -391,7 +564,6 @@
                 btn.classList.remove("loading");
 
                 if (err.code === "UNAUTHORIZED") {
-                    // Guest → show our styled modal, not the raw login page
                     btn.innerText = "Add to cart";
                     openAuthModal();
                     return;
@@ -402,37 +574,51 @@
             });
     }
 
-    // Ripple: places a circle where the user clicked inside the button
+    /* ============================================================
+       CART: RIPPLE
+       ============================================================ */
     function spawnRipple(btn, event) {
         const rect = btn.getBoundingClientRect();
         const ripple = document.createElement("span");
         ripple.className = "ripple";
         const size = Math.max(rect.width, rect.height) * 2;
-        ripple.style.width = ripple.style.height = `${size}px`;
+        ripple.style.width  = ripple.style.height = `${size}px`;
         ripple.style.left = `${event.clientX - rect.left - size / 2}px`;
         ripple.style.top  = `${event.clientY - rect.top  - size / 2}px`;
         btn.appendChild(ripple);
         setTimeout(() => ripple.remove(), 600);
     }
 
+    /* ============================================================
+       CART: BADGE REFRESH
+       ============================================================ */
     function refreshCartBadge(animate = false) {
+        // Guests don't have a cart — skip the call
+        if (isGuestUser) {
+            const badge = document.getElementById("cartBadge");
+            if (badge) {
+                badge.innerText = "0";
+                badge.dataset.empty = "true";
+            }
+            return;
+        }
+
         fetch(`${API_BASE}/users/cart`, {
             credentials: "include",
             headers: { "Accept": "application/json" }
         })
             .then(res => {
-                if (isUnauthorized(res)) {
-                isGuestUser = true;
-                return null;
-            }
-            if (!res.ok) return null;
-            isGuestUser = false;
-            return res.json();
+                if (isUnauthorized(res)) return null;
+                if (!res.ok) return null;
+                return res.json();
             })
             .then(cart => {
                 if (!cart) return;
                 const badge = document.getElementById("cartBadge");
-                const count = (cart.items || []).reduce((sum, item) => sum + (item.quantity || 0), 0);
+                if (!badge) return;
+
+                const count = (cart.items || [])
+                    .reduce((sum, item) => sum + (item.quantity || 0), 0);
 
                 const changed = badge.innerText !== String(count);
                 badge.innerText = count;
@@ -448,18 +634,26 @@
             .catch(() => {});
     }
 
-    // ---------- Logout ----------
+    /* ============================================================
+       LOGOUT
+       ============================================================ */
     function logout() {
-        fetch("/auth/v1/logout", { method: "POST" })
+        fetch("/auth/v1/logout", {
+            method: "POST",
+            credentials: "include"
+        })
             .catch(err => console.error("Logout error:", err))
-            .finally(() => { window.location.href = "/LoginForm.html"; });
+            .finally(() => {
+                window.location.href = "/LoginForm.html";
+            });
     }
 
-    // ============================================================
-    //  DRAG-TO-SCROLL + CLICK-TO-FILTER FOR CATEGORY ROW
-    // ============================================================
+    /* ============================================================
+       DRAG-TO-SCROLL + CLICK-TO-FILTER (CATEGORY ROW)
+       ============================================================ */
     (function setupCategoryDragAndClick() {
         const row = document.getElementById("categoryRow");
+        if (!row) return;
 
         let isPointerDown = false;
         let isDragging = false;
@@ -534,53 +728,32 @@
             }
         }, true);
 
-        row.addEventListener("pointerdown", onPointerDown);
-        row.addEventListener("pointermove", onPointerMove);
-        row.addEventListener("pointerup", onPointerUp);
+        row.addEventListener("pointerdown",   onPointerDown);
+        row.addEventListener("pointermove",   onPointerMove);
+        row.addEventListener("pointerup",     onPointerUp);
         row.addEventListener("pointercancel", onPointerUp);
-        row.addEventListener("dragstart", (e) => e.preventDefault());
+        row.addEventListener("dragstart",     (e) => e.preventDefault());
     })();
 
-    // ---------- Wheel: horizontal scroll ----------
+    /* ============================================================
+       CATEGORY ROW: WHEEL + ARROWS
+       ============================================================ */
     const categoryRowEl = document.getElementById("categoryRow");
-    categoryRowEl.addEventListener("scroll", updateArrows);
-    categoryRowEl.addEventListener("wheel", (event) => {
-        if (event.deltaY !== 0) {
-            event.preventDefault();
-            categoryRowEl.scrollLeft += event.deltaY;
-        }
-    }, { passive: false });
+    if (categoryRowEl) {
+        categoryRowEl.addEventListener("scroll", updateArrows);
+        categoryRowEl.addEventListener("wheel", (event) => {
+            if (event.deltaY !== 0) {
+                event.preventDefault();
+                categoryRowEl.scrollLeft += event.deltaY;
+            }
+        }, { passive: false });
+    }
 
     window.addEventListener("resize", updateArrows);
 
-    // ---------- Initial load ----------
-    fetch(`${API_BASE}/products/categories`, { credentials: "include" })
-        .then(r => {
-            if (!r.ok) throw new Error(`HTTP ${r.status}`);
-            return r.json();
-        })
-        .then(cats => {
-            availableCategories = ["All", ...cats];
-            renderCategories();
-        })
-        .catch(err => {
-            console.error("Failed to load categories:", err);
-            availableCategories = ["All"];
-            renderCategories();
-        });
-
-    // Kick off first load → shows skeletons → then real products
-    loadProducts(0);
-    refreshCartBadge();
-
-    // ---------- bfcache reload ----------
-    window.addEventListener("pageshow", function (event) {
-        if (event.persisted) {
-            window.location.reload();
-        }
-    });
-
-    // ---------- Auth Prompt Modal ----------
+    /* ============================================================
+       AUTH PROMPT MODAL
+       ============================================================ */
     let authModalEl = null;
 
     function openAuthModal() {
@@ -602,7 +775,14 @@
         document.body.style.overflow = "";
     }
 
-    // Close on backdrop click + Escape key
+    function setAuthModalLinks() {
+        const here = encodeURIComponent(location.pathname + location.search);
+        const loginLink    = document.querySelector('#authModal .auth-btn-primary');
+        const registerLink = document.querySelector('#authModal .auth-btn-secondary');
+        if (loginLink)    loginLink.href    = `/LoginForm.html?redirect=${here}`;
+        if (registerLink) registerLink.href = `/RegistrationForm.html?redirect=${here}`;
+    }
+
     document.addEventListener("click", (e) => {
         if (e.target && e.target.id === "authModal") closeAuthModal();
     });
@@ -610,78 +790,59 @@
         if (e.key === "Escape") closeAuthModal();
     });
 
-    // Helper: detect a 401/403 from a fetch response
-    function isUnauthorized(res) {
-        return res.status === 401 || res.status === 403;
-    }
-
-    // Hide logout if not logged in
-    (function hideLogoutIfGuest() {
-        fetch(`${API_BASE}/users/cart`, {
-            credentials: "include",
-            headers: { "Accept": "application/json" }
-        })
-            .then(res => {
-                const btn = document.querySelector(".btn-logout");
-                if (!btn) return;
-                if (res.status === 401 || res.status === 403) {
-                    btn.style.display = "none";
-                }
-            })
-            .catch(() => {});
-    })();
-
-    // ---------- Navbar Cart: gate for guests ----------
+    /* ============================================================
+       CART NAV GATE (guest → modal, user → navigate)
+       ============================================================ */
     (function setupCartNavGate() {
         const cartLink = document.getElementById("cartNavLink");
         if (!cartLink) return;
 
         cartLink.addEventListener("click", (e) => {
-            // Let modifier clicks / middle-click / target=_blank behave normally
+            // Let modifier clicks behave normally
             if (e.ctrlKey || e.metaKey || e.shiftKey || e.altKey || e.button !== 0) return;
 
-            // Fast path: we already know the user is a guest
-            if (isGuestUser === true) {
+            if (isGuestUser) {
                 e.preventDefault();
                 openAuthModal();
-                return;
             }
-
-            // Fast path: we already know the user is logged in
-            if (isGuestUser === false) {
-                return;   // let the browser navigate normally
-            }
-
-            e.preventDefault();
-
-            // Probe the cart endpoint — if we get 401, user is a guest
-            fetch(`${API_BASE}/users/cart`, {
-                credentials: "include",
-                headers: { "Accept": "application/json" }
-            })
-                .then(res => {
-                    if (isUnauthorized(res)) {
-                        openAuthModal();
-                        return;
-                    }
-                    // Logged in (or some other status we can't classify) → just go
-                    window.location.href = cartLink.href;
-                })
-                .catch(() => {
-                    // Network error → let the browser try the navigation
-                    window.location.href = cartLink.href;
-                });
+            // Logged in → let the browser navigate normally
         });
     })();
 
-    // In openAuthModal() — before showing
-    function setAuthModalLinks() {
-        const here = encodeURIComponent(location.pathname + location.search);
-        const loginLink = document.querySelector('#authModal .auth-btn-primary');
-        const registerLink = document.querySelector('#authModal .auth-btn-secondary');
-        if (loginLink)    loginLink.href    = `/LoginForm.html?redirect=${here}`;
-        if (registerLink) registerLink.href = `/RegistrationForm.html?redirect=${here}`;
-    }
+    /* ============================================================
+       BFCACHE RELOAD
+       ============================================================ */
+    window.addEventListener("pageshow", function (event) {
+        if (event.persisted) window.location.reload();
+    });
+
+    /* ============================================================
+       INIT
+       ============================================================ */
+    (async function init() {
+        // 1. Decide guest vs logged-in FIRST
+        await bootstrapAuth();
+
+        // 2. If we got redirected to admin, stop here
+        if (currentUser && currentUser.role === "ADMIN") return;
+
+        // 3. Categories
+        try {
+            const r = await fetch(`${API_BASE}/products/categories`, { credentials: "include" });
+            if (!r.ok) throw new Error(`HTTP ${r.status}`);
+            const cats = await r.json();
+            availableCategories = ["All", ...cats];
+            renderCategories();
+        } catch (err) {
+            console.error("Failed to load categories:", err);
+            availableCategories = ["All"];
+            renderCategories();
+        }
+
+        // 4. Products + cart badge
+        loadProducts(0);
+        refreshCartBadge();
+    })();
 
 </script>
 </body>

@@ -1,12 +1,13 @@
 # JustBuyIt 🛒
 
-A full-stack e-commerce web application built with **Spring Boot 4**, featuring JWT authentication, email verification, password reset, product management, shopping cart, PDF receipt generation, admin user management, and a **two-tier caching system** using **Caffeine + Redis**.
+A full-stack e-commerce web application built with **Spring Boot 4**, featuring JWT authentication, email verification via **Resend**, password reset, product management, shopping cart, order history, user profile management, PDF receipt generation, admin user management, and a **two-tier caching system** using **Caffeine + Redis**.
 
 ![Java](https://img.shields.io/badge/Java-17-orange?logo=openjdk)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.1.1-brightgreen?logo=springboot)
 ![MySQL](https://img.shields.io/badge/MySQL-8-blue?logo=mysql)
 ![Redis](https://img.shields.io/badge/Redis-alpine-red?logo=redis)
 ![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker)
+![Resend](https://img.shields.io/badge/Resend-Email%20API-000000?logo=resend)
 
 ---
 
@@ -36,11 +37,14 @@ A full-stack e-commerce web application built with **Spring Boot 4**, featuring 
 **JustBuyIt** is a learning-focused, production-style e-commerce application built entirely in **Spring Boot 4**. It demonstrates:
 
 - Stateless **JWT authentication** stored in HttpOnly cookies
-- **Email verification** and **password reset** flows using Spring Mail
+- **Email verification** and **password reset** flows delivered through the **Resend API**
 - **Role-based authorization** with **three roles**: `USER`, `SECONDARY_ADMIN`, and `ADMIN`
 - A **two-tier cache** (in-JVM Caffeine + remote Redis) layered behind Spring's `CacheManager` abstraction
+- **Order history** with immutable order snapshots taken at checkout time
+- **User profile management** (name, phone, delivery address)
 - **PDF receipt generation** using OpenPDF
 - **Admin user management** with ban/unban capabilities
+- **Spring Boot Actuator** health checks for PaaS deployments (e.g. Render)
 
 The app is designed to run locally in **IntelliJ IDEA** while **MySQL** and **Redis** run externally (MySQL on Aiven, Redis in Docker) — so contributors don't need to install database servers natively.
 
@@ -49,19 +53,23 @@ The app is designed to run locally in **IntelliJ IDEA** while **MySQL** and **Re
 ## ✨ Features
 
 ### 👤 Authentication & Account
-- User registration with **email verification** (SMTP link)
+- User registration with **email verification** (link sent via **Resend**)
 - **Forgot password** / **reset password** flow with expiring tokens
 - Login issues a **JWT** stored in an **HttpOnly cookie** (XSS-safe)
 - Logout invalidates both the cookie and the Redis-cached token
 - **BCrypt** password hashing
+- **Profile management** — view and update your name, phone, and delivery address
 
 ### 🛍️ Shopping (USER role)
 - Browse products with **pagination, sorting, and category filter**
 - **Search products** by keyword
 - View single product with image
 - **Shopping cart**: add, update quantity, remove, clear
-- **Fake payment checkout** with transaction ID
+- **Fake payment checkout** with transaction ID and a prefilled **Delivery details** panel
+- **Order history** — list and paged list of all your past orders
+- **Order detail page** — full item breakdown plus delivery info
 - **Download PDF receipt** for completed orders
+- **Auth-aware navbar** shared across all user pages (user pill dropdown, login prompt modal, live cart badge)
 
 ### 🛠️ Administration (ADMIN role)
 - **Admin dashboard**
@@ -88,6 +96,9 @@ The app is designed to run locally in **IntelliJ IDEA** while **MySQL** and **Re
 - **HikariCP** tuned for cloud MySQL (Aiven)
 - **`GlobalExceptionHandler`** returns consistent JSON error payloads (`ApiError`) for every failure mode
 - **Multipart upload limit** configurable via `application.properties` (currently 5 MB per file / 10 MB per request)
+- **Resend API** (`resend-java`) for transactional email — works on cloud hosts where outbound SMTP is blocked
+- **Spring Boot Actuator** exposes `/actuator/health` for PaaS health checks
+- **Favicon** linked from every frontend page
 - Environment-variable driven configuration — no secrets in source
 
 ---
@@ -103,6 +114,7 @@ The app enforces **two layers** of authorization:
 |---|---|---|---|
 | Browse products | ✅ | ✅ | ✅ |
 | Manage own cart / checkout | ✅ | ✅ | ✅ |
+| View own orders & profile | ✅ | ✅ | ✅ |
 | Access admin dashboard UI | ❌ | ✅ | ✅ |
 | Add product | ❌ | ✅ (max 3, own) | ✅ |
 | Update product | ❌ | ✅ (own only) | ✅ (any) |
@@ -146,7 +158,8 @@ To test as a **USER**, register a fresh account via `RegistrationForm.html` and 
 | **Cache L1** | Caffeine 3.2.4 |
 | **Cache L2** | Redis (Upstash / Docker) via Lettuce |
 | **PDF Generation** | OpenPDF 1.3.30 |
-| **Email** | Spring Boot Starter Mail (SMTP) |
+| **Email** | **Resend API** (`resend-java`) |
+| **Observability** | Spring Boot Actuator |
 | **Build** | Maven |
 | **Frontend** | HTML / CSS / vanilla JavaScript |
 | **Local Dev** | Docker Compose (Redis) + IntelliJ |
@@ -179,7 +192,9 @@ To test as a **USER**, register a fresh account via `RegistrationForm.html` and 
 │                   ▼                           │
 │  ┌────────────────────────────────────────┐   │
 │  │             Controllers                │   │
-│  │  Auth · Product · Cart · Admin         │   │
+│  │  Auth · Admin · ShoppingCart · Users   │   │
+│  │  Users → /me · /profile · /orders/**   │   │
+│  │         + /products/** (public read)   │   │
 │  └────────────────┬───────────────────────┘   │
 │                   ▼                           │
 │  ┌────────────────────────────────────────┐   │
@@ -263,7 +278,7 @@ JWT → username mappings and cached `Users` objects use `RedisCacheService` **d
 - **BCrypt** password hashing
 - **Email verification required** before login
 - **Password reset** uses short-lived signed tokens
-- Public routes: `/auth/**`, `/LoginForm.html`, `/RegistrationForm.html`, `/ForgotPassword.html`, `/ResetPassword.html`
+- Public routes: `/auth/**`, `/LoginForm.html`, `/RegistrationForm.html`, `/ForgotPassword.html`, `/ResetPassword.html`, `/actuator/health`
 - `/Admin_Pages/**` and `/admin`, `/admin/users` → `ADMIN` or `SECONDARY_ADMIN`
 - `/admin/all`, `/admin/users/*/ban`, `/admin/users/*/unban` → `ADMIN` only
 - `/Users_Pages/**` and `/users/**` → `USER` only
@@ -281,7 +296,7 @@ Any `IllegalStateException` thrown by these guards is caught by `GlobalException
 ### Auth flow
 ```
 1. POST /auth/v1/register        → user created (unverified)
-2. Email sent with verification link
+2. Email sent via Resend with verification link
 3. GET  /auth/v1/verify-email    → account verified → redirect to login
 4. POST /auth/v1/login           → JWT generated, cached in Redis,
                                    set as HttpOnly cookie
@@ -327,39 +342,48 @@ JustBuyIt/
     │   │   ├── Controllers/
     │   │   │   ├── AdminController.java
     │   │   │   ├── AuthController.java
-    │   │   │   ├── ProductController.java
-    │   │   │   └── ShoppingCartController.java
+    │   │   │   ├── ShoppingCartController.java
+    │   │   │   └── UsersController.java            # /users/me, /users/profile, /users/orders/**, /products/**
     │   │   │
     │   │   ├── DTOs/
     │   │   │   ├── ApiError.java                   # Uniform error body
     │   │   │   ├── CartItemRequest.java
     │   │   │   ├── CartItemResponse.java
+    │   │   │   ├── OrderDetailDTO.java
+    │   │   │   ├── OrderItemDTO.java
+    │   │   │   ├── OrderSummaryDTO.java
     │   │   │   ├── PaymentRequest.java
     │   │   │   ├── PaymentResponse.java
     │   │   │   ├── ProductDTO.java
     │   │   │   ├── ProductPageDTO.java
+    │   │   │   ├── ProfileUpdateRequest.java
     │   │   │   ├── ShoppingCartResponse.java
     │   │   │   └── UserPrincipalDto.java
     │   │   │
     │   │   ├── Models/
     │   │   │   ├── CartItem.java
     │   │   │   ├── Category.java
+    │   │   │   ├── Order.java                      # Snapshot of a checkout
+    │   │   │   ├── OrderItem.java                  # Denormalized line item
+    │   │   │   ├── OrderStatus.java                # PLACED · CONFIRMED · DISPATCHED · DELIVERED · CANCELLED
     │   │   │   ├── Product.java
     │   │   │   ├── QuantityUnit.java
     │   │   │   ├── Role.java                       # USER · SECONDARY_ADMIN · ADMIN
     │   │   │   ├── ShoppingCart.java
-    │   │   │   └── Users.java
+    │   │   │   └── Users.java                      # + phone, address
     │   │   │
     │   │   ├── Repository/
     │   │   │   ├── CategoryRepo.java
+    │   │   │   ├── OrderRepo.java
     │   │   │   ├── ProductRepo.java                # + countByAddedById
     │   │   │   ├── ShoppingCartRepo.java
     │   │   │   └── UsersRepo.java
     │   │   │
     │   │   └── Services/
-    │   │       ├── EmailService.java
+    │   │       ├── EmailService.java               # Resend API
     │   │       ├── ImageService.java
     │   │       ├── JwtService.java
+    │   │       ├── OrderService.java               # cart → order, stock decrement
     │   │       ├── PaymentService.java
     │   │       ├── ProductService.java
     │   │       ├── ReceiptService.java
@@ -373,6 +397,7 @@ JustBuyIt/
     │       ├── application.properties
     │       │
     │       └── static/
+    │           ├── favicon.png
     │           ├── ForgotPassword.html
     │           ├── HomePage.html
     │           ├── LoginForm.html
@@ -389,7 +414,10 @@ JustBuyIt/
     │           │   └── ViewAllProduct.html
     │           │
     │           ├── Users_Pages/
+    │           │   ├── OrderDetail.html
+    │           │   ├── Orders.html
     │           │   ├── PaymentCheckout.html
+    │           │   ├── Profile.html
     │           │   └── ShoppingCart.html
     │           │
     │           ├── css/
@@ -412,14 +440,20 @@ JustBuyIt/
     │           │           ├── cart.css
     │           │           ├── checkout.css
     │           │           ├── home.css
-    │           │           └── product.css
+    │           │           ├── orders.css
+    │           │           ├── product.css
+    │           │           └── profile.css
     │           │
     │           └── js/
-    │               └── popup.js
+    │               ├── popup.js
+    │               └── users/
+    │                   └── navbar.js               # Shared auth-aware navbar
     │
     └── test/java/com/example/JustBuyIt/
         └── JustBuyItApplicationTests.java
 ```
+
+> 📝 **Note:** Product and Order endpoints are consolidated into `UsersController.java`. There is **no** separate `ProductController.java` or `OrderController.java`. `UsersController` serves `/users/me`, `/users/profile`, `/users/orders/**`, and the `/products/**` routes.
 
 ---
 
@@ -434,7 +468,7 @@ This project runs **without installing MySQL or Redis natively**:
 > - IntelliJ IDEA (Community or Ultimate)
 > - Docker Desktop
 > - A MySQL 8 database (Aiven free tier works great)
-> - A Gmail account with an **App Password** (for SMTP)
+> - A [Resend](https://resend.com/) account with an **API key** and a **verified sender domain** (for verification / reset emails)
 
 ### 1️⃣ Clone the repository
 
@@ -468,9 +502,11 @@ The app reads all secrets from environment variables. Set them either in a `.env
 | `DB_URL` | Full JDBC URL to your MySQL instance |
 | `DB_USERNAME` | MySQL username |
 | `DB_PASSWORD` | MySQL password |
-| `EMAIL_ADDRESS` | Gmail address used to send verification / reset emails |
-| `EMAIL_APP_PASSWORD` | Gmail **App Password** (not your normal password) |
+| `RESEND_API_KEY` | Resend API key used to send verification / reset emails |
+| `RESEND_FROM_EMAIL` | Sender address for outgoing emails (must belong to a **verified Resend domain**) |
 | `JWT_SECRET` | A long, random string used to sign JWT tokens |
+
+> ⚠️ Resend only delivers mail from a **verified sender domain**. Verify your domain in the Resend dashboard (DNS records) before expecting verification or reset emails to arrive.
 
 Example:
 
@@ -478,8 +514,8 @@ Example:
 DB_URL=jdbc:mysql://<your-mysql-host>:<port>/JustBuyItDb?zeroDateTimeBehavior=convertToNull
 DB_USERNAME=<your-db-user>
 DB_PASSWORD=<your-db-password>
-EMAIL_ADDRESS=<your-gmail-address>
-EMAIL_APP_PASSWORD=<gmail-app-password>
+RESEND_API_KEY=<your-resend-api-key>
+RESEND_FROM_EMAIL=<no-reply@your-verified-domain.com>
 JWT_SECRET=<a-long-random-string-at-least-32-chars>
 ```
 
@@ -515,7 +551,16 @@ Right-click → **Run 'JustBuyItApplication'**.
 
 The app starts at **http://localhost:8080**.
 
-### 7️⃣ First-time use
+### 7️⃣ Verify the health endpoint
+
+Once the app is running, confirm Actuator is up:
+
+```bash
+curl http://localhost:8080/actuator/health
+# → {"status":"UP"}
+```
+
+### 8️⃣ First-time use
 
 1. Open **http://localhost:8080/RegistrationForm.html**
 2. Register a user → check the email inbox for the verification link
@@ -536,7 +581,7 @@ UPDATE users SET role = 'SECONDARY_ADMIN' WHERE email = 'secondary@example.com';
 
 Log out and back in to pick up the new role.
 
-### 8️⃣ Quick test with demo accounts
+### 9️⃣ Quick test with demo accounts
 
 Use the built-in demo credentials to skip registration:
 
@@ -588,13 +633,13 @@ spring.cache.redis.cache-null-values=false
 spring.cache.redis.use-key-prefix=true
 spring.cache.redis.key-prefix=RedisDbForJustBuyIt:
 
-# Mail (use Gmail app password or your SMTP provider)
-spring.mail.host=smtp.gmail.com
-spring.mail.port=587
-spring.mail.username=${EMAIL_ADDRESS}
-spring.mail.password=${EMAIL_APP_PASSWORD}
-spring.mail.properties.mail.smtp.auth=true
-spring.mail.properties.mail.smtp.starttls.enable=true
+# Email (Resend API)
+resend.api-key=${RESEND_API_KEY}
+resend.from-email=${RESEND_FROM_EMAIL}
+
+# Actuator (health checks)
+management.endpoints.web.exposure.include=health
+management.endpoint.health.show-details=when-authorized
 
 # App config
 app.base-url=http://localhost:8080
@@ -617,7 +662,8 @@ jwt.secret=${JWT_SECRET}
 - **DataSource** — Hikari is tuned for cloud MySQL (Aiven) that aggressively reaps idle connections.
 - **Redis** — `lettuce.pool.*` properties keep the client resilient to transient network blips. The commented `spring.data.redis.url` line is left in place so you can switch to a managed Redis (Upstash, Redis Cloud) by uncommenting it and setting `REDIS_URL`.
 - **Cache** — Redis is the L2 store; Caffeine L1 is configured in Java code via `LayeredCacheConfig`.
-- **Mail** — Uses Gmail SMTP with STARTTLS. Requires a Gmail **App Password** (2FA must be enabled on the Google account).
+- **Email** — Uses the **Resend API** via the `resend-java` SDK. `RESEND_FROM_EMAIL` must belong to a domain you have verified in Resend.
+- **Actuator** — Only the `health` endpoint is exposed. `show-details=when-authorized` means anonymous callers see just `{"status":"UP"}`, while authorized callers can see component details.
 - **Multipart** — `max-file-size=5MB` and `max-request-size=10MB` are the current limits. Increase both if you need larger product images.
 - **JWT** — `jwt.secret` must be a long, random string. `JwtService` fails to start if it's missing or too short.
 
@@ -627,9 +673,9 @@ jwt.secret=${JWT_SECRET}
 
 1. Create a database named **`JustBuyItDb`** on any MySQL 8 instance (Aiven, Railway, Docker MySQL, etc.).
 2. Import `JustBuyIt.sql`:
-   ```bash
+```bash
    mysql -h <host> -u <user> -p JustBuyItDb < JustBuyIt.sql
-   ```
+```
 3. The schema and seed data will be created automatically.
 
 ---
@@ -637,6 +683,8 @@ jwt.secret=${JWT_SECRET}
 ## 🌐 API Reference
 
 ### 🔐 Auth — `/auth/v1`
+
+> Served by `AuthController`.
 
 | Method | Endpoint | Access | Description |
 |---|---|---|---|
@@ -647,7 +695,31 @@ jwt.secret=${JWT_SECRET}
 | `POST` | `/auth/v1/forgot-password?email=` | Public | Send reset link |
 | `POST` | `/auth/v1/reset-password?token=&password=` | Public | Reset password |
 
+### 👤 Users — `/users`
+
+> Served by `UsersController`.
+
+| Method | Endpoint | Access | Description |
+|---|---|---|---|
+| `GET` | `/users/me` | Auth | Current user (id, name, email, phone, address, role) |
+| `GET` | `/users/profile` | Auth | Full profile |
+| `PUT` | `/users/profile` | Auth | Update name, phone, address |
+
+### 📦 Orders — `/users/orders`
+
+> Served by `UsersController`. There is **no** separate `OrderController`.
+
+| Method | Endpoint | Access | Description |
+|---|---|---|---|
+| `GET` | `/users/orders` | Auth | List all orders for the current user |
+| `GET` | `/users/orders/paged?page=&size=` | Auth | Paged order list |
+| `GET` | `/users/orders/{id}` | Auth | Order detail with items + delivery info |
+
+> ℹ️ Orders are created server-side during checkout (`PaymentService.processFakePayment` → `OrderService.createOrderFromCart`). Each order stores a **snapshot** of its items and delivery details, so it stays accurate even if a product is later modified or deleted. Order statuses: `PLACED`, `CONFIRMED`, `DISPATCHED`, `DELIVERED`, `CANCELLED`.
+
 ### 🛍 Products
+
+> Served by `UsersController`. There is **no** separate `ProductController`.
 
 | Method | Endpoint | Access | Description |
 |---|---|---|---|
@@ -667,16 +739,20 @@ jwt.secret=${JWT_SECRET}
 
 ### 🛒 Cart — `/users/cart`
 
+> Served by `ShoppingCartController`.
+
 | Method | Endpoint | Access | Description |
 |---|---|---|---|
 | `GET` | `/users/cart` | USER | Get current user's cart |
 | `POST` | `/users/cart/items` | USER | Add item |
 | `DELETE` | `/users/cart/items/{cartItemId}` | USER | Remove item |
 | `DELETE` | `/users/cart` | USER | Clear cart |
-| `POST` | `/users/cart/payment/checkout` | USER | Fake payment |
+| `POST` | `/users/cart/payment/checkout` | USER | Fake payment (requires phone + address on the profile; creates an order) |
 | `POST` | `/users/cart/payment/checkout/receipt` | USER | Download PDF receipt |
 
 ### 🛠 Admin — `/admin`
+
+> Served by `AdminController`.
 
 | Method | Endpoint | Access | Description |
 |---|---|---|---|
@@ -685,6 +761,14 @@ jwt.secret=${JWT_SECRET}
 | `GET` | `/admin/users?q=&page=&size=` | ADMIN, SECONDARY_ADMIN | Paged + searchable user list |
 | `PATCH` | `/admin/users/{id}/ban` | **ADMIN only** | Ban user |
 | `PATCH` | `/admin/users/{id}/unban` | **ADMIN only** | Unban user |
+
+### 🩺 Health — `/actuator`
+
+> Provided by Spring Boot Actuator (not a custom controller). Used by Render (PaaS) for health checks.
+
+| Method | Endpoint | Access | Description |
+|---|---|---|---|
+| `GET` | `/actuator/health` | Public | Liveness check → `{"status":"UP"}` |
 
 ### ❗ Error responses
 
@@ -739,13 +823,19 @@ Building JustBuyIt was a deep dive into production-style Spring Boot patterns:
 
 5. **JWT + Redis is a strong pairing.** Caching `token → username` in Redis lets every authenticated request skip a DB lookup while still allowing instant revocation on logout.
 
-6. **Environment variables are non-negotiable.** Moving all credentials (`DB_*`, `EMAIL_*`, `JWT_SECRET`, `REDIS_*`) out of `application.properties` means the repo is safe to publish and easy to configure per environment.
+6. **Environment variables are non-negotiable.** Moving all credentials (`DB_*`, `RESEND_*`, `JWT_SECRET`, `REDIS_*`) out of `application.properties` means the repo is safe to publish and easy to configure per environment.
 
 7. **A single `GlobalExceptionHandler` beats scattered try/catch.** Wrapping every controller method in `try { ... } catch (Exception e) { return 500 }` hides the true cause of errors. Letting exceptions bubble to a `@RestControllerAdvice` produces consistent status codes, consistent JSON shapes, and clean frontend messages.
 
 8. **HikariCP + Lettuce tuning matters.** Setting `keepalive-time`, `max-lifetime`, and pool `min-idle` prevents connection starvation against cloud databases that aggressively reap idle sockets.
 
 9. **Spring Boot's `spring-boot-docker-compose` integration is a game-changer.** It auto-detects `docker-compose.yml`, starts Redis on app boot, and injects connection details — no native Redis install required for contributors.
+
+10. **Resend beats Gmail SMTP for cloud deployments.** Many PaaS providers block or throttle outbound SMTP ports, and Gmail App Passwords are brittle and tied to a personal account. Sending through an HTTPS API (Resend via `resend-java`) with a verified sender domain is more reliable, easier to configure with just two environment variables, and avoids the `spring.mail.*` boilerplate.
+
+11. **Snapshot order data at checkout time — never join back to the product.** `Order` and `OrderItem` copy `productId`, `productName`, `unitPrice`, `quantity`, `subTotal`, and the delivery name / phone / address at the moment of purchase. That way order history stays accurate even if a product is later edited or deleted, or the user changes their profile. Related gotcha: mutating a possibly-detached `Product` (e.g. `p.setQuantity(...)`) is silently ignored by Hibernate, so stock decrements need an explicit `productRepo.save(p)`.
+
+12. **Actuator's `/actuator/health` is the right tool for PaaS health checks.** Adding `spring-boot-starter-actuator` and exposing only `health` gives platforms like Render a cheap, standard liveness probe (`{"status":"UP"}`) without writing a custom endpoint or leaking internal details to anonymous callers.
 
 ---
 
@@ -764,6 +854,7 @@ Building JustBuyIt was a deep dive into production-style Spring Boot patterns:
 - [Caffeine](https://github.com/ben-manes/caffeine)
 - [Redis](https://redis.io/) / [Upstash](https://upstash.com/)
 - [Aiven](https://aiven.io/) for hosted MySQL
+- [Resend](https://resend.com/) for transactional email
 - [jjwt](https://github.com/jwtk/jjwt)
 - [OpenPDF](https://github.com/LibrePDF/OpenPDF)
 

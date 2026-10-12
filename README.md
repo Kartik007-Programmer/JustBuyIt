@@ -1,6 +1,6 @@
 # JustBuyIt 🛒
 
-A full-stack e-commerce web application built with **Spring Boot 4**, featuring JWT authentication, email verification via **Resend**, password reset, product management, shopping cart, order history, user profile management, PDF receipt generation, admin user management, and a **two-tier caching system** using **Caffeine + Redis**.
+A full-stack e-commerce web application built with **Spring Boot 4**, featuring JWT authentication, email verification via **Resend**, password reset, product management (including **single + batch import**), shopping cart, order history, user profile management, PDF receipt generation, admin user management, and a **two-tier caching system** using **Caffeine + Redis**.
 
 ![Java](https://img.shields.io/badge/Java-17-orange?logo=openjdk)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.1.1-brightgreen?logo=springboot)
@@ -74,7 +74,7 @@ The app is designed to run locally in **IntelliJ IDEA** while **MySQL** and **Re
 ### 🛠️ Administration (ADMIN role)
 - **Admin dashboard**
 - Add products (JSON + image URL, or multipart file upload)
-- Batch product upload
+- Batch product upload (no product-count limit)
 - Update / delete **any** product
 - **User management**: paged + searchable user list, ban / unban users
 - View all admins
@@ -85,7 +85,7 @@ The app is designed to run locally in **IntelliJ IDEA** while **MySQL** and **Re
 - **Can update / delete only the products they added** — cannot touch other admins' products
 - **Cannot ban or unban users**
 - **Cannot access the full admin list** (`GET /admin/all`)
-- **Cannot use batch import** (`POST /multi_products`)
+- **Can use batch import** (`POST /multi_products`) — subject to the same 3-product total cap
 - Attempts to exceed the limit return a clean `403 Forbidden` with a clear message
 
 ### ⚡ Engineering
@@ -119,14 +119,14 @@ The app enforces **two layers** of authorization:
 | Add product | ❌ | ✅ (max 3, own) | ✅ |
 | Update product | ❌ | ✅ (own only) | ✅ (any) |
 | Delete product | ❌ | ✅ (own only) | ✅ (any) |
-| Batch product import (`/multi_products`) | ❌ | ❌ | ✅ |
+| Batch product import (`/multi_products`) | ❌ | ✅ (≤ 3 total) | ✅ (unlimited) |
 | List all admins (`/admin/all`) | ❌ | ❌ | ✅ |
 | Ban / unban users | ❌ | ❌ | ✅ |
 | Manage users page | ❌ | ❌ | ✅ |
 
 **Product ownership** is tracked via `Product.addedBy` (`@ManyToOne` to `Users`). Whenever a Secondary Admin tries to modify or delete a product they did not create, the service throws `IllegalStateException`, which `GlobalExceptionHandler` converts to a `403 Forbidden` with a clear message.
 
-**3-product quota** is enforced at creation time by counting `ProductRepo.countByAddedById(actor.getId())` and rejecting the request when it would exceed the limit.
+**3-product quota** is enforced at creation time by counting `ProductRepo.countByAddedById(actor.getId())` and rejecting the request when it would exceed the limit. The same cap applies to **batch import** — a batch that would push a secondary admin past 3 total products is rejected in full (all-or-nothing).
 
 ---
 
@@ -290,6 +290,7 @@ JWT → username mappings and cached `Users` objects use `RedisCacheService` **d
 2. **Service-level checks** in `SecurityService` — fine-grained:
    - `assertCanCreateProduct(actor)` → enforces the 3-product limit for `SECONDARY_ADMIN`
    - `assertCanModifyOrDeleteProduct(existing, actor)` → verifies the caller owns the product (for `SECONDARY_ADMIN`)
+   - `assertCanBatchCreateProducts(actor, incomingCount)` → enforces the 3-product cap forSECONDARY_ADMINon batch import; rejects the batch ifcurrent + incoming > 3``
 
 Any `IllegalStateException` thrown by these guards is caught by `GlobalExceptionHandler` and returned as a clean `403 Forbidden` JSON payload.
 
@@ -454,6 +455,8 @@ JustBuyIt/
 ```
 
 > 📝 **Note:** Product and Order endpoints are consolidated into `UsersController.java`. There is **no** separate `ProductController.java` or `OrderController.java`. `UsersController` serves `/users/me`, `/users/profile`, `/users/orders/**`, and the `/products/**` routes.
+
+> 📝 **Note:** Batch import is not a separate page. The Add Product page (`Admin_Pages/AddProduct.html`) contains a named toggle ("Add Product" ⇄ "Batch Import") that swaps between the single-product form and the batch-import UI.
 
 ---
 
@@ -730,12 +733,12 @@ jwt.secret=${JWT_SECRET}
 | `GET` | `/products/categories` | Public | All category names |
 | `POST` | `/products` | ADMIN, SECONDARY_ADMIN | Add product (JSON + image URL) |
 | `POST` | `/products/upload` | ADMIN, SECONDARY_ADMIN | Add product (multipart) |
-| `POST` | `/multi_products` | **ADMIN only** | Batch add products |
+| `POST` | `/multi_products` | ADMIN, SECONDARY_ADMIN (≤ 3 total) | Batch add products (JSON array; images downloaded fromimageUrl) |
 | `PUT` | `/products/{id}` | ADMIN, SECONDARY_ADMIN | Update product (JSON) |
 | `PUT` | `/products/{id}/upload` | ADMIN, SECONDARY_ADMIN | Update product (multipart) |
 | `DELETE` | `/products/{id}` | ADMIN, SECONDARY_ADMIN | Delete product |
 
-> ⚠️ `SECONDARY_ADMIN` calls to `POST`/`PUT`/`DELETE /products/**` are further validated in `ProductService` — the caller must own the product (for update/delete) and must not exceed 3 products (for create).
+> ⚠️ `SECONDARY_ADMIN` calls to `POST`/`PUT`/`DELETE /products/**` and `POST /multi_productsare` further validated in `ProductService`/`SecurityService` — the caller must own the product (for update/delete) and must not exceed 3 products (for single create and for batch import, counted together).
 
 ### 🛒 Cart — `/users/cart`
 
@@ -781,6 +784,15 @@ Every error response uses a single JSON shape:
 }
 ```
 
+**Batch quota example (403):**
+
+```json
+{
+  "error": "FORBIDDEN",
+  "message": "Secondary admins can only own up to 3 products. You currently own 1 and tried to add 3 (remaining slots: 2)."
+}
+```
+
 | HTTP Status | `error` | When |
 |---|---|---|
 | `400` | `BAD_REQUEST` | Invalid input |
@@ -806,6 +818,8 @@ Every error response uses a single JSON shape:
 | Admin Dashboard | `docs/screenshots/admin-dashboard.png` |
 | Admin User Management | `docs/screenshots/admin-users.png` |
 | Secondary Admin — 3-product limit | `docs/screenshots/secondary-admin-limit.png` |
+| Batch Import (toggle on Add Product page) | `docs/screenshots/admin-batch-import.png` |
+| Placeholder guard — sample data rejected | `docs/screenshots/admin-batch-placeholder.png` |
 
 ---
 
@@ -836,6 +850,8 @@ Building JustBuyIt was a deep dive into production-style Spring Boot patterns:
 11. **Snapshot order data at checkout time — never join back to the product.** `Order` and `OrderItem` copy `productId`, `productName`, `unitPrice`, `quantity`, `subTotal`, and the delivery name / phone / address at the moment of purchase. That way order history stays accurate even if a product is later edited or deleted, or the user changes their profile. Related gotcha: mutating a possibly-detached `Product` (e.g. `p.setQuantity(...)`) is silently ignored by Hibernate, so stock decrements need an explicit `productRepo.save(p)`.
 
 12. **Actuator's `/actuator/health` is the right tool for PaaS health checks.** Adding `spring-boot-starter-actuator` and exposing only `health` gives platforms like Render a cheap, standard liveness probe (`{"status":"UP"}`) without writing a custom endpoint or leaking internal details to anonymous callers.
+
+13. **URL-level authorization can silently lie to your frontend.** When `/multi_productswas` still marked `hasAuthority("ADMIN")`, a `SECONDARY_ADMIN` request was rejected by Spring Security *before* it ever reached the service — and because the entry point couldn't distinguish "not logged in" from "wrong role", the frontend toast said "Please log in to continue" to a fully authenticated user. Splitting the `authenticationEntryPoint` (401) from an explicit `accessDeniedHandler` (403) fixed the UX. Lesson: never assume the message shown to the user reflects the real reason — trace the request through the filter chain.
 
 ---
 

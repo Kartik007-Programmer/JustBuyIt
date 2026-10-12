@@ -1,37 +1,74 @@
-HELP.md
+# ============================================
+# Build output
+# ============================================
 target/
-.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
+build/
+*.jar
+*.war
 
-### Custom Environment Variables ###
+# ============================================
+# Environment / secrets
+# ============================================
 .env
 .env.*
+*.env
 
-### STS ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
+# ============================================
+# Docker / deployment files (not needed in image)
+# ============================================
+Dockerfile
+.dockerignore
+docker-compose.yml
+docker-compose.*.yml
 
-### IntelliJ IDEA ###
-.idea
+# ============================================
+# Documentation & DB dumps
+# ============================================
+README.md
+HELP.md
+JustBuyIt.sql
+docs/
+*.md
+
+# ============================================
+# Maven wrapper (Dockerfile uses maven image)
+# ============================================
+mvnw
+mvnw.cmd
+.mvn/
+!.mvn/wrapper/maven-wrapper.properties
+
+# ============================================
+# Git
+# ============================================
+.git/
+.gitignore
+.gitattributes
+
+# ============================================
+# IDE files
+# ============================================
+.idea/
 *.iws
 *.iml
 *.ipr
-
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
-build/
-!**/src/main/**/build/
-!**/src/test/**/build/
-
-### VS Code ###
 .vscode/
+.classpath
+.project
+.settings/
+.factorypath
+.apt_generated
+.springBeans
+.sts4-cache
+
+# ============================================
+# OS files
+# ============================================
+.DS_Store
+Thumbs.db
+
+# ============================================
+# Logs
+# ============================================
+*.log
+logs/

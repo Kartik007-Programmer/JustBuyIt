@@ -130,7 +130,14 @@
 
 <script src="/js/users/navbar.js"></script>
 <script>
-    const API_BASE = window.API_BASE;
+    const API_BASE = (() => {
+        // Local development
+        if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+            return "http://localhost:8080";
+        }
+        // Production — same origin
+        return window.location.origin;
+    })();
 
     function setAvatarAndName(user) {
         const display = (user.name && user.name.trim()) || user.email || "U";

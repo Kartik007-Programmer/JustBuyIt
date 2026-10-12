@@ -172,7 +172,7 @@ public class SecurityService {
 
                 ResponseCookie responseCookie = ResponseCookie.from("JWT_TOKEN",token)
                         .httpOnly(true)
-                        .secure(false)
+                        .secure(true)
                         .path("/")
                         .maxAge(60 * 60)
                         .sameSite("Lax")
@@ -222,7 +222,7 @@ public class SecurityService {
 
         ResponseCookie deleteCookie = ResponseCookie.from("JWT_TOKEN", "")
                 .httpOnly(true)
-                .secure(false)
+                .secure(true)
                 .path("/")
                 .maxAge(0)
                 .sameSite("Lax")

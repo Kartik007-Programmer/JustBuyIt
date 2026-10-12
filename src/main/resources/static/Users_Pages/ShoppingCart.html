@@ -108,7 +108,14 @@
     /* ============================================================
        PAGE STATE
        ============================================================ */
-    const API_BASE  = window.API_BASE;
+    const API_BASE = (() => {
+        // Local development
+        if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+            return "http://localhost:8080";
+        }
+        // Production — same origin
+        return window.location.origin;
+    })();
     const CART_BASE = `${API_BASE}/users/cart`;
     let currentCart = null;
 

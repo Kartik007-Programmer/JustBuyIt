@@ -8,7 +8,11 @@
 (function () {
     "use strict";
 
-    const API_BASE = window.API_BASE || "http://localhost:8080";
+    const API_BASE = window.API_BASE || (
+        ["localhost", "127.0.0.1"].includes(window.location.hostname)
+            ? "http://localhost:8080"
+            : window.location.origin
+    );
 
     /* Expose a couple of things globally so per-page scripts
        (addToCart, checkout, cart, etc.) can read them. */
@@ -243,28 +247,6 @@
         init();
     }
 })();
-
-/* ---------- Wire everything up on DOM ready ---------- */
-function init() {
-    setupUserMenu();
-    setupCartNavGate();
-
-    document.addEventListener("click", (e) => {
-        if (e.target && e.target.id === "authModal") window.closeAuthModal();
-    });
-    document.addEventListener("keydown", (e) => {
-        if (e.key === "Escape") window.closeAuthModal();
-    });
-
-    window.__authReady = window.bootstrapAuth();
-}
-
-if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", init);
-} else {
-    init();
-}
-
 /* ------------------------------------------------------------
    Shared page guard.
    Usage:
@@ -275,12 +257,12 @@ if (document.readyState === "loading") {
 window.requireAuth = async function requireAuth() {
     let user = await window.__authReady;
 
-    // Distinguish "not authenticated" from "transient failure".
-    // Only a confirmed 401/403 marks the user as a guest.
     if (user && user.__error) {
-        // one retry — cookie may just have been set
-        user = await window.bootstrapAuth();
+        user = await window.bootstrapAuth();   // one retry
     }
+
+    // Server unreachable: don't treat as guest, don't proceed
+    if (user && user.__error) return null;
 
     if (window.isGuestUser || user === null) {
         const here = encodeURIComponent(location.pathname + location.search);
@@ -288,16 +270,9 @@ window.requireAuth = async function requireAuth() {
         return null;
     }
 
-    if (user && user.__error) {
-        // Server unreachable — do NOT treat as guest, but don't proceed either
-        return null;
-    }
-
-    // Admins should never land on user pages
     if (user.role === "ADMIN" || user.role === "SECONDARY_ADMIN") {
         window.location.replace("/Admin_Pages/AdminDashboad.html");
         return null;
     }
-
     return user;
 };

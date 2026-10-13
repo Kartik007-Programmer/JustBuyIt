@@ -621,7 +621,7 @@
        ============================================================ */
     (async function initPage() {
         const user = await window.__authReady;
-        if (!user || user.__error) {
+        if (window.isGuestUser) {
             const here = encodeURIComponent(location.pathname + location.search);
             window.location.href = `/LoginForm.html?redirect=${here}`;
             return;

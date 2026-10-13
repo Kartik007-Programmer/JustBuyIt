@@ -175,7 +175,7 @@ public class SecurityService {
                         .secure(true)
                         .path("/")
                         .maxAge(60 * 60)
-                        .sameSite("Lax")
+                        .sameSite("None")
                         .build();
                 response.addHeader(HttpHeaders.SET_COOKIE, responseCookie.toString());
                 return ResponseEntity.ok().build();
@@ -225,7 +225,7 @@ public class SecurityService {
                 .secure(true)
                 .path("/")
                 .maxAge(0)
-                .sameSite("Lax")
+                .sameSite("None")
                 .build();
 
         response.addHeader(HttpHeaders.SET_COOKIE, deleteCookie.toString());

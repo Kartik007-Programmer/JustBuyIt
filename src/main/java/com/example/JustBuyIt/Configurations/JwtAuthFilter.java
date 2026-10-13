@@ -23,77 +23,80 @@ import java.io.IOException;
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
 
-    @Autowired
-    private JwtService jwtService;
-
-    @Autowired
-    private UserDetailsService userDetailsService;
-
-    @Autowired
-    private RedisCacheService redisCacheService;
+    @Autowired private JwtService jwtService;
+    @Autowired private UserDetailsService userDetailsService;
+    @Autowired private RedisCacheService redisCacheService;
 
     @Override
-    protected void doFilterInternal(
-            HttpServletRequest request,
-            HttpServletResponse response,
-            FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain) throws ServletException, IOException {
 
         String authToken = getAuthTokenFromRequest(request);
 
-        if (authToken != null && SecurityContextHolder.getContext().getAuthentication() == null){
+        if (authToken != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             try {
-                String CachedUsername = redisCacheService.getUserNameFromTokenCache(authToken);
-                String username = (CachedUsername != null) ? CachedUsername : jwtService.getUsernameByToken(authToken);
+                String cachedUsername = null;
+                try {
+                    cachedUsername = redisCacheService.getUserNameFromTokenCache(authToken);
+                } catch (Exception redisEx) {
+                    logger.warn("Redis token cache lookup failed, falling back to JWT parse: " + redisEx.getMessage());
+                }
+
+                String username = (cachedUsername != null)
+                        ? cachedUsername
+                        : jwtService.getUsernameByToken(authToken);
 
                 if (username != null) {
-                    UserPrincipalDto userDto = redisCacheService.getUserFromCache(username);
+                    UserPrincipalDto userDto = null;
+                    try {
+                        userDto = redisCacheService.getUserFromCache(username);
+                    } catch (Exception redisEx) {
+                        logger.warn("Redis user cache lookup failed, falling back to DB: " + redisEx.getMessage());
+                    }
+
                     if (userDto == null) {
-                        UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
-                        if (userDetails instanceof Users) {
-                            userDto = UserPrincipalDto.fromEntity((Users) userDetails);
-                            redisCacheService.setCacheUser(username, userDto);
+                        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                        if (userDetails instanceof Users u) {
+                            userDto = UserPrincipalDto.fromEntity(u);
+                            try {
+                                redisCacheService.setCacheUser(username, userDto);
+                            } catch (Exception ignored) { /* cache write is best-effort */ }
                         }
                     }
 
                     if (userDto != null && jwtService.isTokenValid(authToken, userDto)) {
-                        if (CachedUsername == null) {
-                            redisCacheService.setCacheToken(authToken, username);
+                        if (cachedUsername == null) {
+                            try { redisCacheService.setCacheToken(authToken, username); }
+                            catch (Exception ignored) { /* best-effort */ }
                         }
-                        setAuthenticationByUserDetails(userDto, request);
+                        setAuthentication(userDto, request);
+                    } else if (userDto != null) {
+                        logger.info("JWT rejected for user " + username + " — token invalid or expired");
                     }
                 }
             } catch (Exception e) {
-                logger.error("Authentication failed: " + e.getMessage());
+                logger.error("Authentication failed: " + e.getMessage(), e);
             }
         }
         filterChain.doFilter(request, response);
     }
 
     private String getAuthTokenFromRequest(HttpServletRequest request) {
-        if (request.getCookies() != null){
+        if (request.getCookies() != null) {
             for (Cookie cookie : request.getCookies()) {
-                if ("JWT_TOKEN".equals(cookie.getName())) {
-                    return cookie.getValue();
-                }
+                if ("JWT_TOKEN".equals(cookie.getName())) return cookie.getValue();
             }
         }
-
         String authHeader = request.getHeader("Authorization");
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            return authHeader.substring(7);
-        }
+        if (authHeader != null && authHeader.startsWith("Bearer ")) return authHeader.substring(7);
         return null;
     }
 
-    private void setAuthenticationByUserDetails(UserDetails userDetails, HttpServletRequest request) {
-        UsernamePasswordAuthenticationToken usernamePasswordAuthToken = new UsernamePasswordAuthenticationToken(
-                userDetails,
-                null,
-                userDetails.getAuthorities());
-
-        usernamePasswordAuthToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
-        SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthToken);
+    private void setAuthentication(UserDetails userDetails, HttpServletRequest request) {
+        UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
+                userDetails, null, userDetails.getAuthorities());
+        auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+        SecurityContextHolder.getContext().setAuthentication(auth);
     }
-
 }

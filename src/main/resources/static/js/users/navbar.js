@@ -29,15 +29,10 @@
         document.body.classList.remove("is-logged-in");
 
         const menu = document.getElementById("userMenu");
-        if (menu) {
-            menu.classList.remove("open");
-            menu.hidden = true;
-        }
+        if (menu) { menu.classList.remove("open"); menu.hidden = true; }
+
         const badge = document.getElementById("cartBadge");
-        if (badge) {
-            badge.innerText = "0";
-            badge.dataset.empty = "true";
-        }
+        if (badge) { badge.innerText = "0"; badge.dataset.empty = "true"; }
     }
 
     function setLoggedInUI(user) {
@@ -49,25 +44,21 @@
         if (menu) menu.hidden = false;
 
         const display = (user.name && user.name.trim()) || user.email || "U";
-        const initials = display
-            .trim().split(/\s+/).map(s => s[0]).slice(0, 2).join("").toUpperCase();
+        const initials = display.trim().split(/\s+/).map(s => s[0]).slice(0, 2).join("").toUpperCase();
 
         const avatarEl = document.getElementById("userAvatar");
         const nameEl   = document.getElementById("userName");
         if (avatarEl) avatarEl.textContent = initials;
         if (nameEl)   nameEl.textContent   = display;
 
-        // Page-specific hero greeting (only HomePage has one)
         const heroTitle = document.getElementById("heroTitle");
         const heroSub   = document.getElementById("heroSub");
         if (heroTitle) heroTitle.textContent = `Welcome back, ${user.name || "shopper"} 👋`;
         if (heroSub)   heroSub.textContent   = "Pick up where you left off — your cart is waiting.";
 
-        // Let the page know we're logged in (for cart loading etc.)
         document.dispatchEvent(new CustomEvent("auth:logged-in", { detail: user }));
     }
 
-    /* ---------- Bootstrap auth ---------- */
     window.bootstrapAuth = async function () {
         try {
             const res = await fetch(`${API_BASE}/users/me`, {
@@ -75,26 +66,27 @@
                 headers: { "Accept": "application/json" }
             });
 
+            // Only a real 401/403 means guest. Anything else is a transient error.
             if (res.status === 401 || res.status === 403) {
                 setGuestUI();
                 return null;
             }
             if (!res.ok) {
-                setGuestUI();
+                // 5xx / network blip — leave UI in a neutral state
                 return { __error: true };
             }
 
             const user = await res.json();
-            if (user.role === "ADMIN") {
-                window.location.replace("/Admin_Pages/Dashboard.html");
+
+            if (user.role === "ADMIN" || user.role === "SECONDARY_ADMIN") {
+                window.location.replace("/Admin_Pages/AdminDashboad.html");
                 return null;
             }
             setLoggedInUI(user);
             return user;
         } catch (err) {
             console.warn("Auth check failed:", err);
-            setGuestUI();
-            return { __error: true };
+            return { __error: true };  // do NOT setGuestUI here
         }
     };
 
@@ -272,3 +264,40 @@ if (document.readyState === "loading") {
 } else {
     init();
 }
+
+/* ------------------------------------------------------------
+   Shared page guard.
+   Usage:
+     const user = await window.requireAuth();
+     if (!user) return;     // guest → already redirected to login
+     // otherwise, user is a valid logged-in user object
+   ------------------------------------------------------------ */
+window.requireAuth = async function requireAuth() {
+    let user = await window.__authReady;
+
+    // Distinguish "not authenticated" from "transient failure".
+    // Only a confirmed 401/403 marks the user as a guest.
+    if (user && user.__error) {
+        // one retry — cookie may just have been set
+        user = await window.bootstrapAuth();
+    }
+
+    if (window.isGuestUser || user === null) {
+        const here = encodeURIComponent(location.pathname + location.search);
+        window.location.href = `/LoginForm.html?redirect=${here}`;
+        return null;
+    }
+
+    if (user && user.__error) {
+        // Server unreachable — do NOT treat as guest, but don't proceed either
+        return null;
+    }
+
+    // Admins should never land on user pages
+    if (user.role === "ADMIN" || user.role === "SECONDARY_ADMIN") {
+        window.location.replace("/Admin_Pages/AdminDashboad.html");
+        return null;
+    }
+
+    return user;
+};

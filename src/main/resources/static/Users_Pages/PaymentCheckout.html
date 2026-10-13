@@ -620,12 +620,8 @@
        INIT
        ============================================================ */
     (async function initPage() {
-        const user = await window.__authReady;
-        if (window.isGuestUser) {
-            const here = encodeURIComponent(location.pathname + location.search);
-            window.location.href = `/LoginForm.html?redirect=${here}`;
-            return;
-        }
+        const user = await window.requireAuth();
+        if (!user) return;
         loadCheckout();
     })();
 </script>

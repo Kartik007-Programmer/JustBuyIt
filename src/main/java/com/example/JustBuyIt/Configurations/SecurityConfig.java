@@ -31,7 +31,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorizeRequests ->
                         authorizeRequests
                                 .requestMatchers("/auth/**","/LoginForm.html","/RegistrationForm.html","/ForgotPassword.html","/ResetPassword.html").permitAll()
-                                .requestMatchers("/","/HomePage.html","/OneProduct.html","/css/**","/js/**","/Icons/**").permitAll()
+                                .requestMatchers("/","/HomePage.html","/OneProduct.html","/Users_Pages/**","/css/**","/js/**","/Icons/**").permitAll()
                                 .requestMatchers(HttpMethod.GET,    "/products/**").permitAll()
 
                                 // Product writes: ADMIN + SECONDARY_ADMIN (fine-grained checks live in the service)
@@ -50,7 +50,7 @@ public class SecurityConfig {
                                 .requestMatchers("/Admin_Pages/**","/admin","/admin/users").hasAnyAuthority("ADMIN","SECONDARY_ADMIN")
 
                                 // Regular user endpoints and users frontend
-                                .requestMatchers("/users/**","/Users_Pages/**").hasAuthority("USER")
+                                .requestMatchers("/users/**").hasAuthority("USER")
                                 .anyRequest().authenticated())
                 .exceptionHandling(exception ->
                         exception.authenticationEntryPoint((request, response, authException) -> {

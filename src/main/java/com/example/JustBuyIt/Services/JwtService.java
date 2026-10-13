@@ -88,18 +88,28 @@ public class JwtService {
             if (!username.equals(userDetails.getUsername())) return false;
             if (isTokenExpiration(authToken)) return false;
 
-            // Password-change invalidation:
+            // Password-change invalidation handling for UserPrincipalDto
+            if (userDetails instanceof com.example.JustBuyIt.DTOs.UserPrincipalDto dto && dto.getPasswordChangedAt() != null) {
+                Instant issuedAt = ExtractClaims(authToken, Claims::getIssuedAt).toInstant().truncatedTo(ChronoUnit.SECONDS);
+                Instant pwdChangedAt = dto.getPasswordChangedAt().truncatedTo(ChronoUnit.SECONDS);
+
+                return !issuedAt.isBefore(pwdChangedAt);
+            }
+
+            // Fallback for Users entity (if used elsewhere)
             if (userDetails instanceof Users user && user.getPasswordChangedAt() != null) {
                 Instant issuedAt = ExtractClaims(authToken, Claims::getIssuedAt).toInstant().truncatedTo(ChronoUnit.SECONDS);
                 Instant pwdChangedAt = user.getPasswordChangedAt().truncatedTo(ChronoUnit.SECONDS);
 
                 return !issuedAt.isBefore(pwdChangedAt);
             }
+
             return true;
         } catch (JwtException | IllegalArgumentException e) {
             return false;
         }
     }
+
 
     private boolean isTokenExpiration(String authToken) {
         return ExtractClaims(authToken,Claims::getExpiration).before(new Date());

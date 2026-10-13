@@ -305,13 +305,17 @@
        ============================================================ */
     (async function initPage() {
         const user = await window.__authReady;
-
-        // Guests shouldn't be here
-        if (!user) {
-            window.location.href = "/HomePage.html";
-            return;
+        if (user && user.__error) {
+            user = await fetch(`${API_BASE}/users/me`, { credentials: "include" })
+                .then(r => r.ok ? r.json() : null)
+                .catch(() => null);
         }
 
+        if (!user || user.__error) {
+            const here = encodeURIComponent(location.pathname + location.search);
+            window.location.href = `/LoginForm.html?redirect=${here}`;
+            return;
+        }
         loadCart();
     })();
 </script>

@@ -251,20 +251,17 @@ public class SecurityService {
             throw new AuthenticationCredentialsNotFoundException("No authenticated user");
         }
         String username = authentication.getName();
-        UserPrincipalDto user = null;
 
-        UserPrincipalDto Cachedusers = redisCacheService.getUserFromCache(username);
+        UserPrincipalDto cached = redisCacheService.getUserFromCache(username);
+        if (cached != null) return cached;
 
-        if (Cachedusers != null) {
-            user = Cachedusers;
-        }else {
-            UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
-            if (userDetails instanceof Users) {
-                user = UserPrincipalDto.fromEntity((Users) userDetails);
-                redisCacheService.setCacheUser(username, user);
-            }
+        UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
+        if (userDetails instanceof Users u) {
+            UserPrincipalDto dto = UserPrincipalDto.fromEntity(u);
+            redisCacheService.setCacheUser(username, dto);
+            return dto;
         }
-        return user;
+        throw new AuthenticationCredentialsNotFoundException("User not found");
     }
 
     public UserPrincipalDto getPresentAuthorizedAdmin() {

@@ -63,8 +63,11 @@ public class SecurityConfig {
                                         "{\"error\":\"UNAUTHORIZED\",\"message\":\"Please log in to continue\"}"
                                 );
                             } else {
-                                // Any page navigation → browser-style redirect
-                                response.sendRedirect("/LoginForm.html");
+                                String target = request.getRequestURI();
+                                String qs = request.getQueryString();
+                                if (qs != null && !qs.isEmpty()) target += "?" + qs;
+                                String encoded = java.net.URLEncoder.encode(target, java.nio.charset.StandardCharsets.UTF_8);
+                                response.sendRedirect("/LoginForm.html?redirect=" + encoded);
                             }
                         }))
                 .sessionManagement(sessionManagement ->

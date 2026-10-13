@@ -75,26 +75,26 @@
                 headers: { "Accept": "application/json" }
             });
 
-            if (window.isUnauthorized(res) || !res.ok) {
+            if (res.status === 401 || res.status === 403) {
                 setGuestUI();
                 return null;
             }
+            if (!res.ok) {
+                setGuestUI();
+                return { __error: true };
+            }
 
             const user = await res.json();
-
-            // Admins shouldn't be on user pages
             if (user.role === "ADMIN") {
                 window.location.replace("/Admin_Pages/Dashboard.html");
                 return null;
             }
-
             setLoggedInUI(user);
             return user;
-
         } catch (err) {
-            console.warn("Auth check failed, treating as guest:", err);
+            console.warn("Auth check failed:", err);
             setGuestUI();
-            return null;
+            return { __error: true };
         }
     };
 
@@ -252,8 +252,8 @@
     }
 })();
 
-/* ---------- Wire everything up ---------- */
-function setupUI() {
+/* ---------- Wire everything up on DOM ready ---------- */
+function init() {
     setupUserMenu();
     setupCartNavGate();
 
@@ -263,14 +263,12 @@ function setupUI() {
     document.addEventListener("keydown", (e) => {
         if (e.key === "Escape") window.closeAuthModal();
     });
+
+    window.__authReady = window.bootstrapAuth();
 }
 
 if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", setupUI);
+    document.addEventListener("DOMContentLoaded", init);
 } else {
-    setupUI();
+    init();
 }
-
-/* Fire the auth check IMMEDIATELY — pages can rely on __authReady
-   being a real Promise the moment this script finishes executing. */
-window.__authReady = window.bootstrapAuth();
